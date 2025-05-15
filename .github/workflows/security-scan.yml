@@ -1,0 +1,70 @@
+name: Security and Quality Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Build with Maven
+      run: ./mvnw clean verify -Djacoco.skip=false
+        
+    - name: OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'Station Service'
+        path: '.'
+        format: 'HTML'
+        out: 'reports'
+        args: >
+          --suppression suppression.xml
+          --failOnCVSS 7
+          --enableRetired
+        
+    - name: Upload Dependency Check Report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: dependency-check-report
+        path: reports/
+        
+    - name: Start Spring Boot Application
+      run: |
+        nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=test &
+        sleep 30  # Wait for application to start
+        
+    - name: OWASP ZAP Scan
+      uses: zaproxy/action-full-scan@v0.4.0
+      with:
+        target: 'http://localhost:8081'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
+        
+    - name: Upload ZAP Report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: zap-report
+        path: zap-report.html
+        
+    - name: Stop Spring Boot Application
+      if: always()
+      run: |
+        pkill -f spring-boot 
