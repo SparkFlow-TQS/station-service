@@ -41,4 +41,12 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SPRING_PROFILES_ACTIVE: test
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SparkFlow-TQS_station-service 
+        run: |
+          ./mvnw clean verify
+          ./mvnw sonar:sonar \
+            -Dsonar.projectKey=SparkFlow-TQS_station-service \
+            -Dsonar.organization=sparkflow-tqs \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.java.coveragePlugin=jacoco \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.qualitygate.wait=true 
