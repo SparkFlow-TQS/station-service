@@ -1,12 +1,11 @@
 name: SonarQube
-
 on:
   push:
-    branches: [ main, dev ]
+    branches:
+      - main
+      - dev
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main, dev ]
-
 jobs:
   build:
     name: Build and analyze
@@ -15,38 +14,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-          
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: 'zulu'
-          cache: 'maven'
-          
+          distribution: 'zulu' # Alternative distribution options are available.
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-          
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-          
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SPRING_PROFILES_ACTIVE: test
-        run: |
-          ./mvnw clean verify
-          ./mvnw sonar:sonar \
-            -Dsonar.projectKey=SparkFlow-TQS_station-service \
-            -Dsonar.organization=sparkflow-tqs \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.java.coveragePlugin=jacoco \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.qualitygate.wait=true 
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SparkFlow-TQS_station-service
