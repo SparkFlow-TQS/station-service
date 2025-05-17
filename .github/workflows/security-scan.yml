@@ -34,7 +34,11 @@ jobs:
         
     - name: Build and Run Dependency Check
       run: |
-        ./mvnw clean verify org.owasp:dependency-check-maven:check -Ddependency-check.failBuildOnCVSS=7 -Ddependency-check.nvd.apiKey=${{ secrets.NVD_API_KEY }}
+        ./mvnw clean verify org.owasp:dependency-check-maven:check \
+          -Ddependency-check.failBuildOnCVSS=7 \
+          -Ddependency-check.nvd.apiKey=${{ secrets.NVD_API_KEY }} \
+          -Ddependency-check.nvd.apiUrl=https://services.nvd.nist.gov/rest/json/cves/2.0 \
+          -Ddependency-check.nvd.apiDelay=6000
       env:
         SPRING_PROFILES_ACTIVE: test
         
