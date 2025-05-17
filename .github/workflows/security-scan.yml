@@ -37,6 +37,12 @@ jobs:
       env:
         SPRING_PROFILES_ACTIVE: test
         
+    - name: Set up Java for Dependency Check
+      run: |
+        echo "JAVA_HOME=/opt/hostedtoolcache/Java_Zulu_jdk/17.0.15-6/x64" >> $GITHUB_ENV
+        echo "PATH=/opt/hostedtoolcache/Java_Zulu_jdk/17.0.15-6/x64/bin:$PATH" >> $GITHUB_ENV
+        java -version
+        
     - name: OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
       with:
