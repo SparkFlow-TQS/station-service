@@ -32,38 +32,18 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
-    - name: Build with Maven
-      run: ./mvnw clean verify -Djacoco.skip=false
+    - name: Build and Run Dependency Check
+      run: |
+        ./mvnw clean verify org.owasp:dependency-check-maven:check -Ddependency-check.failBuildOnCVSS=7
       env:
         SPRING_PROFILES_ACTIVE: test
-        
-    - name: Set up Java for Dependency Check
-      run: |
-        echo "JAVA_HOME=/opt/hostedtoolcache/Java_Zulu_jdk/17.0.15-6/x64" >> $GITHUB_ENV
-        echo "PATH=/opt/hostedtoolcache/Java_Zulu_jdk/17.0.15-6/x64/bin:$PATH" >> $GITHUB_ENV
-        java -version
-        
-    - name: OWASP Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      env:
-        JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.15-6/x64
-        PATH: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.15-6/x64/bin:$PATH
-      with:
-        project: 'Station Service'
-        path: '.'
-        format: 'HTML'
-        out: 'reports'
-        args: >
-          --suppression suppression.xml
-          --failOnCVSS 7
-          --enableRetired
         
     - name: Upload Dependency Check Report
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: dependency-check-report
-        path: reports/
+        path: target/dependency-check-report.html
         
     - name: Start Spring Boot Application
       run: |
