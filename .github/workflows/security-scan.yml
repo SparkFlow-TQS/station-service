@@ -59,18 +59,33 @@ jobs:
         name: dependency-check-report
         path: target/dependency-check-report.html
         
+    - name: Start PostgreSQL Container
+      run: |
+        docker run -d \
+          --name postgres \
+          -e POSTGRES_DB=test \
+          -e POSTGRES_USER=test \
+          -e POSTGRES_PASSWORD=test \
+          -p 5432:5432 \
+          postgres:16.9
+        sleep 10  # Wait for PostgreSQL to start
+        
     - name: Start Spring Boot Application
       run: |
         ./mvnw clean package -DskipTests
-        nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar --spring.profiles.active=test &
+        nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar \
+          --spring.profiles.active=test \
+          --spring.datasource.url=jdbc:postgresql://localhost:5432/test \
+          --spring.datasource.username=test \
+          --spring.datasource.password=test &
         sleep 30  # Wait for application to start
         
     - name: OWASP ZAP Scan
       run: |
-        docker pull owasp/zap2docker-weekly
+        docker pull owasp/zap2docker-stable
         docker run -v $(pwd):/zap/wrk/:rw \
-          -t owasp/zap2docker-weekly zap-baseline.py \
-          -t http://localhost:8081 \
+          -t owasp/zap2docker-stable zap-baseline.py \
+          -t http://localhost:8080 \
           -g gen.conf \
           -r testreport.html
       continue-on-error: true
@@ -86,4 +101,6 @@ jobs:
       if: always()
       run: |
         pkill -f "spring-boot:run" || true
-        pkill -f "java.*station-service" || true 
+        pkill -f "java.*station-service" || true
+        docker stop postgres || true
+        docker rm postgres || true 
