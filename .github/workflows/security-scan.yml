@@ -38,9 +38,11 @@ jobs:
           -Ddependency-check.failBuildOnCVSS=7 \
           -Ddependency-check.nvd.apiKey=${{ secrets.NVD_API_KEY }} \
           -Ddependency-check.nvd.apiUrl=https://services.nvd.nist.gov/rest/json/cves/2.0 \
-          -Ddependency-check.nvd.apiDelay=6000
+          -Ddependency-check.nvd.apiDelay=6000 \
+          -Ddependency-check.nvd.validForHours=24
       env:
         SPRING_PROFILES_ACTIVE: test
+        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         
     - name: Upload Dependency Check Report
       uses: actions/upload-artifact@v4
