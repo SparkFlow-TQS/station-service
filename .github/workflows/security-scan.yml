@@ -32,11 +32,19 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
+    - name: Debug API Key
+      run: |
+        if [ -n "${{ secrets.NVD_API_KEY }}" ]; then
+          echo "NVD_API_KEY is set"
+        else
+          echo "NVD_API_KEY is not set"
+        fi
+    
     - name: Build and Run Dependency Check
       run: |
         ./mvnw clean verify org.owasp:dependency-check-maven:check \
           -Ddependency-check.failBuildOnCVSS=7 \
-          -Ddependency-check.nvd.apiKey=${{ secrets.NVD_API_KEY }} \
+          -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
           -Ddependency-check.nvd.apiUrl=https://services.nvd.nist.gov/rest/json/cves/2.0 \
           -Ddependency-check.nvd.apiDelay=6000 \
           -Ddependency-check.nvd.validForHours=24
