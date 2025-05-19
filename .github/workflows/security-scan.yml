@@ -61,7 +61,8 @@ jobs:
         
     - name: Start Spring Boot Application
       run: |
-        nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=test &
+        ./mvnw clean package -DskipTests
+        nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar --spring.profiles.active=test &
         sleep 30  # Wait for application to start
         
     - name: OWASP ZAP Scan
