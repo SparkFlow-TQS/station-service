@@ -78,12 +78,25 @@ jobs:
           --spring.datasource.url=jdbc:postgresql://localhost:5432/test \
           --spring.datasource.username=test \
           --spring.datasource.password=test &
-        sleep 30  # Wait for application to start
+        # Wait for application to be ready
+        for i in {1..30}; do
+          if curl -s http://localhost:8080/actuator/health > /dev/null; then
+            echo "Application is ready!"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "Application failed to start within 30 seconds"
+            exit 1
+          fi
+          echo "Waiting for application to start... ($i/30)"
+          sleep 1
+        done
         
     - name: OWASP ZAP Scan
       run: |
         docker pull ghcr.io/zaproxy/zaproxy:stable
         docker run -v $(pwd):/zap/wrk/:rw \
+          --network host \
           -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
           -t http://localhost:8080 \
           -g gen.conf \
