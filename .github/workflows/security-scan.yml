@@ -74,4 +74,5 @@ jobs:
     - name: Stop Spring Boot Application
       if: always()
       run: |
-        pkill -f spring-boot 
+        pkill -f "spring-boot:run" || true
+        pkill -f "java.*station-service" || true 
