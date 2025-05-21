@@ -84,7 +84,11 @@ public class SecurityConfig {
             .addFilterBefore(new OncePerRequestFilter() {
                 @Override
                 protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws jakarta.servlet.ServletException, java.io.IOException {
-                    response.setHeader("Set-Cookie", "SameSite=Strict; Secure; HttpOnly");
+                    // Add SameSite attribute to all cookies
+                    String cookies = response.getHeader("Set-Cookie");
+                    if (cookies != null) {
+                        response.setHeader("Set-Cookie", cookies + "; SameSite=Strict");
+                    }
                     filterChain.doFilter(request, response);
                 }
             }, org.springframework.security.web.context.SecurityContextHolderFilter.class);
