@@ -31,14 +31,6 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-        
-    - name: Debug API Key
-      run: |
-        if [ -n "${{ secrets.NVD_API_KEY }}" ]; then
-          echo "NVD_API_KEY is set"
-        else
-          echo "NVD_API_KEY is not set"
-        fi
     
     - name: Build and Run Dependency Check
       run: |
