@@ -63,15 +63,3 @@ jobs:
           exit 1
         fi
       if: always()
-    
-    - name: SonarQube Analysis
-      uses: SonarSource/sonarqube-scan-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      with:
-        args: >
-          -Dsonar.projectKey=SparkFlow-TQS_station-service
-          -Dsonar.java.coveragePlugin=jacoco
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-          -Dsonar.qualitygate.wait=true 
