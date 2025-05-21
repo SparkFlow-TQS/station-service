@@ -30,7 +30,6 @@
 ### Manual Testing
 - [ ] Tested in development environment
 - [ ] Cross-browser testing (if applicable)
-- [ ] Mobile responsiveness (if applicable)
 
 ## Security Considerations
 <!-- Describe any security implications of these changes -->

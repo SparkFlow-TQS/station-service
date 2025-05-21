@@ -31,7 +31,6 @@
 - [ ] Tested in development environment
 - [ ] Tested in staging environment
 - [ ] Cross-browser testing (if applicable)
-- [ ] Mobile responsiveness (if applicable)
 
 ## Security Considerations
 <!-- Describe any security implications of these changes -->
