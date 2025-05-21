@@ -102,7 +102,7 @@ public class SecurityConfig {
                 @NonNull FilterChain filterChain
             ) throws jakarta.servlet.ServletException, java.io.IOException {
               // Set SameSite attribute for JSESSIONID cookie
-              response.setHeader("Set-Cookie",
+              response.addHeader("Set-Cookie",
                 "JSESSIONID=" + request.getSession().getId() + "; SameSite=Strict; Secure; HttpOnly");
               filterChain.doFilter(request, response);
             }

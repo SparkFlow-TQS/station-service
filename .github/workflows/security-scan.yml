@@ -108,7 +108,10 @@ jobs:
     - name: Stop Spring Boot Application
       if: always()
       run: |
-        pkill -f "spring-boot:run" || true
-        pkill -f "java.*station-service" || true
+        if [ -f app.pid ]; then
+          kill $(cat app.pid) || true
+          rm -f app.pid
+        fi
         docker stop postgres || true
-        docker rm postgres || true 
+        docker rm postgres || true
+        docker stop postgres || true
