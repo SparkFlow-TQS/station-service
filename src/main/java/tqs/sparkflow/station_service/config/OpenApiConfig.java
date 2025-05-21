@@ -18,16 +18,16 @@ public class OpenApiConfig {
    * Creates and configures the OpenAPI documentation for the Station Service.
    *
    * @return configured OpenAPI instance with API information
-  */
+   */
   @Bean
   public OpenAPI configureOpenApi() {
     return new OpenAPI()
       .info(new Info()
-      .title("Station Service API")
-      .version("0.0.1")
-      .description("API for managing charging stations")
-      .license(new License()
-      .name("Apache 2.0")
-      .url("http://www.apache.org/licenses/LICENSE-2.0.html")));
-    }
+        .title("Station Service API")
+        .version("0.0.1")
+        .description("API for managing charging stations")
+        .license(new License()
+          .name("Apache 2.0")
+          .url("http://www.apache.org/licenses/LICENSE-2.0.html")));
+  }
 } 
