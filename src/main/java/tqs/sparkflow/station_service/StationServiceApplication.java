@@ -10,4 +10,7 @@ public class StationServiceApplication {
 		SpringApplication.run(StationServiceApplication.class, args);
 	}
 
+	// This is a very long line that should trigger a style violation because it exceeds 100 characters and has operators that should be on new lines
+	private String veryLongString = "This is a very long string" + " that should be split into multiple lines" + " because it exceeds the maximum line length" + " and has operators that should be on new lines";
+
 }
