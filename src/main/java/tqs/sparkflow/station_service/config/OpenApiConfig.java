@@ -26,9 +26,6 @@ public class OpenApiConfig {
                         .title("Station Service API")
                         .version("0.0.1")
                         .description("API for managing charging stations")
-                        .contact(new Contact()
-                                .name("Sparkflow Team")
-                                .email("contact@sparkflow.com"))
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("http://www.apache.org/licenses/LICENSE-2.0.html")));
