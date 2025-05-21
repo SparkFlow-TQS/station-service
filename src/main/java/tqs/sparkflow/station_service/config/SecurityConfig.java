@@ -14,16 +14,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
-                .requireCsrfProtectionMatcher(request -> {
-                    String method = request.getMethod();
-                    return HttpMethod.POST.matches(method) ||
-                           HttpMethod.PUT.matches(method) ||
-                           HttpMethod.DELETE.matches(method) ||
-                           HttpMethod.PATCH.matches(method);
-                })
-            )
+            // CSRF protection is disabled for this REST API because:
+            // 1. The API uses token-based authentication (not cookie-based sessions)
+            // 2. API clients send requests with Authorization headers
+            // 3. CSRF attacks target browser-based sessions using cookies
+            // 4. This is the standard approach for REST APIs
+            .csrf(csrf -> csrf.disable())
             .headers(headers -> headers
                 .contentTypeOptions(content -> {})
                 .frameOptions(frame -> frame.deny())
