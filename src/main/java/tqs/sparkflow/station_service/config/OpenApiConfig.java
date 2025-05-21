@@ -1,17 +1,26 @@
 package tqs.sparkflow.station_service.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for OpenAPI documentation.
+ * Defines the API information, contact details, and license.
+ */
 @Configuration
 public class OpenApiConfig {
 
+    /**
+     * Creates and configures the OpenAPI documentation for the Station Service.
+     *
+     * @return configured OpenAPI instance with API information
+     */
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI configureOpenApi() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Station Service API")
