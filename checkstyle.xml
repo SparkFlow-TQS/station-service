@@ -4,11 +4,6 @@
           "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
-    <module name="SuppressionFilter">
-        <property name="file" value="${config_loc}/suppressions.xml"/>
-        <property name="optional" value="true"/>
-    </module>
-
     <module name="TreeWalker">
         <module name="LineLength">
             <property name="id" value="LineLength"/>
