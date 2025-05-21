@@ -1,0 +1,11 @@
+# Configuration for pull request templates
+templates:
+  - name: main_branch_template
+    branch: main
+    required_reviewers: 2
+    template: .github/PULL_REQUEST_TEMPLATE/main_branch_template.md
+
+  - name: dev_branch_template
+    branch: dev
+    required_reviewers: 1
+    template: .github/PULL_REQUEST_TEMPLATE/dev_branch_template.md 
