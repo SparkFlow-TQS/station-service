@@ -29,11 +29,11 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-      // CSRF protection is disabled for this REST API because:
-      // 1. The API uses token-based authentication (not cookie-based sessions)
-      // 2. API clients send requests with Authorization headers
-      // 3. CSRF attacks target browser-based sessions using cookies
-      // 4. This is the standard approach for REST APIs
+        // CSRF protection is disabled for this REST API because:
+        // 1. The API uses token-based authentication (not cookie-based sessions)
+        // 2. API clients send requests with Authorization headers
+        // 3. CSRF attacks target browser-based sessions using cookies
+        // 4. This is the standard approach for REST APIs
         .csrf(csrf -> csrf.disable())
         .headers(headers -> headers
         .contentTypeOptions(content -> {})
@@ -95,15 +95,15 @@ public class SecurityConfig {
         .authenticated()
       )
         .addFilterBefore(new OncePerRequestFilter() {
-          @Override
-          protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+            @Override
+            protected void doFilterInternal(
+              @NonNull HttpServletRequest request,
+              @NonNull HttpServletResponse response,
+              @NonNull FilterChain filterChain
           ) throws jakarta.servlet.ServletException, java.io.IOException {
             // Set SameSite attribute for JSESSIONID cookie
             response.setHeader("Set-Cookie",
-              "JSESSIONID=" + request.getSession().getId() + "; SameSite=Strict; Secure; HttpOnly");
+                "JSESSIONID=" + request.getSession().getId() + "; SameSite=Strict; Secure; HttpOnly");
             filterChain.doFilter(request, response);
           }
         }, org.springframework.security.web.context.SecurityContextHolderFilter.class);
