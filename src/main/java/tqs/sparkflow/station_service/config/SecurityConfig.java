@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -13,7 +14,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF for API endpoints
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                .requireCsrfProtectionMatcher(request -> {
+                    String method = request.getMethod();
+                    return HttpMethod.POST.matches(method) ||
+                           HttpMethod.PUT.matches(method) ||
+                           HttpMethod.DELETE.matches(method) ||
+                           HttpMethod.PATCH.matches(method);
+                })
+            )
             .headers(headers -> headers
                 .contentTypeOptions(content -> {})
                 .frameOptions(frame -> frame.deny())
