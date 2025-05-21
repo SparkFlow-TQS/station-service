@@ -89,7 +89,7 @@ jobs:
         docker pull ghcr.io/zaproxy/zaproxy:stable
         # Create directory with proper permissions
         mkdir -p zap-output
-        chmod 777 zap-output
+        chmod 755 zap-output
         docker run -v $(pwd)/zap-output:/zap/wrk/:rw \
           --network host \
           -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
