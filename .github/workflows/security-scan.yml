@@ -95,7 +95,10 @@ jobs:
     - name: OWASP ZAP Scan
       run: |
         docker pull ghcr.io/zaproxy/zaproxy:stable
-        docker run -v $(pwd):/zap/wrk/:rw \
+        # Create directory with proper permissions
+        mkdir -p zap-output
+        chmod 777 zap-output
+        docker run -v $(pwd)/zap-output:/zap/wrk/:rw \
           --network host \
           -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
           -t http://localhost:8080 \
@@ -108,7 +111,7 @@ jobs:
       if: always()
       with:
         name: zap-report
-        path: testreport.html
+        path: zap-output/testreport.html
         
     - name: Stop Spring Boot Application
       if: always()
