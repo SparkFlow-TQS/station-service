@@ -4,20 +4,35 @@
           "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
-    <module name="GoogleStyle">
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+        <property name="optional" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
         <module name="LineLength">
+            <property name="id" value="LineLength"/>
             <property name="severity" value="error"/>
             <property name="max" value="100"/>
+            <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
         </module>
-        
+
         <module name="Indentation">
+            <property name="id" value="Indentation"/>
             <property name="severity" value="error"/>
             <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="throwsIndent" value="4"/>
+            <property name="lineWrappingIndentation" value="4"/>
+            <property name="arrayInitIndent" value="4"/>
         </module>
-        
+
         <module name="OperatorWrap">
+            <property name="id" value="OperatorWrap"/>
             <property name="severity" value="error"/>
             <property name="option" value="NL"/>
+            <property name="tokens" value="PLUS,MINUS,DIV,MOD,BSR,SR,SL,BSL,GE,GT,LE,LT,EQ,NE,BAND,BOR,BXOR,LAND,LOR"/>
         </module>
     </module>
 </module> 
