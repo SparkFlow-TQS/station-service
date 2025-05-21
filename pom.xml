@@ -258,7 +258,8 @@
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>true</failsOnError>
 					<linkXRef>false</linkXRef>
-					<violationSeverity>error</violationSeverity>
+					<maxAllowedViolations>0</maxAllowedViolations>
+					<violationSeverity>warning</violationSeverity>
 				</configuration>
 				<executions>
 					<execution>
