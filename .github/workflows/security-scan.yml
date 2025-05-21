@@ -1,0 +1,116 @@
+name: Security and Quality Scan
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+        cache: 'maven'
+    
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Build and Run Dependency Check
+      run: |
+        ./mvnw clean verify org.owasp:dependency-check-maven:check \
+          -Ddependency-check.failBuildOnCVSS=7 \
+          -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
+          -Ddependency-check.nvd.apiUrl=https://services.nvd.nist.gov/rest/json/cves/2.0 \
+          -Ddependency-check.nvd.apiDelay=6000 \
+          -Ddependency-check.nvd.validForHours=24
+      env:
+        SPRING_PROFILES_ACTIVE: test
+        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        
+    - name: Upload Dependency Check Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-check-report
+        path: target/dependency-check-report.html
+        
+    - name: Start PostgreSQL Container
+      run: |
+        docker run -d \
+          --name postgres \
+          -e POSTGRES_DB=test \
+          -e POSTGRES_USER=test \
+          -e POSTGRES_PASSWORD=test \
+          -p 5432:5432 \
+          postgres:16.9
+        sleep 10  # Wait for PostgreSQL to start
+        
+    - name: Start Spring Boot Application
+      run: |
+        ./mvnw clean package -DskipTests
+        nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar \
+          --spring.profiles.active=test \
+          --spring.datasource.url=jdbc:postgresql://localhost:5432/test \
+          --spring.datasource.username=test \
+          --spring.datasource.password=test &
+        # Wait for application to be ready
+        for i in {1..30}; do
+          if curl -s http://localhost:8080/actuator/health > /dev/null; then
+            echo "Application is ready!"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "Application failed to start within 30 seconds"
+            exit 1
+          fi
+          echo "Waiting for application to start... ($i/30)"
+          sleep 1
+        done
+        
+    - name: OWASP ZAP Scan
+      run: |
+        docker pull ghcr.io/zaproxy/zaproxy:stable
+        # Create directory with proper permissions
+        mkdir -p zap-output
+        chmod 755 zap-output
+        docker run -v $(pwd)/zap-output:/zap/wrk/:rw \
+          --network host \
+          -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+          -t http://localhost:8080 \
+          -g gen.conf \
+          -r testreport.html
+      continue-on-error: true
+        
+    - name: Upload ZAP Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: zap-report
+        path: zap-output/testreport.html
+        
+    - name: Stop Spring Boot Application
+      if: always()
+      run: |
+        if [ -f app.pid ]; then
+          kill $(cat app.pid) || true
+          rm -f app.pid
+        fi
+        docker stop postgres || true
+        docker rm postgres || true

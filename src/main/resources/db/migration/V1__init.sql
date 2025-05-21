@@ -1,0 +1,2 @@
+-- This is an empty migration to initialize the database
+-- Add your table creation statements here when needed 
