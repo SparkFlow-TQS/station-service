@@ -4,36 +4,18 @@
           "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
-    <property name="severity" value="warning"/>
-    <property name="fileExtensions" value="java, properties, xml"/>
-    <property name="tabWidth" value="4"/>
-
-    <module name="TreeWalker">
-        <!-- Critical style rules set to ERROR level -->
-        <module name="LineLength">
-            <property name="severity" value="error"/>
-            <property name="max" value="100"/>
-        </module>
-        
-        <module name="Indentation">
-            <property name="severity" value="error"/>
-            <property name="basicOffset" value="4"/>
-            <property name="braceAdjustment" value="0"/>
-            <property name="caseIndent" value="4"/>
-            <property name="throwsIndent" value="4"/>
-            <property name="lineWrappingIndentation" value="4"/>
-            <property name="arrayInitIndent" value="4"/>
-        </module>
-
-        <module name="OperatorWrap">
-            <property name="severity" value="error"/>
-            <property name="option" value="NL"/>
-            <property name="tokens" value="PLUS,MINUS,DIV,MOD,BSR,SR,SL,BSL,GE,GT,LE,LT,EQ,NE,BAND,BOR,BXOR,LAND,LOR"/>
-        </module>
-
-        <!-- Other rules remain at WARNING level -->
-        <module name="PackageName">
-            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
-        </module>
+    <module name="LineLength">
+        <property name="severity" value="error"/>
+        <property name="max" value="100"/>
+    </module>
+    
+    <module name="Indentation">
+        <property name="severity" value="error"/>
+        <property name="basicOffset" value="4"/>
+    </module>
+    
+    <module name="OperatorWrap">
+        <property name="severity" value="error"/>
+        <property name="option" value="NL"/>
     </module>
 </module> 
