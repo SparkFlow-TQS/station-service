@@ -35,4 +35,9 @@ public class StationController {
             @RequestParam(defaultValue = "10") int radius) {
         return stationService.getNearbyStations(latitude, longitude, radius);
     }
+
+    @GetMapping("/connector/{type}")
+    public List<Station> getStationsByConnectorType(@PathVariable String type) {
+        return stationService.getStationsByConnectorType(type);
+    }
 } 

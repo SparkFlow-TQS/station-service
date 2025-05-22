@@ -30,4 +30,8 @@ public class StationService {
         // For now, return all stations
         return stationRepository.findAll();
     }
+
+    public List<Station> getStationsByConnectorType(String connectorType) {
+        return stationRepository.findByConnectorType(connectorType);
+    }
 } 
