@@ -34,16 +34,19 @@ jobs:
       run: ./mvnw clean verify
       env:
         SPRING_PROFILES_ACTIVE: test
+        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Run Integration Tests
       run: ./mvnw verify -Dtest=*IT
       env:
         SPRING_PROFILES_ACTIVE: test
+        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Run Cucumber Tests
       run: ./mvnw verify -Dtest=*CucumberTest
       env:
         SPRING_PROFILES_ACTIVE: test
+        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
