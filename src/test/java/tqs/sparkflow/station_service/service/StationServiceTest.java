@@ -12,7 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StationServiceTest {
@@ -53,5 +54,95 @@ class StationServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result).extracting(Station::getConnectorType)
             .allMatch(type -> type.equals(connectorType));
+    }
+
+    @Test
+    void whenCreatingValidStation_thenStationIsSaved() {
+        // Given
+        Station station = new Station();
+        station.setId("1");
+        station.setName("Test Station");
+        station.setLatitude("38.7223");
+        station.setLongitude("-9.1393");
+        station.setConnectorType("Type2");
+        
+        when(stationRepository.save(station)).thenReturn(station);
+
+        // When
+        Station result = stationService.createStation(station);
+
+        // Then
+        assertThat(result).isEqualTo(station);
+        verify(stationRepository).save(station);
+    }
+
+    @Test
+    void whenCreatingStationWithInvalidCoordinates_thenThrowsException() {
+        // Given
+        Station station = new Station();
+        station.setName("Test Station");
+        station.setLatitude("invalid");
+        station.setLongitude("-9.1393");
+        station.setConnectorType("Type2");
+
+        // When/Then
+        assertThatThrownBy(() -> stationService.createStation(station))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Invalid coordinate format");
+    }
+
+    @Test
+    void whenCreatingStationWithEmptyName_thenThrowsException() {
+        // Given
+        Station station = new Station();
+        station.setName("");
+        station.setLatitude("38.7223");
+        station.setLongitude("-9.1393");
+        station.setConnectorType("Type2");
+
+        // When/Then
+        assertThatThrownBy(() -> stationService.createStation(station))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Station name cannot be empty");
+    }
+
+    @Test
+    void whenCreatingStationWithEmptyConnectorType_thenThrowsException() {
+        // Given
+        Station station = new Station();
+        station.setName("Test Station");
+        station.setLatitude("38.7223");
+        station.setLongitude("-9.1393");
+        station.setConnectorType("");
+
+        // When/Then
+        assertThatThrownBy(() -> stationService.createStation(station))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Connector type cannot be empty");
+    }
+
+    @Test
+    void whenDeletingExistingStation_thenStationIsDeleted() {
+        // Given
+        String stationId = "1";
+        when(stationRepository.existsById(stationId)).thenReturn(true);
+
+        // When
+        stationService.deleteStation(stationId);
+
+        // Then
+        verify(stationRepository).deleteById(stationId);
+    }
+
+    @Test
+    void whenDeletingNonExistentStation_thenThrowsException() {
+        // Given
+        String stationId = "1";
+        when(stationRepository.existsById(stationId)).thenReturn(false);
+
+        // When/Then
+        assertThatThrownBy(() -> stationService.deleteStation(stationId))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining("Station not found with id: " + stationId);
     }
 } 
