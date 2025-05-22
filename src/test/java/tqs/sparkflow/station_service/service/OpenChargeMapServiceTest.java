@@ -3,7 +3,6 @@ package tqs.sparkflow.station_service.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
@@ -35,17 +34,15 @@ class OpenChargeMapServiceTest {
     @Mock
     private StationRepository stationRepository;
 
-    @InjectMocks
     private OpenChargeMapService service;
 
-    private final String apiKey = "test-api-key";
     private final String baseUrl = "https://api.openchargemap.io/v3/poi";
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(service, "apiKey", apiKey);
-        ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
+        service = new OpenChargeMapService("test-api-key", stationRepository);
         ReflectionTestUtils.setField(service, "restTemplate", restTemplate);
+        ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
     }
 
     @Test

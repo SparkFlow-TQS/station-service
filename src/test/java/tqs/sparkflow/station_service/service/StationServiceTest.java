@@ -1,8 +1,8 @@
 package tqs.sparkflow.station_service.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sparkflow.station_service.model.Station;
@@ -20,8 +20,12 @@ class StationServiceTest {
     @Mock
     private StationRepository stationRepository;
 
-    @InjectMocks
     private StationService stationService;
+
+    @BeforeEach
+    void setUp() {
+        stationService = new StationService(stationRepository);
+    }
 
     @Test
     void whenGettingStationsByConnectorType_thenReturnsMatchingStations() {
