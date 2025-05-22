@@ -69,4 +69,27 @@ public class StationController {
     public ResponseEntity<List<Station>> getStationsByConnectorType(@PathVariable String type) {
         return ResponseEntity.ok(stationService.getStationsByConnectorType(type));
     }
+
+    /**
+     * Create a new charging station.
+     *
+     * @param station the station to create
+     * @return the created station
+     */
+    @PostMapping
+    public ResponseEntity<Station> createStation(@RequestBody Station station) {
+        return ResponseEntity.ok(stationService.createStation(station));
+    }
+
+    /**
+     * Delete a station by its ID.
+     *
+     * @param id the station ID
+     * @return no content response
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStation(@PathVariable String id) {
+        stationService.deleteStation(id);
+        return ResponseEntity.noContent().build();
+    }
 } 

@@ -43,6 +43,20 @@ public class StationService {
         return stationRepository.findByConnectorType(connectorType);
     }
 
+    public Station createStation(Station station) {
+        Objects.requireNonNull(station, "Station cannot be null");
+        validateStation(station);
+        return stationRepository.save(station);
+    }
+
+    public void deleteStation(String id) {
+        Objects.requireNonNull(id, "Station ID cannot be null");
+        if (!stationRepository.existsById(id)) {
+            throw new RuntimeException("Station not found with id: " + id);
+        }
+        stationRepository.deleteById(id);
+    }
+
     private void validateCoordinates(double latitude, double longitude) {
         if (latitude < -90 || latitude > 90) {
             throw new IllegalArgumentException("Latitude must be between -90 and 90 degrees");
@@ -58,6 +72,22 @@ public class StationService {
         }
         if (radius > 100) {
             throw new IllegalArgumentException("Radius cannot be greater than 100 km");
+        }
+    }
+
+    private void validateStation(Station station) {
+        if (station.getName() == null || station.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Station name cannot be empty");
+        }
+        try {
+            double lat = Double.parseDouble(station.getLatitude());
+            double lon = Double.parseDouble(station.getLongitude());
+            validateCoordinates(lat, lon);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid coordinate format");
+        }
+        if (station.getConnectorType() == null || station.getConnectorType().trim().isEmpty()) {
+            throw new IllegalArgumentException("Connector type cannot be empty");
         }
     }
 } 
