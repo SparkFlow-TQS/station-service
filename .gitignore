@@ -31,3 +31,30 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Cucumber ###
+target/
+
+### SonarQube ###
+.sonar/
+
+### JaCoCo ###
+.jacoco/
+
+### Maven ###
+.mvn/
+
+### Eclipse ###
+.metadata/
+.project
+.settings/
+
+### IntelliJ ###
+.idea/
+*.iml
+*.ipr
+*.iws
+*.xml
+
+### Environment ###
+.env

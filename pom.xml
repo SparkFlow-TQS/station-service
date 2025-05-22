@@ -39,6 +39,7 @@
 		<springdoc.version>2.4.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
 		<logback.version>1.4.14</logback.version>
+		<cucumber.version>7.22.2</cucumber.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -95,19 +96,19 @@
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-java</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-spring</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-junit-platform-engine</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- REST Assured -->
@@ -257,8 +258,8 @@
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>true</failsOnError>
 					<linkXRef>false</linkXRef>
-					<maxAllowedViolations>10</maxAllowedViolations>
-					<violationSeverity>warning</violationSeverity>
+					<maxAllowedViolations>0</maxAllowedViolations>
+					<violationSeverity>error</violationSeverity>
 				</configuration>
 				<executions>
 					<execution>

@@ -10,6 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 /**
  * Security configuration for the application.
@@ -29,27 +33,19 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        // CSRF protection is disabled for this REST API because:
-        // 1. The API uses token-based authentication (not cookie-based sessions)
-        // 2. API clients send requests with Authorization headers
-        // 3. CSRF attacks target browser-based sessions using cookies
-        // 4. This is the standard approach for REST APIs
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
         .headers(headers -> headers
         .contentTypeOptions(content -> {})
         .frameOptions(frame -> frame.deny())
         .xssProtection(xss -> {})
-        .httpStrictTransportSecurity(hsts -> hsts
-          .includeSubDomains(true)
-          .preload(true)
-          .maxAgeInSeconds(31536000))
         .contentSecurityPolicy(csp -> csp
-          .policyDirectives("default-src 'self'; "
+          .policyDirectives("default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
             + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             + "style-src 'self' 'unsafe-inline'; "
             + "img-src 'self' data:; "
             + "font-src 'self'; "
-            + "connect-src 'self'; "
+            + "connect-src 'self' *; "
             + "base-uri 'self'; "
             + "form-action 'self'; "
             + "frame-ancestors 'none'; "
@@ -85,14 +81,19 @@ public class SecurityConfig {
             + "usb=(), "
             + "web-share=(), "
             + "xr-spatial-tracking=()"))
-      )
+        )
         .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
-        .permitAll()
-        .requestMatchers("/actuator/**")
-        .permitAll()
-        .anyRequest()
-        .authenticated()
+        .requestMatchers("/stations/**").permitAll()
+        .requestMatchers("/admin/openchargemap/**").permitAll()
+        .requestMatchers(
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/v2/api-docs/**"
+        ).permitAll()
+        .anyRequest().authenticated()
       )
         .addFilterBefore(new OncePerRequestFilter() {
             @Override
@@ -109,5 +110,20 @@ public class SecurityConfig {
         }, org.springframework.security.web.context.SecurityContextHolderFilter.class);
     
     return http.build();
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(Arrays.asList("*"));
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(Arrays.asList("*"));
+    configuration.setExposedHeaders(Arrays.asList("Authorization"));
+    configuration.setAllowCredentials(false);
+    configuration.setMaxAge(3600L);
+    
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 } 
