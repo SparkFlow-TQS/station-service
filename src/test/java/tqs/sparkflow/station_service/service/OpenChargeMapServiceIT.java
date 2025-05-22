@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-    "openchargemap.api.key=test-key"
+    "openchargemap.api.key=invalid-test-key"
 })
 class OpenChargeMapServiceIT {
 

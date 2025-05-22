@@ -126,7 +126,7 @@ class StationControllerIT {
         );
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(stationRepository.findById("1")).isEmpty();
     }
 
