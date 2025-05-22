@@ -1,0 +1,26 @@
+services:
+  station-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - station-db
+    networks:
+      - sparkflow-network
+
+  station-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sparkflow_station
+    volumes:
+      - station-mysql-data:/var/lib/mysql
+    networks:
+      - sparkflow-network
+
+networks:
+  sparkflow-network:
+    name: sparkflow-network
+
+volumes:
+  station-mysql-data: 
