@@ -96,7 +96,7 @@ class OpenChargeMapServiceTest {
         // When/Then
         assertThatThrownBy(() -> service.populateStations(38.7223, -9.1393, 50))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Invalid Open Charge Map API key");
+            .hasMessageContaining("Access denied to Open Charge Map API");
     }
 
     @Test
