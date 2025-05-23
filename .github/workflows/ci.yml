@@ -43,7 +43,7 @@ jobs:
         OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Run Cucumber Tests
-      run: ./mvnw verify -Dtest=*CucumberTest
+      run: ./mvnw verify -Dtest=CucumberTestRunner
       env:
         SPRING_PROFILES_ACTIVE: test
         OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}

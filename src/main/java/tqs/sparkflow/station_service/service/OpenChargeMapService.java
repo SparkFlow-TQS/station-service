@@ -1,16 +1,18 @@
 package tqs.sparkflow.station_service.service;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
-import java.util.Map;
-import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
 import tqs.sparkflow.station_service.model.Station;
 import tqs.sparkflow.station_service.repository.StationRepository;
 
@@ -43,7 +45,7 @@ public class OpenChargeMapService {
 
     public String populateStations(double latitude, double longitude, int radius) {
         try {
-            List<Map<String, Object>> stationsData = getStationsFromAPI(latitude, longitude, radius);
+            List<Map<String, Object>> stationsData = getStationsFromApi(latitude, longitude, radius);
             if (stationsData == null || stationsData.isEmpty()) {
                 throw new IllegalStateException("No stations found in the specified area");
             }
@@ -62,7 +64,7 @@ public class OpenChargeMapService {
         }
     }
 
-    private List<Map<String, Object>> getStationsFromAPI(double latitude, double longitude, int radius) {
+    private List<Map<String, Object>> getStationsFromApi(double latitude, double longitude, int radius) {
         String url = String.format("%s?key=%s&latitude=%f&longitude=%f&distance=%d&distanceunit=KM&maxresults=100",
                 baseUrl, apiKey, latitude, longitude, radius);
 
@@ -121,28 +123,4 @@ public class OpenChargeMapService {
             })
             .toList();
     }
-
-  public String getStation(String id) {
-    return "Hello, World!";
-  }
-
-  public String createStation(Station station) {
-    return "Hello, World!";
-  }
-
-  public String deleteStation(String id) {
-    return "Hello, World!";
-  }
-
-  public String updateStation(String id, Station station) {
-    return "Hello, World!";
-  }
-
-  public String searchStations(String query) {
-    return "Hello, World!";
-  }
-
-  public String getNearbyStations(String latitude, String longitude) {
-    return "Hello, World!";
-  }
 }
