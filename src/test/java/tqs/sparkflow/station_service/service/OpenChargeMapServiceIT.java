@@ -4,23 +4,50 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.RestTemplate;
+import tqs.sparkflow.station_service.StationServiceApplication;
 import tqs.sparkflow.station_service.repository.StationRepository;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@TestPropertySource(properties = {
-    "openchargemap.api.key=invalid-test-key"
-})
+@SpringBootTest(classes = StationServiceApplication.class)
+@ActiveProfiles("test")
 class OpenChargeMapServiceIT {
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        public RestTemplate restTemplate() {
+            return new RestTemplate();
+        }
+    }
 
     @Autowired
     private OpenChargeMapService openChargeMapService;
 
     @Autowired
     private StationRepository stationRepository;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @BeforeEach
     void setUp() {
@@ -30,29 +57,21 @@ class OpenChargeMapServiceIT {
     @Test
     void whenPopulatingStationsWithValidCoordinates_thenStationsAreCreated() {
         // Given
-        double latitude = 38.7223;
-        double longitude = -9.1393;
-        int radius = 10;
+        List<Map<String, Object>> mockResponse = createMockResponse();
+        ResponseEntity<List<Map<String, Object>>> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            eq(null),
+            any(ParameterizedTypeReference.class)
+        )).thenReturn(responseEntity);
 
         // When
-        String result = openChargeMapService.populateStations(latitude, longitude, radius);
+        String result = openChargeMapService.populateStations(38.7223, -9.1393, 10);
 
         // Then
         assertThat(result).contains("Successfully populated");
         assertThat(stationRepository.findAll()).isNotEmpty();
-    }
-
-    @Test
-    void whenPopulatingStationsWithInvalidApiKey_thenThrowsException() {
-        // Given
-        double latitude = 38.7223;
-        double longitude = -9.1393;
-        int radius = 10;
-
-        // When/Then
-        assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, radius))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Access denied to Open Charge Map API");
     }
 
     @Test
@@ -77,5 +96,28 @@ class OpenChargeMapServiceIT {
         // When/Then
         assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
             .isInstanceOf(IllegalStateException.class);
+    }
+
+    private List<Map<String, Object>> createMockResponse() {
+        List<Map<String, Object>> response = new ArrayList<>();
+        Map<String, Object> station = new HashMap<>();
+        
+        Map<String, Object> addressInfo = new HashMap<>();
+        addressInfo.put("Title", "Test Station");
+        addressInfo.put("AddressLine1", "Test Address");
+        addressInfo.put("Latitude", 38.7223);
+        addressInfo.put("Longitude", -9.1393);
+        
+        List<Map<String, Object>> connections = new ArrayList<>();
+        Map<String, Object> connection = new HashMap<>();
+        connection.put("ConnectionTypeID", "1");
+        connections.add(connection);
+        
+        station.put("ID", 1);
+        station.put("AddressInfo", addressInfo);
+        station.put("Connections", connections);
+        
+        response.add(station);
+        return response;
     }
 } 

@@ -40,8 +40,7 @@ class OpenChargeMapServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new OpenChargeMapService("test-api-key", stationRepository);
-        ReflectionTestUtils.setField(service, "restTemplate", restTemplate);
+        service = new OpenChargeMapService("test-api-key", restTemplate, stationRepository);
         ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
     }
 

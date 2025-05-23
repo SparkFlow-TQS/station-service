@@ -25,17 +25,18 @@ public class OpenChargeMapService {
     @Autowired
     public OpenChargeMapService(
             @Value("${openchargemap.api.key:#{null}}") String apiKey,
+            RestTemplate restTemplate,
             StationRepository stationRepository) {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
         this.stationRepository = stationRepository;
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            // Check if we're in a test environment
-            if (System.getProperty("spring.profiles.active", "").contains("test")) {
-                this.apiKey = "test-key";
-            } else {
+        
+        // Check if we're in a test environment
+        if (System.getProperty("spring.profiles.active", "").contains("test")) {
+            this.apiKey = apiKey != null && !apiKey.trim().isEmpty() ? apiKey : "test-key";
+        } else {
+            if (apiKey == null || apiKey.trim().isEmpty()) {
                 throw new IllegalStateException("Open Charge Map API key not found. Please set the openchargemap.api.key property.");
             }
-        } else {
             this.apiKey = apiKey;
         }
     }
