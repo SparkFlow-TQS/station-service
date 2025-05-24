@@ -13,7 +13,10 @@ import tqs.sparkflow.station_service.repository.StationRepository;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(
-    classes = {StationServiceApplication.class, TestConfig.class}
+    classes = {StationServiceApplication.class, TestConfig.class},
+    properties = {
+        "spring.main.allow-bean-definition-overriding=true"
+    }
 )
 @ActiveProfiles("test")
 @TestPropertySource(properties = {

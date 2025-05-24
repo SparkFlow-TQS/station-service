@@ -29,7 +29,10 @@ import tqs.sparkflow.station_service.config.TestConfig;
 import tqs.sparkflow.station_service.repository.StationRepository;
 
 @SpringBootTest(
-    classes = {StationServiceApplication.class, TestConfig.class}
+    classes = {StationServiceApplication.class, TestConfig.class},
+    properties = {
+        "spring.main.allow-bean-definition-overriding=true"
+    }
 )
 @ActiveProfiles("test")
 class OpenChargeMapServiceIT {

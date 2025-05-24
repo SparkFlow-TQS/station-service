@@ -30,6 +30,22 @@ public class TestConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .headers(headers -> headers
+                .contentTypeOptions(content -> {})
+                .frameOptions(frame -> frame.deny())
+                .xssProtection(xss -> {})
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
+                        + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                        + "style-src 'self' 'unsafe-inline'; "
+                        + "img-src 'self' data:; "
+                        + "font-src 'self'; "
+                        + "connect-src 'self' *; "
+                        + "base-uri 'self'; "
+                        + "form-action 'self'; "
+                        + "frame-ancestors 'none'; "
+                        + "object-src 'none'"))
+            )
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll()
             );

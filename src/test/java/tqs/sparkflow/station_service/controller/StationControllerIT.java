@@ -23,7 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = {StationServiceApplication.class, TestConfig.class}
+    classes = {StationServiceApplication.class, TestConfig.class},
+    properties = {
+        "spring.main.allow-bean-definition-overriding=true"
+    }
 )
 @ActiveProfiles("test")
 class StationControllerIT {
