@@ -44,6 +44,7 @@ class OpenChargeMapServiceTest {
         ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void whenPopulatingStations_thenStationsAreSaved() {
         // Given
@@ -65,6 +66,7 @@ class OpenChargeMapServiceTest {
         verify(stationRepository).saveAll(any());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void whenNoStationsFound_thenThrowsException() {
         // Given
@@ -82,6 +84,7 @@ class OpenChargeMapServiceTest {
             .hasMessageContaining("No stations found");
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void whenApiKeyInvalid_thenThrowsException() {
         // Given
@@ -98,6 +101,7 @@ class OpenChargeMapServiceTest {
             .hasMessageContaining("Invalid Open Charge Map API key");
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void whenApiAccessDenied_thenThrowsException() {
         // Given

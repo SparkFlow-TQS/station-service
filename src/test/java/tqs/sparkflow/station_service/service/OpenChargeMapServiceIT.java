@@ -51,6 +51,7 @@ class OpenChargeMapServiceIT {
         stationRepository.deleteAll();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void whenPopulatingStationsWithValidCoordinates_thenStationsAreCreated() {
         // Given
