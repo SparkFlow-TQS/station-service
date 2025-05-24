@@ -5,7 +5,6 @@ import tqs.sparkflow.station_service.service.OpenChargeMapService;
 
 @RestController
 @RequestMapping("/admin/openchargemap")
-@CrossOrigin(origins = "*")
 public class OpenChargeMapController {
 
     private final OpenChargeMapService openChargeMapService;
