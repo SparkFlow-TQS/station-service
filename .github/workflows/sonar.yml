@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   build:
-    name: Build and analyze
+    name: Build and analyze station-service
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
