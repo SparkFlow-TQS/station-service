@@ -1,10 +1,7 @@
 package tqs.sparkflow.station_service.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tqs.sparkflow.station_service.service.OpenChargeMapService;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/openchargemap")
@@ -13,7 +10,6 @@ public class OpenChargeMapController {
 
     private final OpenChargeMapService openChargeMapService;
 
-    @Autowired
     public OpenChargeMapController(OpenChargeMapService openChargeMapService) {
         this.openChargeMapService = openChargeMapService;
     }

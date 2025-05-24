@@ -3,7 +3,6 @@ package tqs.sparkflow.station_service.cucumber;
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import tqs.sparkflow.station_service.StationServiceApplication;
 
 @CucumberContextConfiguration

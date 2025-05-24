@@ -1,6 +1,5 @@
 package tqs.sparkflow.station_service.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tqs.sparkflow.station_service.model.Station;
@@ -17,7 +16,6 @@ public class StationController {
 
     private final StationService stationService;
 
-    @Autowired
     public StationController(StationService stationService) {
         this.stationService = stationService;
     }

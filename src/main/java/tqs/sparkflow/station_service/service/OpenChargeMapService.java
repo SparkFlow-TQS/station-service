@@ -3,7 +3,6 @@ package tqs.sparkflow.station_service.service;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -24,7 +23,6 @@ public class OpenChargeMapService {
     private final String baseUrl = "https://api.openchargemap.io/v3/poi";
     private final StationRepository stationRepository;
 
-    @Autowired
     public OpenChargeMapService(
             @Value("${openchargemap.api.key:#{null}}") String apiKey,
             RestTemplate restTemplate,
@@ -78,6 +76,7 @@ public class OpenChargeMapService {
         return response.getBody();
     }
 
+    @SuppressWarnings("unchecked")
     private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
         return stationsData.stream()
             .map(data -> {

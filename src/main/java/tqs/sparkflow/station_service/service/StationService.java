@@ -1,6 +1,5 @@
 package tqs.sparkflow.station_service.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tqs.sparkflow.station_service.model.Station;
 import tqs.sparkflow.station_service.repository.StationRepository;
@@ -12,7 +11,6 @@ public class StationService {
 
     private final StationRepository stationRepository;
 
-    @Autowired
     public StationService(StationRepository stationRepository) {
         this.stationRepository = stationRepository;
     }
