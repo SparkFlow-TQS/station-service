@@ -296,6 +296,14 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>12.1.1</version>
+				<configuration>
+					<nvdApiKey>${NVD_API_KEY}</nvdApiKey>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
