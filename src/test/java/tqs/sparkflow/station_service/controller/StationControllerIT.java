@@ -11,6 +11,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
+import tqs.sparkflow.station_service.StationServiceApplication;
+import tqs.sparkflow.station_service.config.TestConfig;
 import tqs.sparkflow.station_service.model.Station;
 import tqs.sparkflow.station_service.repository.StationRepository;
 
@@ -18,7 +21,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    classes = {StationServiceApplication.class, TestConfig.class}
+)
+@ActiveProfiles("test")
 class StationControllerIT {
 
     @LocalServerPort

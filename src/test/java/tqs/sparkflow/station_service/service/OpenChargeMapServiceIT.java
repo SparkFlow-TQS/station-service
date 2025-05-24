@@ -17,8 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -27,19 +25,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import tqs.sparkflow.station_service.StationServiceApplication;
+import tqs.sparkflow.station_service.config.TestConfig;
 import tqs.sparkflow.station_service.repository.StationRepository;
 
-@SpringBootTest(classes = StationServiceApplication.class)
+@SpringBootTest(
+    classes = {StationServiceApplication.class, TestConfig.class}
+)
 @ActiveProfiles("test")
 class OpenChargeMapServiceIT {
-
-    @Configuration
-    static class TestConfig {
-        @Bean
-        public RestTemplate restTemplate() {
-            return new RestTemplate();
-        }
-    }
 
     @Autowired
     private OpenChargeMapService openChargeMapService;

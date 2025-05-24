@@ -4,12 +4,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import tqs.sparkflow.station_service.StationServiceApplication;
+import tqs.sparkflow.station_service.config.TestConfig;
 import tqs.sparkflow.station_service.repository.StationRepository;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
+@SpringBootTest(
+    classes = {StationServiceApplication.class, TestConfig.class}
+)
+@ActiveProfiles("test")
 @TestPropertySource(properties = {
     "openchargemap.api.key=invalid-test-key"
 })
