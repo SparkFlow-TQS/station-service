@@ -1,8 +1,6 @@
 package tqs.sparkflow.stationservice.model;
 
-/**
- * Station model for OpenChargeMap API.
- */
+/** Station model for OpenChargeMap API. */
 public class OpenChargeMapStation {
   private String id;
   private String name;

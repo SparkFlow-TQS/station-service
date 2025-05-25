@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import tqs.sparkflow.stationservice.model.Station;
 
-/**
- * Repository for managing stations.
- */
+/** Repository for managing stations. */
 @Repository
 public interface StationRepository extends JpaRepository<Station, Long> {
   /**

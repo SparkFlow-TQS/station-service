@@ -1,5 +1,6 @@
 package tqs.sparkflow.stationservice.config;
 
+import java.util.Arrays;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +12,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.util.Arrays;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -28,14 +28,26 @@ public class TestConfig {
   @Primary
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable()).headers(headers -> headers.contentTypeOptions(content -> {
-        }).frameOptions(frame -> frame.deny()).xssProtection(xss -> {
-        }).contentSecurityPolicy(
-            csp -> csp.policyDirectives("default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
-                + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                + "style-src 'self' 'unsafe-inline'; " + "img-src 'self' data:; "
-                + "font-src 'self'; " + "connect-src 'self' *; " + "base-uri 'self'; "
-                + "form-action 'self'; " + "frame-ancestors 'none'; " + "object-src 'none'")))
+        .csrf(csrf -> csrf.disable())
+        .headers(
+            headers ->
+                headers
+                    .contentTypeOptions(content -> {})
+                    .frameOptions(frame -> frame.deny())
+                    .xssProtection(xss -> {})
+                    .contentSecurityPolicy(
+                        csp ->
+                            csp.policyDirectives(
+                                "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
+                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                                    + "style-src 'self' 'unsafe-inline'; "
+                                    + "img-src 'self' data:; "
+                                    + "font-src 'self'; "
+                                    + "connect-src 'self' *; "
+                                    + "base-uri 'self'; "
+                                    + "form-action 'self'; "
+                                    + "frame-ancestors 'none'; "
+                                    + "object-src 'none'")))
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
     return http.build();
   }

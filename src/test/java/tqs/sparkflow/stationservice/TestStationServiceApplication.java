@@ -8,5 +8,4 @@ class TestStationServiceApplication {
 
   @Test
   void contextLoads() {}
-
 }

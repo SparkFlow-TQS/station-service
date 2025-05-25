@@ -1,8 +1,11 @@
 package tqs.sparkflow.stationservice.cucumber;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -12,20 +15,13 @@ import org.springframework.http.ResponseEntity;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class StationStepDefinitions {
 
-  @LocalServerPort
-  private int port;
+  @LocalServerPort private int port;
 
-  @Autowired
-  private TestRestTemplate restTemplate;
+  @Autowired private TestRestTemplate restTemplate;
 
-  @Autowired
-  private StationRepository stationRepository;
+  @Autowired private StationRepository stationRepository;
 
   private ResponseEntity<List<Station>> response;
   private ResponseEntity<Station> singleResponse;
@@ -46,8 +42,12 @@ public class StationStepDefinitions {
 
   @When("I request all stations")
   public void iRequestAllStations() {
-    response = restTemplate.exchange("http://localhost:" + port + "/stations", HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<Station>>() {});
+    response =
+        restTemplate.exchange(
+            "http://localhost:" + port + "/stations",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<List<Station>>() {});
   }
 
   @Then("I should receive a list of stations")

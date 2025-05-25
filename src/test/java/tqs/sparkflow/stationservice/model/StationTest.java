@@ -1,7 +1,8 @@
 package tqs.sparkflow.stationservice.model;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 class StationTest {
 
@@ -80,8 +81,9 @@ class StationTest {
   @Test
   void whenCallingToString_thenReturnsCorrectString() {
     // Given
-    Station station = new Station("Test Station", "Test Address", "Test City", 38.7223, -9.1393,
-        "Type2", "Available");
+    Station station =
+        new Station(
+            "Test Station", "Test Address", "Test City", 38.7223, -9.1393, "Type2", "Available");
     station.setId(1L);
 
     // When
@@ -187,8 +189,18 @@ class StationTest {
     Boolean isOperational = true;
 
     // When
-    Station station = new Station(externalId, name, address, city, country, latitude, longitude,
-        connectorType, power, isOperational);
+    Station station =
+        new Station(
+            externalId,
+            name,
+            address,
+            city,
+            country,
+            latitude,
+            longitude,
+            connectorType,
+            power,
+            isOperational);
 
     // Then
     assertThat(station.getExternalId()).isEqualTo(externalId);

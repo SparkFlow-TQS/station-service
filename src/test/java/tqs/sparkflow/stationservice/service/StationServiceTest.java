@@ -1,6 +1,12 @@
 package tqs.sparkflow.stationservice.service;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,22 +15,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class StationServiceTest {
 
-  @Mock
-  private StationRepository stationRepository;
+  @Mock private StationRepository stationRepository;
 
-  @InjectMocks
-  private StationService stationService;
+  @InjectMocks private StationService stationService;
 
   @Test
   void whenGettingAllStations_thenReturnsAllStations() {
@@ -72,7 +68,8 @@ class StationServiceTest {
   void whenGettingStationByIdWithNullId_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.getStationById(null))
-        .isInstanceOf(NullPointerException.class).hasMessageContaining("Station ID cannot be null");
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Station ID cannot be null");
   }
 
   @Test
@@ -81,8 +78,9 @@ class StationServiceTest {
     double latitude = 38.7223;
     double longitude = -9.1393;
     int radius = 10;
-    List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Nearby Station 1"),
-        createTestStation(2L, "Nearby Station 2"));
+    List<Station> expectedStations =
+        Arrays.asList(
+            createTestStation(1L, "Nearby Station 1"), createTestStation(2L, "Nearby Station 2"));
     when(stationRepository.findAll()).thenReturn(expectedStations);
 
     // When
@@ -123,8 +121,9 @@ class StationServiceTest {
   void whenGettingStationsByConnectorType_thenReturnsMatchingStations() {
     // Given
     String connectorType = "Type2";
-    List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Type2 Station 1"),
-        createTestStation(2L, "Type2 Station 2"));
+    List<Station> expectedStations =
+        Arrays.asList(
+            createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
     when(stationRepository.findByConnectorType(connectorType)).thenReturn(expectedStations);
 
     // When
@@ -215,7 +214,8 @@ class StationServiceTest {
   void whenCreatingNullStation_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.createStation(null))
-        .isInstanceOf(NullPointerException.class).hasMessageContaining("Station cannot be null");
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Station cannot be null");
   }
 
   @Test
@@ -250,7 +250,8 @@ class StationServiceTest {
   void whenDeletingStationWithNullId_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.deleteStation(null))
-        .isInstanceOf(NullPointerException.class).hasMessageContaining("Station ID cannot be null");
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Station ID cannot be null");
   }
 
   private Station createTestStation(Long id, String name) {

@@ -7,14 +7,11 @@ import org.springframework.stereotype.Service;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-/**
- * Service for managing charging stations.
- */
+/** Service for managing charging stations. */
 @Service
 public class StationService {
 
-  @Autowired
-  private StationRepository stationRepository;
+  @Autowired private StationRepository stationRepository;
 
   /**
    * Gets all stations.
@@ -37,7 +34,8 @@ public class StationService {
     if (id == null) {
       throw new NullPointerException("Station ID cannot be null");
     }
-    return stationRepository.findById(id)
+    return stationRepository
+        .findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Station not found with id: " + id));
   }
 
@@ -49,8 +47,11 @@ public class StationService {
    * @throws IllegalArgumentException if no station exists with the given external ID
    */
   public Station getStationByExternalId(String externalId) {
-    return stationRepository.findByExternalId(externalId).orElseThrow(
-        () -> new IllegalArgumentException("Station not found with external id: " + externalId));
+    return stationRepository
+        .findByExternalId(externalId)
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException("Station not found with external id: " + externalId));
   }
 
   /**
@@ -124,8 +125,8 @@ public class StationService {
    * @param connectorType The connector type
    * @return List of matching stations
    */
-  public List<Station> searchStations(String name, String city, String country,
-      String connectorType) {
+  public List<Station> searchStations(
+      String name, String city, String country, String connectorType) {
     return stationRepository
         .findByNameContainingAndCityContainingAndCountryContainingAndConnectorTypeContaining(
             Optional.ofNullable(name).orElse(""), Optional.ofNullable(city).orElse(""),

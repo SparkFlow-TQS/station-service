@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,27 +23,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
 import tqs.sparkflow.stationservice.StationServiceApplication;
 import tqs.sparkflow.stationservice.config.TestConfig;
-import tqs.sparkflow.stationservice.model.OpenChargeMapResponse;
-import tqs.sparkflow.stationservice.model.OpenChargeMapStation;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-@SpringBootTest(classes = {StationServiceApplication.class, TestConfig.class},
+@SpringBootTest(
+    classes = {StationServiceApplication.class, TestConfig.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 class OpenChargeMapServiceIT {
 
-  @Autowired
-  private OpenChargeMapService openChargeMapService;
+  @Autowired private OpenChargeMapService openChargeMapService;
 
-  @Autowired
-  private StationRepository stationRepository;
+  @Autowired private StationRepository stationRepository;
 
-  @MockBean
-  private RestTemplate restTemplate;
+  @MockBean private RestTemplate restTemplate;
 
   @BeforeEach
   void setUp() {
@@ -57,8 +51,9 @@ class OpenChargeMapServiceIT {
     List<Map<String, Object>> mockResponse = createMockResponse();
     ResponseEntity<List<Map<String, Object>>> responseEntity =
         new ResponseEntity<>(mockResponse, HttpStatus.OK);
-    when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
-        any(ParameterizedTypeReference.class))).thenReturn(responseEntity);
+    when(restTemplate.exchange(
+            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
+        .thenReturn(responseEntity);
 
     // When
     List<Station> result = openChargeMapService.populateStations(38.7223, -9.1393, 10);
@@ -78,7 +73,7 @@ class OpenChargeMapServiceIT {
 
     // When/Then
     assertThatThrownBy(
-        () -> openChargeMapService.populateStations(invalidLatitude, longitude, radius))
+            () -> openChargeMapService.populateStations(invalidLatitude, longitude, radius))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Latitude must be between -90 and 90 degrees");
   }
@@ -92,7 +87,7 @@ class OpenChargeMapServiceIT {
 
     // When/Then
     assertThatThrownBy(
-        () -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
+            () -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Radius must be positive");
   }
@@ -101,11 +96,10 @@ class OpenChargeMapServiceIT {
   void whenApiKeyInvalid_thenThrowsException() {
     // Given
     when(restTemplate.exchange(
-        anyString(),
-        eq(HttpMethod.GET),
-        eq(null),
-        any(ParameterizedTypeReference.class)
-    )).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null));
+            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
+        .thenThrow(
+            new HttpClientErrorException(
+                HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null));
 
     // When/Then
     assertThatThrownBy(() -> openChargeMapService.populateStations(38.7223, -9.1393, 10))

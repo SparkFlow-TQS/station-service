@@ -40,7 +40,32 @@
 		<jackson.version>2.16.1</jackson.version>
 		<logback.version>1.4.14</logback.version>
 		<cucumber.version>7.22.2</cucumber.version>
+		<spotless.version>2.43.0</spotless.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>spotless</id>
+			<name>Spotless Maven Plugin Repository</name>
+			<url>https://plugins.gradle.org/m2/</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -219,6 +244,15 @@
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>3.1.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -291,6 +325,9 @@
 					<linkXRef>false</linkXRef>
 					<maxAllowedViolations>0</maxAllowedViolations>
 					<violationSeverity>error</violationSeverity>
+					<sourceDirectories>
+						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+					</sourceDirectories>
 				</configuration>
 				<executions>
 					<execution>
@@ -298,26 +335,6 @@
 						<phase>validate</phase>
 						<goals>
 							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-				<version>2.23.0</version>
-				<configuration>
-					<configFile>google-style.xml</configFile>
-					<lineEnding>LF</lineEnding>
-					<encoding>UTF-8</encoding>
-					<compilerSource>${java.version}</compilerSource>
-					<compilerCompliance>${java.version}</compilerCompliance>
-					<compilerTargetPlatform>${java.version}</compilerTargetPlatform>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>format</goal>
 						</goals>
 					</execution>
 				</executions>

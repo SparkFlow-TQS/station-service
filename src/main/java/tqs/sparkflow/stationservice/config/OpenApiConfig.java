@@ -20,8 +20,15 @@ public class OpenApiConfig {
    */
   @Bean
   public OpenAPI configureOpenApi() {
-    return new OpenAPI().info(new Info().title("Station Service API").version("0.0.1")
-        .description("API for managing charging stations").license(new License().name("Apache 2.0")
-            .url("http://www.apache.org/licenses/LICENSE-2.0.html")));
+    return new OpenAPI()
+        .info(
+            new Info()
+                .title("Station Service API")
+                .version("0.0.1")
+                .description("API for managing charging stations")
+                .license(
+                    new License()
+                        .name("Apache 2.0")
+                        .url("http://www.apache.org/licenses/LICENSE-2.0.html")));
   }
 }

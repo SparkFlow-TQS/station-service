@@ -10,5 +10,4 @@ class StationServiceApplicationTests {
 
   @Test
   void contextLoads() {}
-
 }

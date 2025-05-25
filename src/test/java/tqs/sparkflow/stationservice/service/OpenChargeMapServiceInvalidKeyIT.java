@@ -1,5 +1,7 @@
 package tqs.sparkflow.stationservice.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,19 +12,16 @@ import tqs.sparkflow.stationservice.StationServiceApplication;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-@SpringBootTest(classes = {StationServiceApplication.class, TestConfig.class},
+@SpringBootTest(
+    classes = {StationServiceApplication.class, TestConfig.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 @TestPropertySource(properties = {"openchargemap.api.key=invalid-test-key"})
 class OpenChargeMapServiceInvalidKeyIT {
 
-  @Autowired
-  private OpenChargeMapService openChargeMapService;
+  @Autowired private OpenChargeMapService openChargeMapService;
 
-  @Autowired
-  private StationRepository stationRepository;
+  @Autowired private StationRepository stationRepository;
 
   @BeforeEach
   void setUp() {

@@ -1,14 +1,13 @@
 package tqs.sparkflow.stationservice.exception;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
-import tqs.sparkflow.stationservice.model.Station;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.springframework.web.context.request.WebRequest;
 
 class GlobalExceptionHandlerTest {
 

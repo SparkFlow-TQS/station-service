@@ -1,6 +1,10 @@
 package tqs.sparkflow.stationservice.controller;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,20 +15,12 @@ import org.springframework.http.ResponseEntity;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class StationControllerTest {
 
-  @Mock
-  private StationService stationService;
+  @Mock private StationService stationService;
 
-  @InjectMocks
-  private StationController stationController;
+  @InjectMocks private StationController stationController;
 
   @Test
   void whenGettingAllStations_thenReturnsListOfStations() {
@@ -64,10 +60,18 @@ class StationControllerTest {
     double latitude = 38.7223;
     double longitude = -9.1393;
     int radius = 10;
-    List<Station> expectedStations = Arrays.asList(
-        new Station("Station 1", "Address 1", "Lisbon", latitude, longitude, "Type 2", "Available"),
-        new Station("Station 2", "Address 2", "Lisbon", latitude + 0.01, longitude + 0.01, "Type 2",
-            "Available"));
+    List<Station> expectedStations =
+        Arrays.asList(
+            new Station(
+                "Station 1", "Address 1", "Lisbon", latitude, longitude, "Type 2", "Available"),
+            new Station(
+                "Station 2",
+                "Address 2",
+                "Lisbon",
+                latitude + 0.01,
+                longitude + 0.01,
+                "Type 2",
+                "Available"));
 
     when(stationService.getNearbyStations(latitude, longitude, radius))
         .thenReturn(expectedStations);
@@ -86,8 +90,9 @@ class StationControllerTest {
   void whenGettingStationsByConnectorType_thenReturnsListOfStations() {
     // Given
     String connectorType = "Type2";
-    List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Type2 Station 1"),
-        createTestStation(2L, "Type2 Station 2"));
+    List<Station> expectedStations =
+        Arrays.asList(
+            createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
     when(stationService.getStationsByConnectorType(connectorType)).thenReturn(expectedStations);
 
     // When
@@ -103,8 +108,9 @@ class StationControllerTest {
   @Test
   void whenCreateStation_thenReturnCreatedStation() {
     // Given
-    Station station = new Station("Test Station", "Test Address", "Lisbon", 38.7223, -9.1393,
-        "Type 2", "Available");
+    Station station =
+        new Station(
+            "Test Station", "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
     station.setId(1L);
 
     when(stationService.createStation(any(Station.class))).thenReturn(station);

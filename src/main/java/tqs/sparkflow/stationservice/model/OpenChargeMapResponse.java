@@ -2,9 +2,7 @@ package tqs.sparkflow.stationservice.model;
 
 import java.util.List;
 
-/**
- * Response model for OpenChargeMap API.
- */
+/** Response model for OpenChargeMap API. */
 public class OpenChargeMapResponse {
   private List<OpenChargeMapStation> stations;
 

@@ -8,15 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
 
-/**
- * Controller for managing charging stations.
- */
+/** Controller for managing charging stations. */
 @RestController
 @RequestMapping("/stations")
 public class StationController {
 
-  @Autowired
-  private StationService stationService;
+  @Autowired private StationService stationService;
 
   /**
    * Gets all stations.
@@ -74,8 +71,8 @@ public class StationController {
    * @return The updated station
    */
   @PutMapping("/{id}")
-  public ResponseEntity<Station> updateStation(@PathVariable Long id,
-      @RequestBody Station station) {
+  public ResponseEntity<Station> updateStation(
+      @PathVariable Long id, @RequestBody Station station) {
     return ResponseEntity.ok(stationService.updateStation(id, station));
   }
 
@@ -104,8 +101,10 @@ public class StationController {
    * @return List of matching stations
    */
   @GetMapping("/search")
-  public ResponseEntity<List<Station>> searchStations(@RequestParam(required = false) String name,
-      @RequestParam(required = false) String city, @RequestParam(required = false) String country,
+  public ResponseEntity<List<Station>> searchStations(
+      @RequestParam(required = false) String name,
+      @RequestParam(required = false) String city,
+      @RequestParam(required = false) String country,
       @RequestParam(required = false) String connectorType) {
     return ResponseEntity.ok(stationService.searchStations(name, city, country, connectorType));
   }
@@ -119,8 +118,8 @@ public class StationController {
    * @return List of stations within the radius
    */
   @GetMapping("/nearby")
-  public ResponseEntity<List<Station>> getNearbyStations(@RequestParam double latitude,
-      @RequestParam double longitude, @RequestParam int radius) {
+  public ResponseEntity<List<Station>> getNearbyStations(
+      @RequestParam double latitude, @RequestParam double longitude, @RequestParam int radius) {
     return ResponseEntity.ok(stationService.getNearbyStations(latitude, longitude, radius));
   }
 

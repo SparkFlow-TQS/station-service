@@ -10,9 +10,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * Represents a charging station.
- */
+/** Represents a charging station. */
 @Entity
 @Table(name = "stations")
 public class Station {
@@ -54,9 +52,7 @@ public class Station {
   private Integer power;
   private Boolean isOperational;
 
-  /**
-   * Creates a new Station.
-   */
+  /** Creates a new Station. */
   public Station() {}
 
   /**
@@ -70,8 +66,14 @@ public class Station {
    * @param connectorType The type of connector available at the station
    * @param status The status of the station
    */
-  public Station(String name, String address, String city, double latitude, double longitude,
-      String connectorType, String status) {
+  public Station(
+      String name,
+      String address,
+      String city,
+      double latitude,
+      double longitude,
+      String connectorType,
+      String status) {
     this.name = name;
     this.address = address;
     this.city = city;
@@ -95,8 +97,16 @@ public class Station {
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    */
-  public Station(String externalId, String name, String address, String city, String country,
-      Double latitude, Double longitude, String connectorType, Integer power,
+  public Station(
+      String externalId,
+      String name,
+      String address,
+      String city,
+      String country,
+      Double latitude,
+      Double longitude,
+      String connectorType,
+      Integer power,
       Boolean isOperational) {
     this.externalId = externalId;
     this.name = name;
