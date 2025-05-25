@@ -7,5 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 class TestStationServiceApplication {
 
   @Test
-  void contextLoads() {}
+  void contextLoads() {
+    // This test verifies that the Spring application context loads successfully.
+    // It's intentionally empty because the test passes if no exceptions are thrown
+    // during context initialization. If there are any configuration issues,
+    // the context will fail to load and the test will fail.
+  }
 }
