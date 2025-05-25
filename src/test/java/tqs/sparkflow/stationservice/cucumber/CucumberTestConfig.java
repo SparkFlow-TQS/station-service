@@ -45,8 +45,8 @@ public class CucumberTestConfig {
 
   @Bean
   @Primary
-  public StationService stationService() {
-    return new StationService();
+  public StationService stationService(StationRepository stationRepository) {
+    return new StationService(stationRepository);
   }
 
   @Bean
