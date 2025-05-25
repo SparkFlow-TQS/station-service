@@ -135,56 +135,70 @@ public class OpenChargeMapService {
   @SuppressWarnings("unchecked")
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
     return stationsData.stream()
-        .map(
-            data -> {
-              try {
-                Map<String, Object> addressInfo = (Map<String, Object>) data.get("AddressInfo");
-                List<Map<String, Object>> connections =
-                    (List<Map<String, Object>>) data.get("Connections");
-
-                Station station = new Station();
-
-                // Handle ID which could be Integer or String
-                Object id = data.get("ID");
-                if (id != null) {
-                  if (id instanceof Number) {
-                    station.setId(((Number) id).longValue());
-                  } else {
-                    station.setId(Long.parseLong(id.toString()));
-                  }
-                }
-
-                // Handle name which could be null
-                Object name = addressInfo.get("Title");
-                station.setName(name != null ? name.toString() : UNKNOWN_VALUE);
-
-                // Handle address which could be null
-                Object address = addressInfo != null ? addressInfo.get("AddressLine1") : null;
-                station.setAddress(address != null ? address.toString() : UNKNOWN_VALUE);
-
-                // Handle coordinates which could be Double
-                Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
-                Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
-                station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
-                station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
-
-                station.setStatus("Available");
-
-                // Handle connector type which could be null
-                if (connections != null && !connections.isEmpty()) {
-                  Map<String, Object> firstConnection = connections.get(0);
-                  Object connectorType = firstConnection.get("ConnectionTypeID");
-                  station.setConnectorType(
-                      connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
-                } else {
-                  station.setConnectorType(UNKNOWN_VALUE);
-                }
-
-                return station;
-              } catch (Exception e) {
-                throw new IllegalStateException("Error converting station data: " + e.getMessage());
-              }
-            })
+        .map(this::convertMapToStation)
         .toList();
+  }
+
+  private Station convertMapToStation(Map<String, Object> data) {
+    try {
+        Map<String, Object> addressInfo = getAddressInfo(data);
+        List<Map<String, Object>> connections = getConnections(data);
+
+        Station station = new Station();
+        setStationId(data, station);
+        setStationName(addressInfo, station);
+        setStationAddress(addressInfo, station);
+        setStationCoordinates(addressInfo, station);
+        station.setStatus("Available");
+        setStationConnectorType(connections, station);
+
+        return station;
+    } catch (Exception e) {
+        throw new IllegalStateException("Error converting station data: " + e.getMessage());
+    }
+  }
+
+  private Map<String, Object> getAddressInfo(Map<String, Object> data) {
+    return (Map<String, Object>) data.get("AddressInfo");
+  }
+
+  private List<Map<String, Object>> getConnections(Map<String, Object> data) {
+    return (List<Map<String, Object>>) data.get("Connections");
+  }
+
+  private void setStationId(Map<String, Object> data, Station station) {
+    Object id = data.get("ID");
+    if (id instanceof Number) {
+        station.setId(((Number) id).longValue());
+    } else if (id != null) {
+        station.setId(Long.parseLong(id.toString()));
+    }
+  }
+
+  private void setStationName(Map<String, Object> addressInfo, Station station) {
+    Object name = addressInfo != null ? addressInfo.get("Title") : null;
+    station.setName(name != null ? name.toString() : UNKNOWN_VALUE);
+  }
+
+  private void setStationAddress(Map<String, Object> addressInfo, Station station) {
+    Object address = addressInfo != null ? addressInfo.get("AddressLine1") : null;
+    station.setAddress(address != null ? address.toString() : UNKNOWN_VALUE);
+  }
+
+  private void setStationCoordinates(Map<String, Object> addressInfo, Station station) {
+    Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
+    Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
+    station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
+    station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
+  }
+
+  private void setStationConnectorType(List<Map<String, Object>> connections, Station station) {
+    if (connections != null && !connections.isEmpty()) {
+        Map<String, Object> firstConnection = connections.get(0);
+        Object connectorType = firstConnection.get("ConnectionTypeID");
+        station.setConnectorType(connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
+    } else {
+        station.setConnectorType(UNKNOWN_VALUE);
+    }
   }
 }

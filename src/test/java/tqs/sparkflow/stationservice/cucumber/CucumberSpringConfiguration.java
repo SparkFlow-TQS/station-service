@@ -5,7 +5,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import tqs.sparkflow.stationservice.StationServiceApplication;
 import tqs.sparkflow.stationservice.TestcontainersConfiguration;
-import tqs.sparkflow.stationservice.cucumber.CucumberTestConfig;
 import tqs.sparkflow.stationservice.config.TestConfig;
 
 @CucumberContextConfiguration
