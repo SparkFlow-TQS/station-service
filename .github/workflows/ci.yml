@@ -58,6 +58,13 @@ jobs:
           **/target/failsafe-reports
           **/target/cucumber-reports
     
+    - name: Push results to Xray on Jira Cloud
+      run: ./mvnw xray:import-results
+      env:
+        XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+        XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+        XRAY_PROJECT_KEY: ${{ secrets.XRAY_PROJECT_KEY }}
+    
     - name: Check Test Coverage
       run: |
         COVERAGE=$(grep -o '<coverage>.*</coverage>' target/site/jacoco/jacoco.xml | sed 's/<coverage>\(.*\)<\/coverage>/\1/')
