@@ -58,3 +58,7 @@ target/
 
 ### Environment ###
 .env
+
+### Logs ###
+nohup.out
+*.log
