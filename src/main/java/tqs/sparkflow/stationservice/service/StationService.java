@@ -2,7 +2,6 @@ package tqs.sparkflow.stationservice.service;
 
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
@@ -11,7 +10,11 @@ import tqs.sparkflow.stationservice.repository.StationRepository;
 @Service
 public class StationService {
 
-  @Autowired private StationRepository stationRepository;
+  private final StationRepository stationRepository;
+
+  public StationService(StationRepository stationRepository) {
+    this.stationRepository = stationRepository;
+  }
 
   /**
    * Gets all stations.

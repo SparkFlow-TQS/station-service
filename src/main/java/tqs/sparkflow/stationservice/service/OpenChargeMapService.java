@@ -90,11 +90,12 @@ public class OpenChargeMapService {
               null,
               new ParameterizedTypeReference<List<Map<String, Object>>>() {});
 
-      if (response == null || response.getBody() == null || response.getBody().isEmpty()) {
+      List<Map<String, Object>> responseBody = response.getBody();
+      if (responseBody == null || responseBody.isEmpty()) {
         throw new IllegalStateException("No stations found");
       }
 
-      List<Station> stations = convertToStations(response.getBody());
+      List<Station> stations = convertToStations(responseBody);
       return stationRepository.saveAll(stations);
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
