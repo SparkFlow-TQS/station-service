@@ -17,6 +17,8 @@ import tqs.sparkflow.stationservice.config.OpenChargeMapTestConfig;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 import java.util.List;
 
@@ -47,6 +49,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-1")
+  @Requirement("STATION-IT-1")
   void whenCreatingStation_thenStationIsCreated() {
     // Given
     Station station = createTestStation("Test Station");
@@ -62,6 +66,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-2")
+  @Requirement("STATION-IT-2")
   void whenGettingAllStations_thenReturnsAllStations() {
     // Given
     Station station1 = createTestStation("Station 1");
@@ -82,6 +88,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-3")
+  @Requirement("STATION-IT-3")
   void whenGettingStationById_thenReturnsStation() {
     // Given
     Station station = createTestStation("Test Station");
@@ -98,6 +106,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-4")
+  @Requirement("STATION-IT-4")
   void whenGettingNonExistentStationById_thenReturnsNotFound() {
     // When
     ResponseEntity<Station> response = restTemplate.getForEntity(baseUrl + "/999", Station.class);
@@ -107,6 +117,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-5")
+  @Requirement("STATION-IT-5")
   void whenDeletingStation_thenStationIsDeleted() {
     // Given
     Station station = createTestStation("Test Station");
@@ -120,6 +132,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-6")
+  @Requirement("STATION-IT-6")
   void whenGettingStationsByConnectorType_thenReturnsMatchingStations() {
     // Given
     Station station1 = createTestStation("Type2 Station");
@@ -140,6 +154,8 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-7")
+  @Requirement("STATION-IT-7")
   void whenCreateStation_thenReturnCreatedStation() {
     // Given
     Station station = new Station("Test Station", "Test Address", "Lisbon", 38.7223, -9.1393,

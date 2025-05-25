@@ -15,7 +15,12 @@ import tqs.sparkflow.stationservice.model.OpenChargeMapResponse;
 import tqs.sparkflow.stationservice.model.OpenChargeMapStation;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
+@ExtendWith(MockitoExtension.class)
 class OpenChargeMapServiceTest {
 
     @Mock
@@ -37,6 +42,8 @@ class OpenChargeMapServiceTest {
     }
 
     @Test
+    @XrayTest(key = "OCM-1")
+    @Requirement("OCM-1")
     void getStationsByCity_returnsStations() {
         OpenChargeMapStation ocmStation = new OpenChargeMapStation();
         ocmStation.setId("1");
@@ -59,6 +66,8 @@ class OpenChargeMapServiceTest {
     }
 
     @Test
+    @XrayTest(key = "OCM-2")
+    @Requirement("OCM-2")
     void getStationsByCity_returnsEmptyListOnNullResponse() {
         when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(null);
         List<Station> stations = service.getStationsByCity("City");
@@ -66,6 +75,8 @@ class OpenChargeMapServiceTest {
     }
 
     @Test
+    @XrayTest(key = "OCM-3")
+    @Requirement("OCM-3")
     void populateStations_happyPath() {
         double lat = 1.0, lon = 2.0;
         int radius = 10;
@@ -92,6 +103,8 @@ class OpenChargeMapServiceTest {
     }
 
     @Test
+    @XrayTest(key = "OCM-4")
+    @Requirement("OCM-4")
     void populateStations_invalidLatitude_throwsException() {
         assertThatThrownBy(() -> service.populateStations(-100, 0, 10))
             .isInstanceOf(IllegalArgumentException.class);

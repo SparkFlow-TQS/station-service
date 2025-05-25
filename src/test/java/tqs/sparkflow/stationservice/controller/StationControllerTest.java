@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 @ExtendWith(MockitoExtension.class)
 class StationControllerTest {
@@ -23,6 +25,8 @@ class StationControllerTest {
   @InjectMocks private StationController stationController;
 
   @Test
+  @XrayTest(key = "STATION-1")
+  @Requirement("STATION-1")
   void whenGettingAllStations_thenReturnsListOfStations() {
     // Given
     List<Station> expectedStations =
@@ -39,6 +43,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-2")
+  @Requirement("STATION-2")
   void whenGettingStationById_thenReturnsStation() {
     // Given
     Long stationId = 1L;
@@ -55,6 +61,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-3")
+  @Requirement("STATION-3")
   void whenGetNearbyStations_thenReturnStations() {
     // Given
     double latitude = 38.7223;
@@ -87,6 +95,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-4")
+  @Requirement("STATION-4")
   void whenGettingStationsByConnectorType_thenReturnsListOfStations() {
     // Given
     String connectorType = "Type2";
@@ -106,6 +116,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-5")
+  @Requirement("STATION-5")
   void whenCreateStation_thenReturnCreatedStation() {
     // Given
     Station station =
@@ -125,6 +137,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-6")
+  @Requirement("STATION-6")
   void whenDeletingStation_thenCallsService() {
     // Given
     Long stationId = 1L;
@@ -138,6 +152,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-7")
+  @Requirement("STATION-7")
   void whenGettingStationByIdNotFound_thenReturnsNotFound() {
     Long stationId = 99L;
     when(stationService.getStationById(stationId)).thenThrow(new IllegalArgumentException());
@@ -147,6 +163,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-8")
+  @Requirement("STATION-8")
   void whenGettingStationByExternalId_thenReturnsStation() {
     String externalId = "ext-123";
     Station expectedStation = createTestStation(1L, "External Station");
@@ -158,6 +176,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-9")
+  @Requirement("STATION-9")
   void whenGettingStationByExternalIdNotFound_thenReturnsNotFound() {
     String externalId = "not-found";
     when(stationService.getStationByExternalId(externalId)).thenThrow(new IllegalArgumentException());
@@ -167,6 +187,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-10")
+  @Requirement("STATION-10")
   void whenUpdatingStation_thenReturnsUpdatedStation() {
     Long stationId = 1L;
     Station station = createTestStation(stationId, "Old Name");
@@ -179,6 +201,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-11")
+  @Requirement("STATION-11")
   void whenUpdatingStationNotFound_thenReturnsNotFound() {
     Long stationId = 99L;
     Station station = createTestStation(stationId, "Doesn't Matter");
@@ -189,6 +213,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-12")
+  @Requirement("STATION-12")
   void whenDeletingStationNotFound_thenReturnsNotFound() {
     Long stationId = 99L;
     doThrow(new IllegalArgumentException()).when(stationService).deleteStation(stationId);
@@ -198,6 +224,8 @@ class StationControllerTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-13")
+  @Requirement("STATION-13")
   void whenSearchingStations_thenReturnsList() {
     List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Search 1"));
     when(stationService.searchStations("name", "city", "country", "type")).thenReturn(expectedStations);

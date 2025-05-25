@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 @ExtendWith(MockitoExtension.class)
 class StationServiceTest {
@@ -23,6 +25,8 @@ class StationServiceTest {
   @InjectMocks private StationService stationService;
 
   @Test
+  @XrayTest(key = "STATION-SVC-1")
+  @Requirement("STATION-SVC-1")
   void whenGettingAllStations_thenReturnsAllStations() {
     // Given
     List<Station> expectedStations =
@@ -38,6 +42,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-2")
+  @Requirement("STATION-SVC-2")
   void whenGettingStationById_thenReturnsStation() {
     // Given
     Long stationId = 1L;
@@ -53,6 +59,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-3")
+  @Requirement("STATION-SVC-3")
   void whenGettingNonExistentStationById_thenThrowsException() {
     // Given
     Long stationId = 1L;
@@ -65,6 +73,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-4")
+  @Requirement("STATION-SVC-4")
   void whenGettingStationByIdWithNullId_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.getStationById(null))
@@ -73,6 +83,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-5")
+  @Requirement("STATION-SVC-5")
   void whenGettingNearbyStations_thenReturnsOnlyStationsWithinRadius() {
     // Given
     double centerLat = 38.7223;
@@ -107,6 +119,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-6")
+  @Requirement("STATION-SVC-6")
   void whenGettingNearbyStationsWithZeroRadius_thenThrowsException() {
     // Given
     double centerLat = 38.7223;
@@ -120,6 +134,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-7")
+  @Requirement("STATION-SVC-7")
   void whenGettingNearbyStationsWithNegativeRadius_thenThrowsException() {
     // Given
     double centerLat = 38.7223;
@@ -133,6 +149,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-8")
+  @Requirement("STATION-SVC-8")
   void whenGettingNearbyStationsWithTooLargeRadius_thenThrowsException() {
     // Given
     double centerLat = 38.7223;
@@ -146,6 +164,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-9")
+  @Requirement("STATION-SVC-9")
   void whenGettingStationsByConnectorType_thenReturnsMatchingStations() {
     // Given
     String connectorType = "Type2";
@@ -163,6 +183,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-10")
+  @Requirement("STATION-SVC-10")
   void whenGettingStationsByEmptyConnectorType_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.getStationsByConnectorType(""))
@@ -171,6 +193,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-11")
+  @Requirement("STATION-SVC-11")
   void whenGettingStationsByNullConnectorType_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.getStationsByConnectorType(null))
@@ -179,6 +203,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-12")
+  @Requirement("STATION-SVC-12")
   void whenCreatingValidStation_thenStationIsSaved() {
     // Given
     Station station = createTestStation(1L, "Test Station");
@@ -193,6 +219,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-13")
+  @Requirement("STATION-SVC-13")
   void whenCreatingStationWithNullName_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, null);
@@ -204,6 +232,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-14")
+  @Requirement("STATION-SVC-14")
   void whenCreatingStationWithEmptyName_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, "");
@@ -215,6 +245,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-15")
+  @Requirement("STATION-SVC-15")
   void whenCreatingStationWithInvalidCoordinates_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, "Test Station");
@@ -227,6 +259,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-16")
+  @Requirement("STATION-SVC-16")
   void whenCreatingStationWithEmptyConnectorType_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, "Test Station");
@@ -239,6 +273,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-17")
+  @Requirement("STATION-SVC-17")
   void whenCreatingNullStation_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.createStation(null))
@@ -247,6 +283,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-18")
+  @Requirement("STATION-SVC-18")
   void whenDeletingExistingStation_thenStationIsDeleted() {
     // Given
     Long stationId = 1L;
@@ -262,6 +300,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-19")
+  @Requirement("STATION-SVC-19")
   void whenDeletingNonExistentStation_thenThrowsException() {
     // Given
     Long stationId = 1L;
@@ -274,6 +314,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-20")
+  @Requirement("STATION-SVC-20")
   void whenDeletingStationWithNullId_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.deleteStation(null))
@@ -282,6 +324,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-21")
+  @Requirement("STATION-SVC-21")
   void whenGettingStationByExternalId_thenReturnsStation() {
     String externalId = "ext-123";
     Station expectedStation = createTestStation(1L, "External Station");
@@ -294,6 +338,8 @@ class StationServiceTest {
   }
 
   @Test
+  @XrayTest(key = "STATION-SVC-22")
+  @Requirement("STATION-SVC-22")
   void whenGettingNonExistentStationByExternalId_thenThrowsException() {
     String externalId = "not-found";
     when(stationRepository.findByExternalId(externalId)).thenReturn(Optional.empty());
