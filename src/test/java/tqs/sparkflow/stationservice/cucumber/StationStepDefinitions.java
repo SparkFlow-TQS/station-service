@@ -1,11 +1,8 @@
 package tqs.sparkflow.stationservice.cucumber;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -15,13 +12,20 @@ import org.springframework.http.ResponseEntity;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class StationStepDefinitions {
 
-  @LocalServerPort private int port;
+  @LocalServerPort
+  private int port;
 
-  @Autowired private TestRestTemplate restTemplate;
+  @Autowired
+  private TestRestTemplate restTemplate;
 
-  @Autowired private StationRepository stationRepository;
+  @Autowired
+  private StationRepository stationRepository;
 
   private ResponseEntity<List<Station>> response;
   private ResponseEntity<Station> singleResponse;
@@ -42,12 +46,8 @@ public class StationStepDefinitions {
 
   @When("I request all stations")
   public void iRequestAllStations() {
-    response =
-        restTemplate.exchange(
-            "http://localhost:" + port + "/stations",
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<Station>>() {});
+    response = restTemplate.exchange("http://localhost:" + port + "/stations", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Station>>() {});
   }
 
   @Then("I should receive a list of stations")
@@ -60,16 +60,16 @@ public class StationStepDefinitions {
     assertEquals(2, body.size(), "Should have 2 stations in the response");
   }
 
-  @Given("there is a station with ID {long}")
-  public void thereIsAStationWithId(Long id) {
+  @Given("there is a station with ID {string}")
+  public void thereIsAStationWithId(String id) {
     Station station = new Station();
-    station.setId(id);
+    station.setId(Long.parseLong(id));
     station.setName("Test Station " + id);
     stationRepository.save(station);
   }
 
-  @When("I request the station with ID {long}")
-  public void iRequestTheStationWithId(Long id) {
+  @When("I request the station with ID {string}")
+  public void iRequestTheStationWithId(String id) {
     singleResponse =
         restTemplate.getForEntity("http://localhost:" + port + "/stations/" + id, Station.class);
   }
