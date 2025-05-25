@@ -47,6 +47,7 @@ jobs:
     - name: Start Spring Boot Application
       env:
         OPENCHARGEMAP_API_KEY: test-api-key
+        OPENCHARGEMAP_API_URL: https://api.openchargemap.io/v3/poi
       run: |
         ./mvnw clean package -DskipTests
         nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar \
@@ -55,7 +56,8 @@ jobs:
           --spring.datasource.username=test \
           --spring.datasource.password=test \
           --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
-          --openchargemap.api.key=test-api-key &
+          --openchargemap.api.key=test-api-key \
+          --openchargemap.api.url=https://api.openchargemap.io/v3/poi &
         # Wait for application to be ready
         for i in {1..30}; do
           if curl -s http://localhost:8082/actuator/health > /dev/null; then
