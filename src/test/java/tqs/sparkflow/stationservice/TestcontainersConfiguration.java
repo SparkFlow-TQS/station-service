@@ -5,11 +5,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @TestConfiguration
+@Testcontainers
 public class TestcontainersConfiguration {
 
-  static final MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0");
+  @Container
+  static final MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+      .withDatabaseName("testdb")
+      .withUsername("test")
+      .withPassword("test");
 
   static {
     mysql.start();
