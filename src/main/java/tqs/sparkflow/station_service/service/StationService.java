@@ -31,8 +31,11 @@ public class StationService {
         validateRadius(radius);
         return stationRepository.findAll().stream()
                 .filter(station -> {
-                    double lat = station.getLatitude();
-                    double lon = station.getLongitude();
+                    Double lat = station.getLatitude();
+                    Double lon = station.getLongitude();
+                    if (lat == null || lon == null) {
+                        return false;
+                    }
                     return calculateDistance(latitude, longitude, lat, lon) <= radius;
                 })
                 .collect(Collectors.toList());
@@ -94,7 +97,12 @@ public class StationService {
         if (station.getName() == null || station.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Station name cannot be empty");
         }
-        validateCoordinates(station.getLatitude(), station.getLongitude());
+        Double lat = station.getLatitude();
+        Double lon = station.getLongitude();
+        if (lat == null || lon == null) {
+            throw new IllegalArgumentException("Latitude and longitude cannot be null");
+        }
+        validateCoordinates(lat, lon);
         if (station.getConnectorType() == null || station.getConnectorType().trim().isEmpty()) {
             throw new IllegalArgumentException("Connector type cannot be empty");
         }

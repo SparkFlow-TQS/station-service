@@ -60,7 +60,7 @@ class StationControllerIT {
         );
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getName()).isEqualTo(station.getName());
         assertThat(response.getBody().getConnectorType()).isEqualTo(station.getConnectorType());
@@ -150,7 +150,7 @@ class StationControllerIT {
 
         // When
         ResponseEntity<List<Station>> response = restTemplate.exchange(
-            baseUrl + "/connector/Type2",
+            baseUrl + "/connector/Type 2",
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<Station>>() {}
@@ -160,7 +160,7 @@ class StationControllerIT {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody().get(0).getConnectorType()).isEqualTo("Type2");
+        assertThat(response.getBody().get(0).getConnectorType()).isEqualTo("Type 2");
     }
 
     @Test
@@ -176,7 +176,7 @@ class StationControllerIT {
         station.setConnectorType("Type 2");
 
         // When
-        ResponseEntity<Station> response = restTemplate.postForEntity("/api/stations", station, Station.class);
+        ResponseEntity<Station> response = restTemplate.postForEntity(baseUrl, station, Station.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
