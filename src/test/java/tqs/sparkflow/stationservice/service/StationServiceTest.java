@@ -222,7 +222,6 @@ class StationServiceTest {
   void whenDeletingExistingStation_thenStationIsDeleted() {
     // Given
     Long stationId = 1L;
-    Station station = createTestStation(stationId, "Test Station");
     when(stationRepository.existsById(stationId)).thenReturn(true);
     doNothing().when(stationRepository).deleteById(stationId);
 

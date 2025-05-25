@@ -1,4 +1,4 @@
-package tqs.sparkflow.station_service;
+package tqs.sparkflow.stationservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

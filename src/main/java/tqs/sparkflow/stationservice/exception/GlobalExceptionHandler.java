@@ -10,6 +10,8 @@ import org.springframework.web.context.request.WebRequest;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+  private static final String BAD_REQUEST_ERROR = "Bad Request";
+
   /**
    * Handles IllegalArgumentException.
    *
@@ -23,7 +25,7 @@ public class GlobalExceptionHandler {
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            "Bad Request",
+            BAD_REQUEST_ERROR,
             ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -42,7 +44,7 @@ public class GlobalExceptionHandler {
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            "Bad Request",
+            BAD_REQUEST_ERROR,
             ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -61,7 +63,7 @@ public class GlobalExceptionHandler {
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            "Bad Request",
+            BAD_REQUEST_ERROR,
             ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
