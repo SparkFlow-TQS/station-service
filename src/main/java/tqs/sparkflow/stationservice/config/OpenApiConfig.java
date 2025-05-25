@@ -24,7 +24,7 @@ public class OpenApiConfig {
         .info(
             new Info()
                 .title("Station Service API")
-                .version("0.0.1")
+                .version("0.1.0")
                 .description("API for managing charging stations")
                 .license(
                     new License()

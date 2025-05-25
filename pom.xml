@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>tqs.sparkflow</groupId>
 	<artifactId>station-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>station-service</name>
 	<description>Station service of Sparkflow</description>
 	<url/>
