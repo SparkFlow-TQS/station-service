@@ -137,6 +137,76 @@ class StationControllerTest {
     verify(stationService).deleteStation(stationId);
   }
 
+  @Test
+  void whenGettingStationByIdNotFound_thenReturnsNotFound() {
+    Long stationId = 99L;
+    when(stationService.getStationById(stationId)).thenThrow(new IllegalArgumentException());
+    ResponseEntity<Station> response = stationController.getStationById(stationId);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    verify(stationService).getStationById(stationId);
+  }
+
+  @Test
+  void whenGettingStationByExternalId_thenReturnsStation() {
+    String externalId = "ext-123";
+    Station expectedStation = createTestStation(1L, "External Station");
+    when(stationService.getStationByExternalId(externalId)).thenReturn(expectedStation);
+    ResponseEntity<Station> response = stationController.getStationByExternalId(externalId);
+    assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    assertThat(response.getBody()).isEqualTo(expectedStation);
+    verify(stationService).getStationByExternalId(externalId);
+  }
+
+  @Test
+  void whenGettingStationByExternalIdNotFound_thenReturnsNotFound() {
+    String externalId = "not-found";
+    when(stationService.getStationByExternalId(externalId)).thenThrow(new IllegalArgumentException());
+    ResponseEntity<Station> response = stationController.getStationByExternalId(externalId);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    verify(stationService).getStationByExternalId(externalId);
+  }
+
+  @Test
+  void whenUpdatingStation_thenReturnsUpdatedStation() {
+    Long stationId = 1L;
+    Station station = createTestStation(stationId, "Old Name");
+    Station updatedStation = createTestStation(stationId, "New Name");
+    when(stationService.updateStation(eq(stationId), any(Station.class))).thenReturn(updatedStation);
+    ResponseEntity<Station> response = stationController.updateStation(stationId, station);
+    assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    assertThat(response.getBody()).isEqualTo(updatedStation);
+    verify(stationService).updateStation(eq(stationId), any(Station.class));
+  }
+
+  @Test
+  void whenUpdatingStationNotFound_thenReturnsNotFound() {
+    Long stationId = 99L;
+    Station station = createTestStation(stationId, "Doesn't Matter");
+    when(stationService.updateStation(eq(stationId), any(Station.class))).thenThrow(new IllegalArgumentException());
+    ResponseEntity<Station> response = stationController.updateStation(stationId, station);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    verify(stationService).updateStation(eq(stationId), any(Station.class));
+  }
+
+  @Test
+  void whenDeletingStationNotFound_thenReturnsNotFound() {
+    Long stationId = 99L;
+    doThrow(new IllegalArgumentException()).when(stationService).deleteStation(stationId);
+    ResponseEntity<Void> response = stationController.deleteStation(stationId);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    verify(stationService).deleteStation(stationId);
+  }
+
+  @Test
+  void whenSearchingStations_thenReturnsList() {
+    List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Search 1"));
+    when(stationService.searchStations("name", "city", "country", "type")).thenReturn(expectedStations);
+    ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", "type");
+    assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    assertThat(response.getBody()).isEqualTo(expectedStations);
+    verify(stationService).searchStations("name", "city", "country", "type");
+  }
+
   private Station createTestStation(Long id, String name) {
     Station station =
         new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type2", "Available");

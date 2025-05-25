@@ -1,182 +1,164 @@
 package tqs.sparkflow.stationservice.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import tqs.sparkflow.stationservice.model.OpenChargeMapResponse;
+import tqs.sparkflow.stationservice.model.OpenChargeMapStation;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-@ExtendWith(MockitoExtension.class)
 class OpenChargeMapServiceTest {
 
-  @Mock private RestTemplate restTemplate;
+    @Mock
+    private RestTemplate restTemplate;
 
-  @Mock private StationRepository stationRepository;
+    @Mock
+    private StationRepository stationRepository;
 
-  private OpenChargeMapService service;
+    @InjectMocks
+    private OpenChargeMapService service;
 
-  private final String baseUrl = "https://api.openchargemap.io/v3/poi";
+    private final String apiKey = "dummy-key";
+    private final String baseUrl = "http://dummy-url";
 
-  @BeforeEach
-  void setUp() {
-    service = new OpenChargeMapService(restTemplate, stationRepository, "test-api-key", baseUrl);
-    ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
-  }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        service = new OpenChargeMapService(restTemplate, stationRepository, apiKey, baseUrl);
+    }
 
-  @Test
-  void whenPopulatingStations_thenStationsAreSaved() {
-    // Given
-    List<Map<String, Object>> mockResponse = createMockResponse();
-    ResponseEntity<List<Map<String, Object>>> responseEntity =
-        new ResponseEntity<>(mockResponse, HttpStatus.OK);
-    when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
-        .thenReturn(responseEntity);
-    when(stationRepository.saveAll(any())).thenReturn(convertToStations(mockResponse));
+    @Test
+    void getStationsByCity_returnsStations() {
+        OpenChargeMapStation ocmStation = new OpenChargeMapStation();
+        ocmStation.setId("1");
+        ocmStation.setName("Test");
+        ocmStation.setAddress("Addr");
+        ocmStation.setCity("City");
+        ocmStation.setCountry("Country");
+        ocmStation.setLatitude(1.0);
+        ocmStation.setLongitude(2.0);
+        ocmStation.setConnectorType("Type2");
 
-    // When
-    List<Station> result = service.populateStations(38.7223, -9.1393, 50);
+        OpenChargeMapResponse response = new OpenChargeMapResponse();
+        response.setStations(List.of(ocmStation));
 
-    // Then
-    assertThat(result).hasSize(1);
-    verify(stationRepository).saveAll(any());
-  }
+        when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(response);
 
-  @Test
-  void whenNoStationsFound_thenThrowsException() {
-    // Given
-    ResponseEntity<List<Map<String, Object>>> responseEntity =
-        new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
-    when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
-        .thenReturn(responseEntity);
+        List<Station> stations = service.getStationsByCity("City");
+        assertThat(stations).hasSize(1);
+        assertThat(stations.get(0).getName()).isEqualTo("Test");
+    }
 
-    // When/Then
-    assertThatThrownBy(() -> service.populateStations(38.7223, -9.1393, 50))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("No stations found");
-  }
+    @Test
+    void getStationsByCity_returnsEmptyListOnNullResponse() {
+        when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(null);
+        List<Station> stations = service.getStationsByCity("City");
+        assertThat(stations).isEmpty();
+    }
 
-  @Test
-  void whenApiKeyInvalid_thenThrowsException() {
-    // Given
-    when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
-        .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+    @Test
+    void populateStations_happyPath() {
+        double lat = 1.0, lon = 2.0;
+        int radius = 10;
+        Map<String, Object> addressInfo = Map.of(
+            "Title", "Test", "AddressLine1", "Addr", "Latitude", lat, "Longitude", lon
+        );
+        Map<String, Object> connection = Map.of("ConnectionTypeID", "Type2");
+        Map<String, Object> stationData = new HashMap<>();
+        stationData.put("ID", 1);
+        stationData.put("AddressInfo", addressInfo);
+        stationData.put("Connections", List.of(connection));
+        List<Map<String, Object>> responseBody = List.of(stationData);
 
-    // When/Then
-    assertThatThrownBy(() -> service.populateStations(38.7223, -9.1393, 50))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Invalid Open Charge Map API key");
-  }
+        ResponseEntity<List<Map<String, Object>>> responseEntity =
+            new ResponseEntity<>(responseBody, HttpStatus.OK);
 
-  @Test
-  void whenApiAccessDenied_thenThrowsException() {
-    // Given
-    when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
-        .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenReturn(responseEntity);
+        when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    // When/Then
-    assertThatThrownBy(() -> service.populateStations(38.7223, -9.1393, 50))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Access denied");
-  }
+        List<Station> stations = service.populateStations(lat, lon, radius);
+        assertThat(stations).hasSize(1);
+        assertThat(stations.get(0).getName()).isEqualTo("Test");
+    }
 
-  private List<Map<String, Object>> createMockResponse() {
-    List<Map<String, Object>> response = new ArrayList<>();
-    Map<String, Object> station = new HashMap<>();
+    @Test
+    void populateStations_invalidLatitude_throwsException() {
+        assertThatThrownBy(() -> service.populateStations(-100, 0, 10))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
 
-    Map<String, Object> addressInfo = new HashMap<>();
-    addressInfo.put("Title", "Test Station");
-    addressInfo.put("AddressLine1", "Test Address");
-    addressInfo.put("Latitude", 38.7223);
-    addressInfo.put("Longitude", -9.1393);
+    @Test
+    void populateStations_invalidLongitude_throwsException() {
+        assertThatThrownBy(() -> service.populateStations(0, -200, 10))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
 
-    List<Map<String, Object>> connections = new ArrayList<>();
-    Map<String, Object> connection = new HashMap<>();
-    connection.put("ConnectionTypeID", "1");
-    connections.add(connection);
+    @Test
+    void populateStations_invalidRadius_throwsException() {
+        assertThatThrownBy(() -> service.populateStations(0, 0, 0))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
 
-    station.put("ID", 1);
-    station.put("AddressInfo", addressInfo);
-    station.put("Connections", connections);
+    @Test
+    void populateStations_noStationsFound_throwsException() {
+        ResponseEntity<List<Map<String, Object>>> responseEntity =
+            new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
 
-    response.add(station);
-    return response;
-  }
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenReturn(responseEntity);
 
-  private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
-    return stationsData.stream()
-        .map(
-            data -> {
-              try {
-                Map<String, Object> addressInfo = (Map<String, Object>) data.get("AddressInfo");
-                List<Map<String, Object>> connections =
-                    (List<Map<String, Object>>) data.get("Connections");
+        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No stations found");
+    }
 
-                Station station = new Station();
+    @Test
+    void populateStations_unauthorized_throwsException() {
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-                // Handle ID which could be Integer or String
-                Object id = data.get("ID");
-                if (id != null) {
-                  if (id instanceof Number) {
-                    station.setId(((Number) id).longValue());
-                  } else {
-                    station.setId(Long.parseLong(id.toString()));
-                  }
-                }
+        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Invalid Open Charge Map API key");
+    }
 
-                // Handle name which could be null
-                Object name = addressInfo.get("Title");
-                station.setName(name != null ? name.toString() : "Unknown");
+    @Test
+    void populateStations_forbidden_throwsException() {
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 
-                // Handle address which could be null
-                Object address = addressInfo != null ? addressInfo.get("AddressLine1") : null;
-                station.setAddress(address != null ? address.toString() : "Unknown");
+        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Access denied");
+    }
 
-                // Handle coordinates which could be Double
-                Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
-                Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
-                station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
-                station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
+    @Test
+    void populateStations_otherHttpError_throwsException() {
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad request"));
 
-                station.setStatus("Available");
+        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Error accessing Open Charge Map API");
+    }
 
-                // Handle connector type which could be null
-                if (connections != null && !connections.isEmpty()) {
-                  Map<String, Object> firstConnection = connections.get(0);
-                  Object connectorType = firstConnection.get("ConnectionTypeID");
-                  station.setConnectorType(
-                      connectorType != null ? connectorType.toString() : "Unknown");
-                } else {
-                  station.setConnectorType("Unknown");
-                }
+    @Test
+    void populateStations_otherException_throwsException() {
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenThrow(new RuntimeException("Some error"));
 
-                return station;
-              } catch (Exception e) {
-                throw new IllegalStateException("Error converting station data: " + e.getMessage());
-              }
-            })
-        .toList();
-  }
+        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Error fetching stations");
+    }
 }
