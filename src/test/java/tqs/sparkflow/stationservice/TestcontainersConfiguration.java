@@ -23,5 +23,6 @@ public class TestcontainersConfiguration {
     registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
     registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");
     registry.add("spring.flyway.enabled", () -> "true");
+    registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
   }
 }
