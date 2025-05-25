@@ -46,9 +46,6 @@ jobs:
         SPRING_PROFILES_ACTIVE: test
         NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         
-    - name: Print Dependency-Check Version
-      run: ./mvnw org.owasp:dependency-check-maven:check -Ddependency-check.version
-        
     - name: Upload Dependency Check Report
       uses: actions/upload-artifact@v4
       if: always()
