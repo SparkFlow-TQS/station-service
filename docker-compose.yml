@@ -4,7 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      openchargemap.api.key: ${OPENCHARGEMAP_API_KEY}
+      OPENCHARGEMAP_API_KEY: ${OPENCHARGEMAP_API_KEY}
+      OPENCHARGEMAP_API_URL: ${OPENCHARGEMAP_API_URL}
     depends_on:
       station-db:
         condition: service_healthy

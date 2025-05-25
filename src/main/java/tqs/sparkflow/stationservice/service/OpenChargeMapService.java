@@ -81,11 +81,10 @@ public class OpenChargeMapService {
     }
 
     try {
+      String url = String.format("%s?key=%s&latitude=%f&longitude=%f&distance=%d", baseUrl, apiKey, latitude, longitude, radius);
       ResponseEntity<List<Map<String, Object>>> response =
           restTemplate.exchange(
-              String.format(
-                  "%s?key=%s&latitude=%f&longitude=%f&distance=%d",
-                  baseUrl, apiKey, latitude, longitude, radius),
+              url,
               HttpMethod.GET,
               null,
               new ParameterizedTypeReference<List<Map<String, Object>>>() {});
@@ -132,7 +131,6 @@ public class OpenChargeMapService {
         true);
   }
 
-  @SuppressWarnings("unchecked")
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
     return stationsData.stream()
         .map(this::convertMapToStation)
