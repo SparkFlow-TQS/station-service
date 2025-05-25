@@ -1,5 +1,7 @@
 package tqs.sparkflow.station_service.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tqs.sparkflow.station_service.model.Station;
@@ -74,8 +76,9 @@ public class StationController {
      * @return the created station
      */
     @PostMapping
-    public ResponseEntity<Station> createStation(@RequestBody Station station) {
-        return ResponseEntity.ok(stationService.createStation(station));
+    public ResponseEntity<Station> createStation(@Valid @RequestBody Station station) {
+        Station createdStation = stationService.createStation(station);
+        return new ResponseEntity<>(createdStation, HttpStatus.CREATED);
     }
 
     /**

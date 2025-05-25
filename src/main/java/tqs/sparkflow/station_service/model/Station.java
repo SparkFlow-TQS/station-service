@@ -3,17 +3,37 @@ package tqs.sparkflow.station_service.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "stations")
 public class Station {
   @Id
   private String id;
+
+  @NotBlank(message = "Station name cannot be empty")
   private String name;
+
+  @NotBlank(message = "Station address cannot be empty")
   private String address;
-  private double latitude;
-  private double longitude;
+
+  @NotNull(message = "Latitude cannot be null")
+  @Min(value = -90, message = "Latitude must be between -90 and 90 degrees")
+  @Max(value = 90, message = "Latitude must be between -90 and 90 degrees")
+  private Double latitude;
+
+  @NotNull(message = "Longitude cannot be null")
+  @Min(value = -180, message = "Longitude must be between -180 and 180 degrees")
+  @Max(value = 180, message = "Longitude must be between -180 and 180 degrees")
+  private Double longitude;
+
+  @NotBlank(message = "Station status cannot be empty")
   private String status;
+
+  @NotBlank(message = "Connector type cannot be empty")
   private String connectorType;
 
   public Station() {
