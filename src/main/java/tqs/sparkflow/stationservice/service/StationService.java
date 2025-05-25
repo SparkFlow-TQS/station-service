@@ -152,11 +152,48 @@ public class StationService {
     if (longitude < -180 || longitude > 180) {
       throw new IllegalArgumentException("Longitude must be between -180 and 180 degrees");
     }
-    if (radius <= 0 || radius > 100) {
+    if (radius <= 0) {
+      throw new IllegalArgumentException("Radius must be greater than 0 km");
+    }
+    if (radius > 100) {
       throw new IllegalArgumentException("Radius cannot be greater than 100 km");
     }
-    // TODO: Implement actual distance calculation
-    return stationRepository.findAll();
+    
+    return stationRepository.findAll().stream()
+        .filter(station -> {
+            if (station.getLatitude() == null || station.getLongitude() == null) {
+                return false;
+            }
+            double distance = calculateDistance(
+                latitude, longitude,
+                station.getLatitude(), station.getLongitude()
+            );
+            return distance <= radius;
+        })
+        .toList();
+  }
+
+  /**
+   * Calculates the distance between two points using the Haversine formula.
+   * @param lat1 Latitude of first point
+   * @param lon1 Longitude of first point
+   * @param lat2 Latitude of second point
+   * @param lon2 Longitude of second point
+   * @return Distance in kilometers
+   */
+  private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    final int R = 6371; // Earth's radius in kilometers
+
+    double latDistance = Math.toRadians(lat2 - lat1);
+    double lonDistance = Math.toRadians(lon2 - lon1);
+    
+    double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+        + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+    
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    return R * c;
   }
 
   /**
