@@ -253,6 +253,28 @@ class StationServiceTest {
         .hasMessageContaining("Station ID cannot be null");
   }
 
+  @Test
+  void whenGettingStationByExternalId_thenReturnsStation() {
+    String externalId = "ext-123";
+    Station expectedStation = createTestStation(1L, "External Station");
+    when(stationRepository.findByExternalId(externalId)).thenReturn(Optional.of(expectedStation));
+
+    Station result = stationService.getStationByExternalId(externalId);
+
+    assertThat(result).isEqualTo(expectedStation);
+    verify(stationRepository).findByExternalId(externalId);
+  }
+
+  @Test
+  void whenGettingNonExistentStationByExternalId_thenThrowsException() {
+    String externalId = "not-found";
+    when(stationRepository.findByExternalId(externalId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> stationService.getStationByExternalId(externalId))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Station not found with external id: " + externalId);
+  }
+
   private Station createTestStation(Long id, String name) {
     Station station =
         new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
