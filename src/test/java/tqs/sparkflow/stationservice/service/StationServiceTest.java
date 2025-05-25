@@ -73,46 +73,74 @@ class StationServiceTest {
   }
 
   @Test
-  void whenGettingNearbyStations_thenReturnsStations() {
+  void whenGettingNearbyStations_thenReturnsOnlyStationsWithinRadius() {
     // Given
-    double latitude = 38.7223;
-    double longitude = -9.1393;
+    double centerLat = 38.7223;
+    double centerLon = -9.1393;
     int radius = 10;
-    List<Station> expectedStations =
-        Arrays.asList(
-            createTestStation(1L, "Nearby Station 1"), createTestStation(2L, "Nearby Station 2"));
-    when(stationRepository.findAll()).thenReturn(expectedStations);
+
+    // Create stations at different distances
+    Station nearbyStation = createTestStation(1L, "Nearby Station");
+    nearbyStation.setLatitude(38.7323); // ~1.1km away
+    nearbyStation.setLongitude(-9.1393);
+
+    Station farStation = createTestStation(2L, "Far Station");
+    farStation.setLatitude(38.8223); // ~11.1km away
+    farStation.setLongitude(-9.1393);
+
+    Station nullCoordsStation = createTestStation(3L, "Null Coords Station");
+    nullCoordsStation.setLatitude(null);
+    nullCoordsStation.setLongitude(null);
+
+    List<Station> allStations = Arrays.asList(nearbyStation, farStation, nullCoordsStation);
+    when(stationRepository.findAll()).thenReturn(allStations);
 
     // When
-    List<Station> result = stationService.getNearbyStations(latitude, longitude, radius);
+    List<Station> result = stationService.getNearbyStations(centerLat, centerLon, radius);
 
     // Then
-    assertThat(result).isEqualTo(expectedStations);
+    assertThat(result)
+        .hasSize(1)
+        .containsOnly(nearbyStation)
+        .doesNotContain(farStation, nullCoordsStation);
     verify(stationRepository).findAll();
   }
 
   @Test
-  void whenGettingNearbyStationsWithInvalidCoordinates_thenThrowsException() {
+  void whenGettingNearbyStationsWithZeroRadius_thenThrowsException() {
     // Given
-    double invalidLatitude = 91.0;
-    double longitude = -9.1393;
-    int radius = 10;
+    double centerLat = 38.7223;
+    double centerLon = -9.1393;
+    int radius = 0;
 
     // When/Then
-    assertThatThrownBy(() -> stationService.getNearbyStations(invalidLatitude, longitude, radius))
+    assertThatThrownBy(() -> stationService.getNearbyStations(centerLat, centerLon, radius))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Latitude must be between -90 and 90 degrees");
+        .hasMessageContaining("Radius must be greater than 0 km");
   }
 
   @Test
-  void whenGettingNearbyStationsWithInvalidRadius_thenThrowsException() {
+  void whenGettingNearbyStationsWithNegativeRadius_thenThrowsException() {
     // Given
-    double latitude = 38.7223;
-    double longitude = -9.1393;
-    int invalidRadius = 101;
+    double centerLat = 38.7223;
+    double centerLon = -9.1393;
+    int radius = -1;
 
     // When/Then
-    assertThatThrownBy(() -> stationService.getNearbyStations(latitude, longitude, invalidRadius))
+    assertThatThrownBy(() -> stationService.getNearbyStations(centerLat, centerLon, radius))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Radius must be greater than 0 km");
+  }
+
+  @Test
+  void whenGettingNearbyStationsWithTooLargeRadius_thenThrowsException() {
+    // Given
+    double centerLat = 38.7223;
+    double centerLon = -9.1393;
+    int radius = 101;
+
+    // When/Then
+    assertThatThrownBy(() -> stationService.getNearbyStations(centerLat, centerLon, radius))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Radius cannot be greater than 100 km");
   }
