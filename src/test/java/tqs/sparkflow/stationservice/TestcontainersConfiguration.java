@@ -16,7 +16,8 @@ public class TestcontainersConfiguration {
   static final MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
       .withDatabaseName("testdb")
       .withUsername("test")
-      .withPassword("test");
+      .withPassword("test")
+      .withInitScript("init.sql");
 
   static {
     mysql.start();
@@ -31,5 +32,6 @@ public class TestcontainersConfiguration {
     registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");
     registry.add("spring.flyway.enabled", () -> "false");
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+    registry.add("spring.jpa.properties.hibernate.jdbc.time_zone", () -> "UTC");
   }
 }
