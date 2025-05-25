@@ -20,5 +20,8 @@ public class TestcontainersConfiguration {
     registry.add("spring.datasource.url", mysql::getJdbcUrl);
     registry.add("spring.datasource.username", mysql::getUsername);
     registry.add("spring.datasource.password", mysql::getPassword);
+    registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
+    registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");
+    registry.add("spring.flyway.enabled", () -> "true");
   }
 }
