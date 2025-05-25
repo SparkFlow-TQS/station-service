@@ -38,7 +38,13 @@ jobs:
         rm -rf ~/.dependency-check
         rm -rf ~/.m2/repository/org/owasp/dependency-check-data
         
-        # Run dependency check with debug output
+        # First run in offline mode to ensure we have a local database
+        ./mvnw clean verify org.owasp:dependency-check-maven:check \
+          -Ddependency-check.failBuildOnCVSS=7 \
+          -Ddependency-check.offline=true \
+          -Ddependency-check.data.directory=~/.dependency-check
+        
+        # Then try online update with specific parameters
         ./mvnw clean verify org.owasp:dependency-check-maven:check \
           -Ddependency-check.failBuildOnCVSS=7 \
           -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
@@ -49,6 +55,9 @@ jobs:
           -Ddependency-check.nvd.retryDelay=10000 \
           -Ddependency-check.nvd.connectionTimeout=30000 \
           -Ddependency-check.nvd.readTimeout=30000 \
+          -Ddependency-check.nvd.startYear=2020 \
+          -Ddependency-check.nvd.batchSize=100 \
+          -Ddependency-check.data.directory=~/.dependency-check \
           -X
       env:
         SPRING_PROFILES_ACTIVE: test
