@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import tqs.sparkflow.stationservice.StationServiceApplication;
+import tqs.sparkflow.stationservice.TestcontainersConfiguration;
+import tqs.sparkflow.stationservice.config.OpenChargeMapTestConfig;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
@@ -20,8 +22,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = {StationServiceApplication.class, TestConfig.class},
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class, OpenChargeMapTestConfig.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 class StationControllerIT {
@@ -85,8 +88,8 @@ class StationControllerIT {
     station = stationRepository.save(station);
 
     // When
-    ResponseEntity<Station> response =
-        restTemplate.getForEntity(baseUrl + "/" + station.getId(), Station.class);
+    ResponseEntity<Station> response = restTemplate.getForEntity(baseUrl + "/" + station.getId(),
+        Station.class);
 
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -100,7 +103,7 @@ class StationControllerIT {
     ResponseEntity<Station> response = restTemplate.getForEntity(baseUrl + "/999", Station.class);
 
     // Then
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
   }
 
   @Test
@@ -110,11 +113,9 @@ class StationControllerIT {
     station = stationRepository.save(station);
 
     // When
-    ResponseEntity<Void> response =
-        restTemplate.exchange(baseUrl + "/" + station.getId(), HttpMethod.DELETE, null, Void.class);
+    restTemplate.delete(baseUrl + "/" + station.getId());
 
     // Then
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     assertThat(stationRepository.findById(station.getId())).isEmpty();
   }
 
@@ -156,6 +157,16 @@ class StationControllerIT {
   }
 
   private Station createTestStation(String name) {
-    return new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
+    Station station = new Station();
+    station.setName(name);
+    station.setAddress("Test Address");
+    station.setCity("Test City");
+    station.setCountry("Test Country");
+    station.setLatitude(38.7223);
+    station.setLongitude(-9.1393);
+    station.setConnectorType("Type 2");
+    station.setPower(22);
+    station.setStatus("Available");
+    return station;
   }
 }

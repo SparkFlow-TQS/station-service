@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,22 +24,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
 import tqs.sparkflow.stationservice.StationServiceApplication;
+import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @SpringBootTest(
-    classes = {StationServiceApplication.class, TestConfig.class},
+    classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 class OpenChargeMapServiceIT {
 
-  @Autowired private OpenChargeMapService openChargeMapService;
+  @Autowired
+  private OpenChargeMapService openChargeMapService;
 
-  @Autowired private StationRepository stationRepository;
+  @Autowired
+  private StationRepository stationRepository;
 
-  @MockBean private RestTemplate restTemplate;
+  @MockBean
+  private RestTemplate restTemplate;
 
   @BeforeEach
   void setUp() {
@@ -51,9 +57,8 @@ class OpenChargeMapServiceIT {
     List<Map<String, Object>> mockResponse = createMockResponse();
     ResponseEntity<List<Map<String, Object>>> responseEntity =
         new ResponseEntity<>(mockResponse, HttpStatus.OK);
-    when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
-        .thenReturn(responseEntity);
+    when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
+        any(ParameterizedTypeReference.class))).thenReturn(responseEntity);
 
     // When
     List<Station> result = openChargeMapService.populateStations(38.7223, -9.1393, 10);
@@ -72,10 +77,9 @@ class OpenChargeMapServiceIT {
     int radius = 10;
 
     // When/Then
-    assertThatThrownBy(
-            () -> openChargeMapService.populateStations(invalidLatitude, longitude, radius))
+    assertThatThrownBy(() -> openChargeMapService.populateStations(invalidLatitude, longitude, radius))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Latitude must be between -90 and 90 degrees");
+        .hasMessage("Latitude must be between -90 and 90 degrees");
   }
 
   @Test
@@ -86,46 +90,47 @@ class OpenChargeMapServiceIT {
     int invalidRadius = -1;
 
     // When/Then
-    assertThatThrownBy(
-            () -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
+    assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Radius must be positive");
+        .hasMessage("Radius must be positive");
   }
 
   @Test
   void whenApiKeyInvalid_thenThrowsException() {
     // Given
-    when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), eq(null), any(ParameterizedTypeReference.class)))
-        .thenThrow(
-            new HttpClientErrorException(
-                HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null));
+    when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
+        any(ParameterizedTypeReference.class)))
+            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
     // When/Then
     assertThatThrownBy(() -> openChargeMapService.populateStations(38.7223, -9.1393, 10))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Invalid Open Charge Map API key");
+        .hasMessage("Invalid Open Charge Map API key");
   }
 
   private List<Map<String, Object>> createMockResponse() {
     List<Map<String, Object>> response = new ArrayList<>();
     Map<String, Object> station = new HashMap<>();
-
+    
     Map<String, Object> addressInfo = new HashMap<>();
     addressInfo.put("Title", "Test Station");
     addressInfo.put("AddressLine1", "Test Address");
+    addressInfo.put("Town", "Test Town");
+    addressInfo.put("StateOrProvince", "Test State");
+    addressInfo.put("Postcode", "12345");
+    addressInfo.put("Country", Map.of("Title", "Test Country"));
     addressInfo.put("Latitude", 38.7223);
     addressInfo.put("Longitude", -9.1393);
 
-    List<Map<String, Object>> connections = new ArrayList<>();
     Map<String, Object> connection = new HashMap<>();
-    connection.put("ConnectionTypeID", "1");
-    connections.add(connection);
+    connection.put("ConnectionType", Map.of("Title", "Type 2"));
+    connection.put("PowerKW", 22.0);
+    connection.put("StatusType", Map.of("IsOperational", true));
 
     station.put("ID", 1);
     station.put("AddressInfo", addressInfo);
-    station.put("Connections", connections);
-
+    station.put("Connections", List.of(connection));
+    
     response.add(station);
     return response;
   }

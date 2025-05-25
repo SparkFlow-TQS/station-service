@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.client.RestTemplate;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -22,6 +23,12 @@ public class TestConfig {
   @Primary
   public TestRestTemplate testRestTemplate() {
     return new TestRestTemplate();
+  }
+
+  @Bean
+  @Primary
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 
   @Bean
