@@ -201,12 +201,12 @@ class StationServiceTest {
     void whenCreatingStationWithInvalidCoordinates_thenThrowsException() {
         // Given
         Station station = createTestStation("1", "Test Station");
-        station.setLatitude("invalid");
+        station.setLatitude(91.0); // Invalid latitude
 
         // When/Then
         assertThatThrownBy(() -> stationService.createStation(station))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Invalid coordinate format");
+            .hasMessageContaining("Latitude must be between -90 and 90 degrees");
     }
 
     @Test
@@ -267,8 +267,8 @@ class StationServiceTest {
         station.setId(id);
         station.setName(name);
         station.setAddress("Test Address");
-        station.setLatitude("38.7223");
-        station.setLongitude("-9.1393");
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
         station.setStatus("Available");
         station.setConnectorType("Type2");
         return station;

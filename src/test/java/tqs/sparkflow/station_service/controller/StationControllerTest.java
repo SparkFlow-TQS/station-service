@@ -149,8 +149,8 @@ class StationControllerTest {
         station.setId(id);
         station.setName(name);
         station.setAddress("Test Address");
-        station.setLatitude("38.7223");
-        station.setLongitude("-9.1393");
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
         station.setStatus("Available");
         station.setConnectorType("Type2");
         return station;
