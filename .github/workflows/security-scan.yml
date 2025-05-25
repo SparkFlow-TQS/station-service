@@ -34,14 +34,31 @@ jobs:
     
     - name: Build and Run Dependency Check
       run: |
+        # Verify NVD API key is set
+        if [ -z "${{ secrets.NVD_API_KEY }}" ]; then
+          echo "Error: NVD_API_KEY is not set in GitHub Secrets"
+          exit 1
+        fi
+        
+        # Test NVD API key
+        echo "Testing NVD API key..."
+        RESPONSE=$(curl -s -w "\n%{http_code}" -H "apiKey: ${{ secrets.NVD_API_KEY }}" "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1")
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        BODY=$(echo "$RESPONSE" | sed '$d')
+        
+        if [ "$HTTP_CODE" != "200" ]; then
+          echo "Error: NVD API test failed with status $HTTP_CODE"
+          echo "Response: $BODY"
+          exit 1
+        fi
+        
+        echo "NVD API key test successful"
+        
+        # Clean cache
         rm -rf ~/.dependency-check
         rm -rf ~/.m2/repository/org/owasp/dependency-check-data
         
-        # Test NVD API key first
-        echo "Testing NVD API key..."
-        curl -s -H "apiKey: ${{ secrets.NVD_API_KEY }}" "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1" | jq .
-        
-        # Run dependency check with debug output and increased delay
+        # Run dependency check with debug output
         ./mvnw clean verify org.owasp:dependency-check-maven:check \
           -Ddependency-check.failBuildOnCVSS=7 \
           -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
