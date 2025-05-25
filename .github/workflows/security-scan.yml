@@ -40,15 +40,19 @@ jobs:
           exit 1
         fi
         
-        # Test NVD API key
+        # Test NVD API key with proper header case
         echo "Testing NVD API key..."
-        RESPONSE=$(curl -s -w "\n%{http_code}" -H "apiKey: ${{ secrets.NVD_API_KEY }}" "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1")
+        echo "API Key length: ${#NVD_API_KEY}"
+        RESPONSE=$(curl -v -s -w "\n%{http_code}" \
+          -H "apiKey: ${{ secrets.NVD_API_KEY }}" \
+          "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1")
         HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
         BODY=$(echo "$RESPONSE" | sed '$d')
         
         if [ "$HTTP_CODE" != "200" ]; then
           echo "Error: NVD API test failed with status $HTTP_CODE"
           echo "Response: $BODY"
+          echo "Please verify your NVD API key at https://nvd.nist.gov/developers/request-an-api-key"
           exit 1
         fi
         
