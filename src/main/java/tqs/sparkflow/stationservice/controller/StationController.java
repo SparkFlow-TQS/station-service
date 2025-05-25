@@ -1,7 +1,6 @@
 package tqs.sparkflow.stationservice.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +14,11 @@ import tqs.sparkflow.stationservice.service.StationService;
 @RequestMapping("/stations")
 public class StationController {
 
-  @Autowired
-  private StationService stationService;
+  private final StationService stationService;
+
+  public StationController(StationService stationService) {
+    this.stationService = stationService;
+  }
 
   /**
    * Gets all stations.

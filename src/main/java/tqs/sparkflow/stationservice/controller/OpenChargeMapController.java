@@ -1,6 +1,5 @@
 package tqs.sparkflow.stationservice.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +12,11 @@ import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 @RequestMapping("/api/openchargemap")
 public class OpenChargeMapController {
 
-  @Autowired private OpenChargeMapService openChargeMapService;
+  private final OpenChargeMapService openChargeMapService;
+
+  public OpenChargeMapController(OpenChargeMapService openChargeMapService) {
+    this.openChargeMapService = openChargeMapService;
+  }
 
   /**
    * Populates stations from OpenChargeMap API.

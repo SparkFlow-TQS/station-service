@@ -21,6 +21,7 @@ import tqs.sparkflow.stationservice.repository.StationRepository;
 @Service
 public class OpenChargeMapService {
 
+  private static final String UNKNOWN_VALUE = "Unknown";
   private final RestTemplate restTemplate;
   private final StationRepository stationRepository;
   private final String apiKey;
@@ -154,11 +155,11 @@ public class OpenChargeMapService {
 
                 // Handle name which could be null
                 Object name = addressInfo.get("Title");
-                station.setName(name != null ? name.toString() : "Unknown");
+                station.setName(name != null ? name.toString() : UNKNOWN_VALUE);
 
                 // Handle address which could be null
                 Object address = addressInfo != null ? addressInfo.get("AddressLine1") : null;
-                station.setAddress(address != null ? address.toString() : "Unknown");
+                station.setAddress(address != null ? address.toString() : UNKNOWN_VALUE);
 
                 // Handle coordinates which could be Double
                 Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
@@ -173,9 +174,9 @@ public class OpenChargeMapService {
                   Map<String, Object> firstConnection = connections.get(0);
                   Object connectorType = firstConnection.get("ConnectionTypeID");
                   station.setConnectorType(
-                      connectorType != null ? connectorType.toString() : "Unknown");
+                      connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
                 } else {
-                  station.setConnectorType("Unknown");
+                  station.setConnectorType(UNKNOWN_VALUE);
                 }
 
                 return station;
