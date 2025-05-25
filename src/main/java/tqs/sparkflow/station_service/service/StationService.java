@@ -5,6 +5,7 @@ import tqs.sparkflow.station_service.model.Station;
 import tqs.sparkflow.station_service.repository.StationRepository;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class StationService {
@@ -28,9 +29,13 @@ public class StationService {
     public List<Station> getNearbyStations(double latitude, double longitude, int radius) {
         validateCoordinates(latitude, longitude);
         validateRadius(radius);
-        // TODO: Implement nearby stations search using spatial queries
-        // For now, return all stations
-        return stationRepository.findAll();
+        return stationRepository.findAll().stream()
+                .filter(station -> {
+                    double lat = station.getLatitude();
+                    double lon = station.getLongitude();
+                    return calculateDistance(latitude, longitude, lat, lon) <= radius;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<Station> getStationsByConnectorType(String connectorType) {
@@ -55,6 +60,18 @@ public class StationService {
         stationRepository.deleteById(id);
     }
 
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Earth's radius in kilometers
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
     private void validateCoordinates(double latitude, double longitude) {
         if (latitude < -90 || latitude > 90) {
             throw new IllegalArgumentException("Latitude must be between -90 and 90 degrees");
@@ -77,13 +94,7 @@ public class StationService {
         if (station.getName() == null || station.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Station name cannot be empty");
         }
-        try {
-            double lat = Double.parseDouble(station.getLatitude());
-            double lon = Double.parseDouble(station.getLongitude());
-            validateCoordinates(lat, lon);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid coordinate format");
-        }
+        validateCoordinates(station.getLatitude(), station.getLongitude());
         if (station.getConnectorType() == null || station.getConnectorType().trim().isEmpty()) {
             throw new IllegalArgumentException("Connector type cannot be empty");
         }

@@ -101,8 +101,8 @@ public class OpenChargeMapService {
                     // Handle coordinates which could be Double
                     Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
                     Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
-                    station.setLatitude(lat != null ? lat.toString() : "0.0");
-                    station.setLongitude(lon != null ? lon.toString() : "0.0");
+                    station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
+                    station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
                     
                     station.setStatus("Available");
                     
