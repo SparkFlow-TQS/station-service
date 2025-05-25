@@ -163,15 +163,38 @@ class StationControllerIT {
         assertThat(response.getBody().get(0).getConnectorType()).isEqualTo("Type2");
     }
 
+    @Test
+    void whenCreateStation_thenReturnCreatedStation() {
+        // Given
+        Station station = new Station();
+        station.setId("1");
+        station.setName("Test Station");
+        station.setAddress("Test Address");
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
+        station.setStatus("Available");
+        station.setConnectorType("Type 2");
+
+        // When
+        ResponseEntity<Station> response = restTemplate.postForEntity("/api/stations", station, Station.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getName()).isEqualTo(station.getName());
+        assertThat(response.getBody().getLatitude()).isEqualTo(station.getLatitude());
+        assertThat(response.getBody().getLongitude()).isEqualTo(station.getLongitude());
+    }
+
     private Station createTestStation(String id, String name) {
         Station station = new Station();
         station.setId(id);
         station.setName(name);
         station.setAddress("Test Address");
-        station.setLatitude("38.7223");
-        station.setLongitude("-9.1393");
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
         station.setStatus("Available");
-        station.setConnectorType("Type2");
+        station.setConnectorType("Type 2");
         return station;
     }
 } 

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import tqs.sparkflow.station_service.model.Station;
 import tqs.sparkflow.station_service.service.StationService;
@@ -63,15 +64,16 @@ class StationControllerTest {
     }
 
     @Test
-    void whenGettingNearbyStations_thenReturnsListOfStations() {
+    void whenGetNearbyStations_thenReturnStations() {
         // Given
         double latitude = 38.7223;
         double longitude = -9.1393;
         int radius = 10;
         List<Station> expectedStations = Arrays.asList(
-            createTestStation("1", "Nearby Station 1"),
-            createTestStation("2", "Nearby Station 2")
+            new Station("1", "Station 1", "Address 1", latitude, longitude, "Available", "Type 2"),
+            new Station("2", "Station 2", "Address 2", latitude + 0.01, longitude + 0.01, "Available", "Type 2")
         );
+
         when(stationService.getNearbyStations(latitude, longitude, radius))
             .thenReturn(expectedStations);
 
@@ -79,7 +81,7 @@ class StationControllerTest {
         ResponseEntity<List<Station>> response = stationController.getNearbyStations(latitude, longitude, radius);
 
         // Then
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(expectedStations);
         verify(stationService).getNearbyStations(latitude, longitude, radius);
     }
@@ -105,18 +107,26 @@ class StationControllerTest {
     }
 
     @Test
-    void whenCreatingStation_thenReturnsCreatedStation() {
+    void whenCreateStation_thenReturnCreatedStation() {
         // Given
-        Station stationToCreate = createTestStation("1", "New Station");
-        when(stationService.createStation(stationToCreate)).thenReturn(stationToCreate);
+        Station station = new Station();
+        station.setId("1");
+        station.setName("Test Station");
+        station.setAddress("Test Address");
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
+        station.setStatus("Available");
+        station.setConnectorType("Type 2");
+
+        when(stationService.createStation(any(Station.class))).thenReturn(station);
 
         // When
-        ResponseEntity<Station> response = stationController.createStation(stationToCreate);
+        ResponseEntity<Station> response = stationController.createStation(station);
 
         // Then
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody()).isEqualTo(stationToCreate);
-        verify(stationService).createStation(stationToCreate);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo(station);
+        verify(stationService).createStation(station);
     }
 
     @Test

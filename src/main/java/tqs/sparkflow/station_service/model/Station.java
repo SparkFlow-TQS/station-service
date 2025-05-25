@@ -11,15 +11,15 @@ public class Station {
   private String id;
   private String name;
   private String address;
-  private String latitude;
-  private String longitude;
+  private double latitude;
+  private double longitude;
   private String status;
   private String connectorType;
 
   public Station() {
   }
 
-  public Station(String id, String name, String address, String latitude, String longitude, String status, String connectorType) {
+  public Station(String id, String name, String address, double latitude, double longitude, String status, String connectorType) {
     this.id = id;
     this.name = name;
     this.address = address;
@@ -41,11 +41,11 @@ public class Station {
     return address;
   }
 
-  public String getLatitude() {
+  public double getLatitude() {
     return latitude;
   }
 
-  public String getLongitude() {
+  public double getLongitude() {
     return longitude;
   }
 
@@ -69,11 +69,11 @@ public class Station {
     this.address = address;
   }
 
-  public void setLatitude(String latitude) {
+  public void setLatitude(double latitude) {
     this.latitude = latitude;
   }
 
-  public void setLongitude(String longitude) {
+  public void setLongitude(double longitude) {
     this.longitude = longitude;
   }
 
