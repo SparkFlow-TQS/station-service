@@ -32,28 +32,30 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     
-    - name: Start PostgreSQL Container
+    - name: Start MySQL Container
       run: |
         docker run -d \
-          --name postgres \
-          -e POSTGRES_DB=test \
-          -e POSTGRES_USER=test \
-          -e POSTGRES_PASSWORD=test \
-          -p 5432:5432 \
-          postgres:16.9
-        sleep 10  # Wait for PostgreSQL to start
+          --name mysql \
+          -e MYSQL_DATABASE=test \
+          -e MYSQL_USER=test \
+          -e MYSQL_PASSWORD=test \
+          -e MYSQL_ROOT_PASSWORD=test \
+          -p 3306:3306 \
+          mysql:8.0
+        sleep 10  # Wait for MySQL to start
         
     - name: Start Spring Boot Application
       run: |
         ./mvnw clean package -DskipTests
         nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar \
           --spring.profiles.active=test \
-          --spring.datasource.url=jdbc:postgresql://localhost:5432/test \
+          --spring.datasource.url=jdbc:mysql://localhost:3306/test \
           --spring.datasource.username=test \
-          --spring.datasource.password=test &
+          --spring.datasource.password=test \
+          --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver &
         # Wait for application to be ready
         for i in {1..30}; do
-          if curl -s http://localhost:8080/actuator/health > /dev/null; then
+          if curl -s http://localhost:8082/actuator/health > /dev/null; then
             echo "Application is ready!"
             break
           fi
@@ -91,5 +93,5 @@ jobs:
       run: |
         pkill -f "spring-boot:run" || true
         pkill -f "java.*station-service" || true
-        docker stop postgres || true
-        docker rm postgres || true 
+        docker stop mysql || true
+        docker rm mysql || true 
