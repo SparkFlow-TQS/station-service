@@ -10,8 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.RestTemplate;
 import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 import tqs.sparkflow.stationservice.service.StationService;
+import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -30,6 +32,11 @@ public class CucumberTestConfig {
   }
 
   @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
+
+  @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
     return http.build();
@@ -43,7 +50,13 @@ public class CucumberTestConfig {
 
   @Bean
   @Primary
-  public OpenChargeMapService openChargeMapService() {
-    return new OpenChargeMapService();
+  public OpenChargeMapService openChargeMapService(
+      RestTemplate restTemplate,
+      StationRepository stationRepository) {
+    return new OpenChargeMapService(
+        restTemplate,
+        stationRepository,
+        "test-api-key",
+        "https://api.openchargemap.io/v3/poi");
   }
 }
