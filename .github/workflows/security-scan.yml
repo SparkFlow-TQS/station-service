@@ -34,50 +34,15 @@ jobs:
     
     - name: Build and Run Dependency Check
       run: |
-        # Verify NVD API key is set
-        if [ -z "${{ secrets.NVD_API_KEY }}" ]; then
-          echo "Error: NVD_API_KEY is not set in GitHub Secrets"
-          exit 1
-        fi
-        
-        # Test NVD API key with proper header case
-        echo "Testing NVD API key..."
-        echo "API Key length: ${#NVD_API_KEY}"
-        RESPONSE=$(curl -v -s -w "\n%{http_code}" \
-          -H "apiKey: ${{ secrets.NVD_API_KEY }}" \
-          "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1")
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-        BODY=$(echo "$RESPONSE" | sed '$d')
-        
-        if [ "$HTTP_CODE" != "200" ]; then
-          echo "Error: NVD API test failed with status $HTTP_CODE"
-          echo "Response: $BODY"
-          echo "Please verify your NVD API key at https://nvd.nist.gov/developers/request-an-api-key"
-          exit 1
-        fi
-        
-        echo "NVD API key test successful"
-        
-        # Clean cache
-        rm -rf ~/.dependency-check
-        rm -rf ~/.m2/repository/org/owasp/dependency-check-data
-        
-        # Run dependency check with debug output
         ./mvnw clean verify org.owasp:dependency-check-maven:check \
           -Ddependency-check.failBuildOnCVSS=7 \
           -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
           -Ddependency-check.nvd.apiUrl=https://services.nvd.nist.gov/rest/json/cves/2.0 \
-          -Ddependency-check.nvd.apiDelay=10000 \
-          -Ddependency-check.nvd.validForHours=24 \
-          -Ddependency-check.nvd.retryCount=3 \
-          -Ddependency-check.nvd.retryDelay=10000 \
-          -Ddependency-check.nvd.connectionTimeout=30000 \
-          -Ddependency-check.nvd.readTimeout=30000 \
-          -X
+          -Ddependency-check.nvd.apiDelay=6000 \
+          -Ddependency-check.nvd.validForHours=24
       env:
         SPRING_PROFILES_ACTIVE: test
         NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.log.org.owasp.dependencycheck=DEBUG"
         
     - name: Upload Dependency Check Report
       uses: actions/upload-artifact@v4
@@ -124,7 +89,7 @@ jobs:
         docker pull ghcr.io/zaproxy/zaproxy:stable
         # Create directory with proper permissions
         mkdir -p zap-output
-        chmod 755 zap-output
+        chmod 777 zap-output
         docker run -v $(pwd)/zap-output:/zap/wrk/:rw \
           --network host \
           -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
@@ -143,9 +108,7 @@ jobs:
     - name: Stop Spring Boot Application
       if: always()
       run: |
-        if [ -f app.pid ]; then
-          kill $(cat app.pid) || true
-          rm -f app.pid
-        fi
+        pkill -f "spring-boot:run" || true
+        pkill -f "java.*station-service" || true
         docker stop postgres || true
-        docker rm postgres || true
+        docker rm postgres || true 
