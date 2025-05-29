@@ -73,6 +73,7 @@ public class TestConfig {
         .authorizeHttpRequests(auth -> 
             auth.requestMatchers("/stations/**", "/api/openchargemap/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/bookings/**").permitAll()
                 .anyRequest().authenticated())
         .httpBasic(httpBasic -> {});
     return http.build();
