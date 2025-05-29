@@ -11,9 +11,16 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userId;
+    @Column(name = "station_id", nullable = false)
     private Long stationId;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
+
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
     @ElementCollection
@@ -22,14 +29,8 @@ public class Booking {
     private Set<Integer> recurringDays;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private BookingStatus status;
-
-    public enum BookingStatus {
-        ACTIVE,
-        CANCELLED,
-        COMPLETED,
-        REROUTED
-    }
 
     public Booking() {}
 
@@ -41,20 +42,20 @@ public class Booking {
         this.id = id;
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     public Long getStationId() {
         return stationId;
     }
 
     public void setStationId(Long stationId) {
         this.stationId = stationId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public LocalDateTime getStartTime() {
