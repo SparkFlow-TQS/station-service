@@ -3,9 +3,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
     environment:
       OPENCHARGEMAP_API_KEY: ${OPENCHARGEMAP_API_KEY}
       OPENCHARGEMAP_API_URL: ${OPENCHARGEMAP_API_URL}
+      SPRING_DATASOURCE_URL: jdbc:mysql://station-db:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       station-db:
         condition: service_healthy
@@ -29,7 +34,7 @@ services:
 
 networks:
   sparkflow-network:
-    name: sparkflow-network
+    external: true
 
 volumes:
   station-mysql-data: 
