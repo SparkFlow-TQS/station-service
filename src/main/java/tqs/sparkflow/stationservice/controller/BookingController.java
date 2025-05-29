@@ -1,127 +1,188 @@
 package tqs.sparkflow.stationservice.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import tqs.sparkflow.stationservice.model.Booking;
-import tqs.sparkflow.stationservice.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import tqs.sparkflow.stationservice.model.Booking;
+import tqs.sparkflow.stationservice.service.BookingService;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/bookings")
-@Tag(name = "Booking", description = "The Booking API")
+@Tag(name = "Booking", description = "Booking management APIs")
 public class BookingController {
 
     private final BookingService bookingService;
 
+    @Autowired
     public BookingController(BookingService bookingService) {
         this.bookingService = bookingService;
     }
 
-    private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        return Long.parseLong(authentication.getName());
-    }
-
+    @PostMapping
     @Operation(summary = "Create a new booking", description = "Creates a new booking for a charging station")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Booking successfully created",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid booking data provided"),
-        @ApiResponse(responseCode = "403", description = "User not authorized to create booking")
+        @ApiResponse(responseCode = "201", description = "Booking created successfully",
+            content = @Content(schema = @Schema(implementation = Booking.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input or station not operational"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "404", description = "User or station not found")
     })
-    @PostMapping
     public ResponseEntity<Booking> createBooking(
-        @Parameter(description = "Booking object to create", required = true) 
-        @RequestBody Booking booking) {
-        Long userId = getCurrentUserId();
-        booking.setUserId(userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBooking(booking));
+            @Parameter(description = "Booking details", required = true)
+            @RequestBody Booking booking) {
+        try {
+            Booking createdBooking = bookingService.createBooking(booking);
+            return new ResponseEntity<>(createdBooking, HttpStatus.CREATED);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @Operation(summary = "Get booking by ID", description = "Retrieves a specific booking by its ID")
+    @PostMapping("/recurring")
+    @Operation(summary = "Create a recurring booking", description = "Creates a recurring booking for a charging station")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved the booking",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "404", description = "Booking not found"),
-        @ApiResponse(responseCode = "403", description = "User not authorized to view booking")
+        @ApiResponse(responseCode = "201", description = "Recurring booking created successfully",
+            content = @Content(schema = @Schema(implementation = Booking.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input or station not operational"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "404", description = "User or station not found")
     })
+    public ResponseEntity<Booking> createRecurringBooking(
+            @Parameter(description = "User ID", required = true)
+            @RequestParam Long userId,
+            @Parameter(description = "Station ID", required = true)
+            @RequestParam Long stationId,
+            @Parameter(description = "Start time (ISO-8601 format)", required = true)
+            @RequestParam LocalDateTime startTime,
+            @Parameter(description = "End time (ISO-8601 format)", required = true)
+            @RequestParam LocalDateTime endTime,
+            @Parameter(description = "Set of days for recurring booking (0-6, where 0 is Sunday)", required = true)
+            @RequestParam Set<Integer> recurringDays) {
+        try {
+            Booking booking = bookingService.createRecurringBooking(userId, stationId, startTime, endTime, recurringDays);
+            return new ResponseEntity<>(booking, HttpStatus.CREATED);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Booking> getBookingById(
-        @Parameter(description = "ID of the booking to retrieve", required = true) 
-        @PathVariable Long id) {
-        Optional<Booking> booking = bookingService.getBookingById(id);
-        return booking.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Operation(summary = "Get all bookings", description = "Retrieves a list of all bookings the user has permission to view")
+    @Operation(summary = "Get booking by ID", description = "Retrieves a booking by its ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved all bookings",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Booking.class)))
+        @ApiResponse(responseCode = "200", description = "Booking found",
+            content = @Content(schema = @Schema(implementation = Booking.class))),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "403", description = "User not authorized to access this booking"),
+        @ApiResponse(responseCode = "404", description = "Booking not found")
     })
-    @GetMapping
-    public ResponseEntity<List<Booking>> getAllBookings() {
-        Long userId = getCurrentUserId();
-        return ResponseEntity.ok(bookingService.getAllBookings(userId));
+    public ResponseEntity<Booking> getBookingById(
+            @Parameter(description = "Booking ID", required = true)
+            @PathVariable Long id) {
+        return bookingService.getBookingById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping
+    @Operation(summary = "Get all bookings", description = "Retrieves all bookings for a user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Bookings found",
+            content = @Content(schema = @Schema(implementation = Booking.class))),
+        @ApiResponse(responseCode = "204", description = "No bookings found"),
+        @ApiResponse(responseCode = "400", description = "Invalid user ID"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<List<Booking>> getAllBookings(
+            @Parameter(description = "User ID", required = true)
+            @RequestParam Long userId) {
+        try {
+            List<Booking> bookings = bookingService.getAllBookings(userId);
+            if (bookings.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return ResponseEntity.ok(bookings);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/{id}/cancel")
     @Operation(summary = "Cancel a booking", description = "Cancels an existing booking")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Booking successfully cancelled",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "404", description = "Booking not found"),
-        @ApiResponse(responseCode = "403", description = "User not authorized to cancel booking")
+        @ApiResponse(responseCode = "204", description = "Booking cancelled successfully"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "403", description = "User not authorized to cancel this booking"),
+        @ApiResponse(responseCode = "404", description = "Booking not found")
     })
-    @PutMapping("/{id}/cancel")
-    public ResponseEntity<Booking> cancelBooking(
-        @Parameter(description = "ID of the booking to cancel", required = true) 
-        @PathVariable Long id) {
-        return ResponseEntity.ok(bookingService.cancelBooking(id));
+    public ResponseEntity<Void> cancelBooking(
+            @Parameter(description = "Booking ID", required = true)
+            @PathVariable Long id) {
+        try {
+            bookingService.cancelBooking(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
+    @GetMapping("/station/{stationId}")
     @Operation(summary = "Get bookings by station ID", description = "Retrieves all bookings for a specific station")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings for the station",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Booking.class)))
+        @ApiResponse(responseCode = "200", description = "Bookings found",
+            content = @Content(schema = @Schema(implementation = Booking.class))),
+        @ApiResponse(responseCode = "204", description = "No bookings found for this station"),
+        @ApiResponse(responseCode = "400", description = "Invalid station ID"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "404", description = "Station not found")
     })
-    @GetMapping("/station/{stationId}")
     public ResponseEntity<List<Booking>> getBookingsByStationId(
-        @Parameter(description = "ID of the station", required = true) 
-        @PathVariable Long stationId) {
-        return ResponseEntity.ok(bookingService.getBookingsByStationId(stationId));
+            @Parameter(description = "Station ID", required = true)
+            @PathVariable Long stationId) {
+        try {
+            List<Booking> bookings = bookingService.getBookingsByStationId(stationId);
+            if (bookings.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return ResponseEntity.ok(bookings);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
+    @GetMapping("/user/{userId}")
     @Operation(summary = "Get bookings by user ID", description = "Retrieves all bookings for a specific user")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings for the user",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "403", description = "User not authorized to view these bookings")
+        @ApiResponse(responseCode = "200", description = "Bookings found",
+            content = @Content(schema = @Schema(implementation = Booking.class))),
+        @ApiResponse(responseCode = "204", description = "No bookings found for this user"),
+        @ApiResponse(responseCode = "400", description = "Invalid user ID"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated"),
+        @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @GetMapping("/user/{userId}")
     public ResponseEntity<List<Booking>> getBookingsByUserId(
-        @Parameter(description = "ID of the user", required = true) 
-        @PathVariable Long userId) {
-        return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
+            @Parameter(description = "User ID", required = true)
+            @PathVariable Long userId) {
+        try {
+            List<Booking> bookings = bookingService.getBookingsByUserId(userId);
+            if (bookings.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return ResponseEntity.ok(bookings);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
