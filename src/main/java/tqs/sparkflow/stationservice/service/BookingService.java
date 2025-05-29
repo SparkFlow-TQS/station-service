@@ -20,7 +20,46 @@ public class BookingService {
 
     public Booking createRecurringBooking(String userId, Long stationId, LocalDateTime startTime, 
                                         LocalDateTime endTime, Set<Integer> recurringDays) {
-        // This is a minimal implementation that will make the tests fail
-        throw new UnsupportedOperationException("Not implemented yet");
+        // Validate input parameters
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new NullPointerException("User ID cannot be null or empty");
+        }
+        if (stationId == null) {
+            throw new NullPointerException("Station ID cannot be null");
+        }
+        if (startTime == null) {
+            throw new NullPointerException("Start time cannot be null");
+        }
+        if (endTime == null) {
+            throw new NullPointerException("End time cannot be null");
+        }
+        if (recurringDays == null || recurringDays.isEmpty()) {
+            throw new IllegalArgumentException("Recurring days cannot be null or empty");
+        }
+        if (startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
+        // Check if station exists and is operational
+        Station station = stationService.getStationById(stationId);
+        if (!station.getIsOperational()) {
+            throw new IllegalStateException("Station is not operational");
+        }
+
+        // Check for overlapping bookings
+        if (!bookingRepository.findOverlappingBookings(stationId, startTime, endTime).isEmpty()) {
+            throw new IllegalStateException("Time slot is already booked");
+        }
+
+        // Create and save the booking
+        Booking booking = new Booking();
+        booking.setUserId(userId);
+        booking.setStationId(stationId);
+        booking.setStartTime(startTime);
+        booking.setEndTime(endTime);
+        booking.setRecurringDays(recurringDays);
+        booking.setStatus(Booking.BookingStatus.ACTIVE);
+
+        return bookingRepository.save(booking);
     }
 } 
