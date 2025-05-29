@@ -100,7 +100,8 @@ class BookingControllerTest {
         List<Booking> bookings = Arrays.asList(testBooking);
         when(bookingService.getAllBookings(1L)).thenReturn(bookings);
 
-        mockMvc.perform(get("/bookings"))
+        mockMvc.perform(get("/bookings")
+                .param("userId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
@@ -132,10 +133,9 @@ class BookingControllerTest {
         testBooking.setStatus(BookingStatus.CANCELLED);
         when(bookingService.cancelBooking(anyLong())).thenReturn(testBooking);
 
-        mockMvc.perform(put("/bookings/1/cancel")
+        mockMvc.perform(post("/bookings/1/cancel")
                 .with(SecurityMockMvcRequestPostProcessors.csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(BookingStatus.CANCELLED.toString()));
+                .andExpect(status().isNoContent());
     }
 
     @Test
