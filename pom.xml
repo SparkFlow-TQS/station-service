@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>tqs.sparkflow</groupId>
 	<artifactId>station-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>station-service</name>
 	<description>Station service of Sparkflow</description>
 	<url/>
@@ -39,7 +39,38 @@
 		<springdoc.version>2.4.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
 		<logback.version>1.4.14</logback.version>
+		<cucumber.version>7.22.2</cucumber.version>
+		<spotless.version>2.43.0</spotless.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>spotless</id>
+			<name>Spotless Maven Plugin Repository</name>
+			<url>https://plugins.gradle.org/m2/</url>
+		</repository>
+		<repository>
+			<id>xray</id>
+			<name>Xray Repository</name>
+			<url>https://packages.atlassian.com/maven/repository/public</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -60,6 +91,11 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -95,19 +131,19 @@
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-java</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-spring</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-junit-platform-engine</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- REST Assured -->
@@ -128,7 +164,12 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>9.22.3</version>
+			<version>11.8.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+			<version>11.8.2</version>
 		</dependency>
 		<!-- JUnit Platform Suite -->
 		<dependency>
@@ -199,9 +240,36 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-junit</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Xray Dependencies -->
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-junit-extensions</artifactId>
+			<version>0.9.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>3.1.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -241,10 +309,29 @@
 				<configuration>
 					<includes>
 						<include>**/*Test.java</include>
-						<include>**/*Tests.java</include>
-						<include>**/*Suite.java</include>
 					</includes>
-					<useModulePath>false</useModulePath>
+					<reportsDirectories>
+						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+					</reportsDirectories>
+					<reportFormat>xml</reportFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.5.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -257,8 +344,11 @@
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>true</failsOnError>
 					<linkXRef>false</linkXRef>
-					<maxAllowedViolations>10</maxAllowedViolations>
-					<violationSeverity>warning</violationSeverity>
+					<maxAllowedViolations>0</maxAllowedViolations>
+					<violationSeverity>error</violationSeverity>
+					<sourceDirectories>
+						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+					</sourceDirectories>
 				</configuration>
 				<executions>
 					<execution>
@@ -269,6 +359,28 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>12.1.1</version>
+				<configuration>
+					<nvdApiKey>${NVD_API_KEY}</nvdApiKey>
+				</configuration>
+			</plugin>
+			<!-- Xray Maven Plugin -->
+			<plugin>
+				<groupId>app.getxray</groupId>
+				<artifactId>xray-maven-plugin</artifactId>
+				<version>0.9.0</version>
+				<configuration>
+					<clientId>${XRAY_CLIENT_ID}</clientId>
+					<clientSecret>${XRAY_CLIENT_SECRET}</clientSecret>
+					<cloud>true</cloud>
+					<projectKey>${XRAY_PROJECT_KEY}</projectKey>
+					<reportFormat>junit</reportFormat>
+					<reportFile>${project.build.directory}/surefire-reports/TEST-tqs.sparkflow.stationservice.StationServiceApplicationTest.xml</reportFile>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

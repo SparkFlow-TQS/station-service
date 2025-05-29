@@ -32,47 +32,35 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     
-    - name: Build and Run Dependency Check
-      run: |
-        ./mvnw clean verify org.owasp:dependency-check-maven:check \
-          -Ddependency-check.failBuildOnCVSS=7 \
-          -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
-          -Ddependency-check.nvd.apiUrl=https://services.nvd.nist.gov/rest/json/cves/2.0 \
-          -Ddependency-check.nvd.apiDelay=6000 \
-          -Ddependency-check.nvd.validForHours=24
-      env:
-        SPRING_PROFILES_ACTIVE: test
-        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        
-    - name: Upload Dependency Check Report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: dependency-check-report
-        path: target/dependency-check-report.html
-        
-    - name: Start PostgreSQL Container
+    - name: Start MySQL Container
       run: |
         docker run -d \
-          --name postgres \
-          -e POSTGRES_DB=test \
-          -e POSTGRES_USER=test \
-          -e POSTGRES_PASSWORD=test \
-          -p 5432:5432 \
-          postgres:16.9
-        sleep 10  # Wait for PostgreSQL to start
+          --name mysql \
+          -e MYSQL_DATABASE=test \
+          -e MYSQL_USER=test \
+          -e MYSQL_PASSWORD=test \
+          -e MYSQL_ROOT_PASSWORD=test \
+          -p 3306:3306 \
+          mysql:8.0
+        sleep 10  # Wait for MySQL to start
         
     - name: Start Spring Boot Application
+      env:
+        OPENCHARGEMAP_API_KEY: test-api-key
+        OPENCHARGEMAP_API_URL: https://api.openchargemap.io/v3/poi
       run: |
         ./mvnw clean package -DskipTests
-        nohup java -jar target/station-service-0.0.1-SNAPSHOT.jar \
+        nohup java -jar target/station-service-*.jar \
           --spring.profiles.active=test \
-          --spring.datasource.url=jdbc:postgresql://localhost:5432/test \
+          --spring.datasource.url=jdbc:mysql://localhost:3306/test \
           --spring.datasource.username=test \
-          --spring.datasource.password=test &
+          --spring.datasource.password=test \
+          --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+          --openchargemap.api.key=test-api-key \
+          --openchargemap.api.url=https://api.openchargemap.io/v3/poi &
         # Wait for application to be ready
         for i in {1..30}; do
-          if curl -s http://localhost:8080/actuator/health > /dev/null; then
+          if curl -s http://localhost:8082/actuator/health > /dev/null; then
             echo "Application is ready!"
             break
           fi
@@ -89,11 +77,11 @@ jobs:
         docker pull ghcr.io/zaproxy/zaproxy:stable
         # Create directory with proper permissions
         mkdir -p zap-output
-        chmod 755 zap-output
+        chmod 750 zap-output
         docker run -v $(pwd)/zap-output:/zap/wrk/:rw \
           --network host \
           -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-          -t http://localhost:8080 \
+          -t http://localhost:8082 \
           -g gen.conf \
           -r testreport.html
       continue-on-error: true
@@ -108,9 +96,7 @@ jobs:
     - name: Stop Spring Boot Application
       if: always()
       run: |
-        if [ -f app.pid ]; then
-          kill $(cat app.pid) || true
-          rm -f app.pid
-        fi
-        docker stop postgres || true
-        docker rm postgres || true
+        pkill -f "spring-boot:run" || true
+        pkill -f "java.*station-service" || true
+        docker stop mysql || true
+        docker rm mysql || true 

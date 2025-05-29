@@ -34,16 +34,19 @@ jobs:
       run: ./mvnw clean verify
       env:
         SPRING_PROFILES_ACTIVE: test
+        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Run Integration Tests
       run: ./mvnw verify -Dtest=*IT
       env:
         SPRING_PROFILES_ACTIVE: test
+        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Run Cucumber Tests
-      run: ./mvnw verify -Dtest=*CucumberTest
+      run: ./mvnw verify -Dtest=CucumberTestRunner
       env:
         SPRING_PROFILES_ACTIVE: test
+        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
@@ -54,6 +57,13 @@ jobs:
           **/target/surefire-reports
           **/target/failsafe-reports
           **/target/cucumber-reports
+    
+    - name: Push results to Xray on Jira Cloud
+      run: ./mvnw xray:import-results
+      env:
+        XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+        XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+        XRAY_PROJECT_KEY: ${{ secrets.XRAY_PROJECT_KEY }}
     
     - name: Check Test Coverage
       run: |
