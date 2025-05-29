@@ -3,6 +3,8 @@ package tqs.sparkflow.stationservice.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestTemplate;
 
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
@@ -33,6 +36,9 @@ class BookingServiceTest {
 
     @Mock
     private StationService stationService;
+
+    @Mock(lenient = true)
+    private RestTemplate restTemplate;
 
     @InjectMocks
     private BookingServiceImpl bookingService;
@@ -101,6 +107,7 @@ class BookingServiceTest {
     @Test
     void whenGetBookingById_thenReturnBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
 
         Optional<Booking> found = bookingService.getBookingById(1L);
 
@@ -112,7 +119,7 @@ class BookingServiceTest {
     void whenGetAllBookings_thenReturnList() {
         when(bookingRepository.findAll()).thenReturn(List.of(testBooking));
 
-        List<Booking> bookings = bookingService.getAllBookings();
+        List<Booking> bookings = bookingService.getAllBookings(1L);
 
         assertThat(bookings).hasSize(1);
         assertThat(bookings.get(0).getId()).isEqualTo(1L);
@@ -122,6 +129,7 @@ class BookingServiceTest {
     void whenCancelBooking_thenReturnCancelledBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArgument(0));
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
 
         Booking cancelledBooking = bookingService.cancelBooking(1L);
 

@@ -1,6 +1,9 @@
 package tqs.sparkflow.stationservice.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -19,12 +22,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.service.BookingService;
+import tqs.sparkflow.stationservice.service.StationService;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
 
 @WebMvcTest(BookingController.class)
 class BookingControllerTest {
@@ -37,6 +43,15 @@ class BookingControllerTest {
 
     @MockBean
     private BookingService bookingService;
+
+    @MockBean
+    private RestTemplate restTemplate;
+
+    @MockBean
+    private StationService stationService;
+
+    @MockBean
+    private BookingRepository bookingRepository;
 
     private Booking testBooking;
     private LocalDateTime now;
@@ -51,17 +66,27 @@ class BookingControllerTest {
         testBooking.setStartTime(now);
         testBooking.setEndTime(now.plusHours(2));
         testBooking.setStatus(BookingStatus.ACTIVE);
+
+        // Mock user validation to return true
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        when(restTemplate.getForObject(anyString(), eq(Object.class))).thenReturn(new Object());
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     void whenCreateBooking_thenReturnCreatedBooking() throws Exception {
+        Booking inputBooking = new Booking();
+        inputBooking.setStationId(1L);
+        inputBooking.setStartTime(now);
+        inputBooking.setEndTime(now.plusHours(2));
+        inputBooking.setStatus(BookingStatus.ACTIVE);
+
         when(bookingService.createBooking(any(Booking.class))).thenReturn(testBooking);
 
         mockMvc.perform(post("/bookings")
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testBooking)))
+                .content(objectMapper.writeValueAsString(inputBooking)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(testBooking.getId()))
                 .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()))
@@ -70,30 +95,10 @@ class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void whenGetBookingById_thenReturnBooking() throws Exception {
-        when(bookingService.getBookingById(1L)).thenReturn(Optional.of(testBooking));
-
-        mockMvc.perform(get("/bookings/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testBooking.getId()))
-                .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()));
-    }
-
-    @Test
-    @WithMockUser
-    void whenGetBookingById_notFound_thenReturn404() throws Exception {
-        when(bookingService.getBookingById(999L)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/bookings/999"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     void whenGetAllBookings_thenReturnList() throws Exception {
         List<Booking> bookings = Arrays.asList(testBooking);
-        when(bookingService.getAllBookings()).thenReturn(bookings);
+        when(bookingService.getAllBookings(1L)).thenReturn(bookings);
 
         mockMvc.perform(get("/bookings"))
                 .andExpect(status().isOk())
@@ -102,10 +107,30 @@ class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
+    void whenGetBookingById_thenReturnBooking() throws Exception {
+        when(bookingService.getBookingById(anyLong())).thenReturn(Optional.of(testBooking));
+
+        mockMvc.perform(get("/bookings/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(testBooking.getId()))
+                .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()));
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenGetBookingById_notFound_thenReturn404() throws Exception {
+        when(bookingService.getBookingById(anyLong())).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/bookings/999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
     void whenCancelBooking_thenReturnUpdatedBooking() throws Exception {
         testBooking.setStatus(BookingStatus.CANCELLED);
-        when(bookingService.cancelBooking(1L)).thenReturn(testBooking);
+        when(bookingService.cancelBooking(anyLong())).thenReturn(testBooking);
 
         mockMvc.perform(put("/bookings/1/cancel")
                 .with(SecurityMockMvcRequestPostProcessors.csrf()))
@@ -114,10 +139,10 @@ class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     void whenGetBookingsByStationId_thenReturnList() throws Exception {
         List<Booking> bookings = Arrays.asList(testBooking);
-        when(bookingService.getBookingsByStationId(1L)).thenReturn(bookings);
+        when(bookingService.getBookingsByStationId(anyLong())).thenReturn(bookings);
 
         mockMvc.perform(get("/bookings/station/1"))
                 .andExpect(status().isOk())
@@ -126,10 +151,10 @@ class BookingControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "1")
     void whenGetBookingsByUserId_thenReturnList() throws Exception {
         List<Booking> bookings = Arrays.asList(testBooking);
-        when(bookingService.getBookingsByUserId(1L)).thenReturn(bookings);
+        when(bookingService.getBookingsByUserId(anyLong())).thenReturn(bookings);
 
         mockMvc.perform(get("/bookings/user/1"))
                 .andExpect(status().isOk())

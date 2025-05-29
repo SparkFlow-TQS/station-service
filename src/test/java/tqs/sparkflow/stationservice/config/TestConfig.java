@@ -21,6 +21,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -37,6 +41,12 @@ public class TestConfig {
   @Primary
   public RestTemplate restTemplate() {
     return new RestTemplate();
+  }
+
+  @Bean
+  @Primary
+  public String userServiceUrl() {
+    return "http://dummy-user-service-url";
   }
 
   @Bean
@@ -65,6 +75,21 @@ public class TestConfig {
 
   @Bean
   @Primary
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService());
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
+  }
+
+  @Bean
+  @Primary
+  public AuthenticationManager authenticationManager() {
+    return new ProviderManager(authenticationProvider());
+  }
+
+  @Bean
+  @Primary
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
@@ -73,9 +98,8 @@ public class TestConfig {
         .authorizeHttpRequests(auth -> 
             auth.requestMatchers("/stations/**", "/api/openchargemap/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/bookings/**").permitAll()
                 .anyRequest().authenticated())
-        .httpBasic(httpBasic -> {});
+        .authenticationManager(authenticationManager());
     return http.build();
   }
 

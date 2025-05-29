@@ -2,6 +2,7 @@ package tqs.sparkflow.stationservice.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Station;
@@ -17,48 +18,54 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final StationService stationService;
+    private final RestTemplate restTemplate;
+    private final String userServiceUrl;
 
     @Autowired
-    public BookingServiceImpl(BookingRepository bookingRepository, StationService stationService) {
+    public BookingServiceImpl(BookingRepository bookingRepository, 
+                            StationService stationService,
+                            RestTemplate restTemplate,
+                            String userServiceUrl) {
         this.bookingRepository = bookingRepository;
         this.stationService = stationService;
+        this.restTemplate = restTemplate;
+        this.userServiceUrl = userServiceUrl;
+    }
+
+    private void validateUser(Long userId) {
+        try {
+            restTemplate.getForObject(userServiceUrl + "/users/" + userId, Object.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("User not found or not authorized");
+        }
+    }
+
+    private void validateUserPermission(Long userId, Long bookingUserId) {
+        if (!userId.equals(bookingUserId)) {
+            // Check if user has admin role
+            try {
+                restTemplate.getForObject(userServiceUrl + "/users/" + userId + "/has-role/ADMIN", Boolean.class);
+            } catch (Exception e) {
+                throw new IllegalStateException("User not authorized to access this booking");
+            }
+        }
     }
 
     @Override
     public Booking createRecurringBooking(Long userId, Long stationId, LocalDateTime startTime, 
                                         LocalDateTime endTime, Set<Integer> recurringDays) {
-        // Validate input parameters
-        if (userId == null) {
-            throw new NullPointerException("User ID cannot be null");
-        }
-        if (stationId == null) {
-            throw new NullPointerException("Station ID cannot be null");
-        }
-        if (startTime == null) {
-            throw new NullPointerException("Start time cannot be null");
-        }
-        if (endTime == null) {
-            throw new NullPointerException("End time cannot be null");
-        }
-        if (recurringDays == null || recurringDays.isEmpty()) {
-            throw new IllegalArgumentException("Recurring days cannot be null or empty");
-        }
-        if (startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("Start time must be before end time");
-        }
-
-        // Check if station exists and is operational
+        validateUser(userId);
+        
         Station station = stationService.getStationById(stationId);
         if (!station.getIsOperational()) {
             throw new IllegalStateException("Station is not operational");
         }
 
-        // Check for overlapping bookings
-        if (!bookingRepository.findOverlappingBookings(stationId, startTime, endTime).isEmpty()) {
+        List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(stationId, startTime, endTime);
+        if (!overlappingBookings.isEmpty()) {
             throw new IllegalStateException("Time slot is already booked");
         }
 
-        // Create and save the booking
         Booking booking = new Booking();
         booking.setUserId(userId);
         booking.setStationId(stationId);
@@ -72,35 +79,51 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createBooking(Booking booking) {
-        booking.setStatus(BookingStatus.ACTIVE);
-        return bookingRepository.save(booking);
+        validateUser(booking.getUserId());
+        return createRecurringBooking(booking.getUserId(), booking.getStationId(), 
+                                    booking.getStartTime(), booking.getEndTime(), 
+                                    booking.getRecurringDays());
     }
 
     @Override
     public Optional<Booking> getBookingById(Long id) {
-        return bookingRepository.findById(id);
+        Optional<Booking> booking = bookingRepository.findById(id);
+        if (booking.isPresent()) {
+            validateUserPermission(booking.get().getUserId(), booking.get().getUserId());
+        }
+        return booking;
     }
 
     @Override
-    public List<Booking> getAllBookings() {
+    public List<Booking> getAllBookings(Long userId) {
+        validateUser(userId);
+        // For now, return all bookings. In a real application, you might want to filter based on user role
         return bookingRepository.findAll();
     }
 
     @Override
     public Booking cancelBooking(Long id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        Optional<Booking> bookingOpt = bookingRepository.findById(id);
+        if (bookingOpt.isEmpty()) {
+            throw new IllegalStateException("Booking not found");
+        }
+
+        Booking booking = bookingOpt.get();
+        validateUserPermission(booking.getUserId(), booking.getUserId());
+
         booking.setStatus(BookingStatus.CANCELLED);
         return bookingRepository.save(booking);
     }
 
     @Override
     public List<Booking> getBookingsByStationId(Long stationId) {
+        validateUser(stationId);
         return bookingRepository.findByStationId(stationId);
     }
 
     @Override
     public List<Booking> getBookingsByUserId(Long userId) {
+        validateUser(userId);
         return bookingRepository.findByUserId(userId);
     }
 } 

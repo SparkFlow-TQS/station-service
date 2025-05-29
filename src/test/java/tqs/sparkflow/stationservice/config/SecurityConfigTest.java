@@ -13,15 +13,19 @@ import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(classes = {TestConfig.class})
 @AutoConfigureMockMvc
-@Import(SecurityConfig.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = "openchargemap.api.url=http://dummy-url-for-tests")
+@TestPropertySource(properties = {
+    "openchargemap.api.url=http://dummy-url-for-tests",
+    "user.service.url=http://dummy-user-service-url",
+    "spring.main.allow-bean-definition-overriding=true"
+})
 class SecurityConfigTest {
 
     @Autowired
@@ -32,6 +36,9 @@ class SecurityConfigTest {
 
     @MockBean
     private OpenChargeMapService openChargeMapService;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @Test
     void contextLoads() {
