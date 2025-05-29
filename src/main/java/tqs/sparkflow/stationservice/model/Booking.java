@@ -3,33 +3,42 @@ package tqs.sparkflow.stationservice.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "bookings")
+@Schema(description = "Booking entity representing a charging station reservation")
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Unique identifier of the booking")
     private Long id;
 
     @Column(name = "station_id", nullable = false)
+    @Schema(description = "ID of the charging station")
     private Long stationId;
 
     @Column(name = "user_id", nullable = false)
+    @Schema(description = "ID of the user making the booking")
     private Long userId;
 
     @Column(name = "start_time", nullable = false)
+    @Schema(description = "Start time of the booking")
     private LocalDateTime startTime;
 
     @Column(name = "end_time", nullable = false)
+    @Schema(description = "End time of the booking")
     private LocalDateTime endTime;
 
     @ElementCollection
     @CollectionTable(name = "booking_recurring_days", joinColumns = @JoinColumn(name = "booking_id"))
     @Column(name = "day_of_week")
+    @Schema(description = "Set of days of the week for recurring bookings (0-6, where 0 is Sunday)")
     private Set<Integer> recurringDays;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Schema(description = "Current status of the booking")
     private BookingStatus status;
 
     public Booking() {}
