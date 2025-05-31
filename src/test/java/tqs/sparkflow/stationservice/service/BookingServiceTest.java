@@ -37,7 +37,7 @@ class BookingServiceTest {
     @Mock
     private StationService stationService;
 
-    @Mock(lenient = true)
+    @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
@@ -50,6 +50,10 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Set up default behavior for restTemplate
+        when(restTemplate.getForObject(anyString(), eq(Object.class))).thenReturn(new Object());
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
+        
         now = LocalDateTime.now();
         recurringDays = new HashSet<>(Arrays.asList(1, 2, 3)); // Monday, Tuesday, Wednesday
 
@@ -201,21 +205,20 @@ class BookingServiceTest {
 
     @Test
     void whenGetBookingById_withPermissionDenied_thenThrowException() {
-        // Simulate a booking with a different userId than the one requesting
+        // Setup: Create a booking belonging to user 2
         Booking booking = new Booking();
         booking.setId(1L);
-        booking.setUserId(2L); // booking belongs to user 2
+        booking.setUserId(2L);
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
-        // Simulate permission denied by throwing exception in validateUserPermission
-        org.mockito.Mockito.doThrow(new IllegalStateException("User not authorized to access this booking"))
-            .when(restTemplate).getForObject(anyString(), eq(Boolean.class));
-        assertThatThrownBy(() -> {
-            // Simulate requesting user is not the booking owner
-            // This will trigger validateUserPermission
-            bookingService.getBookingById(1L, 1L);
-        })
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("User not authorized to access this booking");
+        
+        // Setup: Mock permission check to fail
+        when(restTemplate.getForObject(anyString(), eq(Boolean.class)))
+            .thenThrow(new IllegalStateException("User not authorized to access this booking"));
+
+        // Test: Single method invocation that should throw the exception
+        assertThatThrownBy(() -> bookingService.getBookingById(1L, 1L))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("User not authorized to access this booking");
     }
 
     @Test

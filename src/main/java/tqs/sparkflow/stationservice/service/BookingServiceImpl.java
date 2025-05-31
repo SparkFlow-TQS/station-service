@@ -55,7 +55,7 @@ public class BookingServiceImpl implements BookingService {
         validateUser(userId);
         
         Station station = stationService.getStationById(stationId);
-        if (!station.getIsOperational()) {
+        if (Boolean.FALSE.equals(station.getIsOperational())) {
             throw new IllegalStateException("Station is not operational");
         }
 

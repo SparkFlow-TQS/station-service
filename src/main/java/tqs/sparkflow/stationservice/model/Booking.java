@@ -41,6 +41,11 @@ public class Booking {
     @Schema(description = "Current status of the booking")
     private BookingStatus status;
 
+    /**
+     * Default constructor required by JPA.
+     * This constructor is used by JPA to create entity instances during persistence operations.
+     * It should not be used directly in application code.
+     */
     public Booking() {}
 
     public Long getId() {
