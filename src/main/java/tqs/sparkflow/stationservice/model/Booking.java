@@ -48,6 +48,7 @@ public class Booking {
      *
      * This method is intentionally left empty.
      */
+    @SuppressWarnings("java:S1186")
     public Booking() {}
 
     public Long getId() {
