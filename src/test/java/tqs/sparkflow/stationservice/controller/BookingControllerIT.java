@@ -56,9 +56,9 @@ class BookingControllerIT {
     @BeforeEach
     void setUp() {
         // Mock user service responses
-        doReturn(new Object()).when(restTemplate).getForObject(anyString(), eq(Object.class));
-        doThrow(new RuntimeException("User not found")).when(restTemplate).getForObject(eq("http://dummy-user-service-url/users/999"), eq(Object.class));
-        doReturn(true).when(restTemplate).getForObject(eq("http://dummy-user-service-url/users/1/has-role/ADMIN"), eq(Boolean.class));
+        doReturn(new Object()).when(restTemplate).getForObject(anyString(), Object.class);
+        doThrow(new RuntimeException("User not found")).when(restTemplate).getForObject("http://dummy-user-service-url/users/999", Object.class);
+        doReturn(true).when(restTemplate).getForObject("http://dummy-user-service-url/users/1/has-role/ADMIN", Boolean.class);
 
         // Mock station service
         Station mockStation = new Station();

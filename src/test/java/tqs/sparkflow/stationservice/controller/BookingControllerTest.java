@@ -12,9 +12,13 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -217,33 +221,25 @@ class BookingControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    @WithMockUser(username = "1")
-    void whenCreateBooking_withNonOperationalStation_thenBadRequest() throws Exception {
-        Booking inputBooking = new Booking();
-        inputBooking.setStationId(2L);
-        inputBooking.setUserId(1L);
-        inputBooking.setStartTime(now);
-        inputBooking.setEndTime(now.plusHours(2));
-        inputBooking.setStatus(BookingStatus.ACTIVE);
-        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Station is not operational"));
-        mockMvc.perform(post("/bookings")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
-                .andExpect(status().isBadRequest());
+    static Stream<Arguments> createBookingExceptionProvider() {
+        return Stream.of(
+            Arguments.of(2L, 1L, "Station is not operational"),
+            Arguments.of(1L, 1L, "Time slot is already booked"),
+            Arguments.of(1L, 999L, "User not found or not authorized")
+        );
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("createBookingExceptionProvider")
     @WithMockUser(username = "1")
-    void whenCreateBooking_withOverlappingBooking_thenBadRequest() throws Exception {
+    void whenCreateBooking_withBusinessException_thenBadRequest(Long stationId, Long userId, String exceptionMessage) throws Exception {
         Booking inputBooking = new Booking();
-        inputBooking.setStationId(1L);
-        inputBooking.setUserId(1L);
+        inputBooking.setStationId(stationId);
+        inputBooking.setUserId(userId);
         inputBooking.setStartTime(now);
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);
-        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Time slot is already booked"));
+        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException(exceptionMessage));
         mockMvc.perform(post("/bookings")
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -274,22 +270,5 @@ class BookingControllerTest {
         when(bookingService.getBookingsByUserId(anyLong())).thenReturn(List.of());
         mockMvc.perform(get("/bookings/user/1"))
                 .andExpect(status().isNoContent());
-    }
-
-    @Test
-    @WithMockUser(username = "1")
-    void whenCreateBooking_withUserNotFound_thenBadRequest() throws Exception {
-        Booking inputBooking = new Booking();
-        inputBooking.setStationId(1L);
-        inputBooking.setUserId(999L);
-        inputBooking.setStartTime(now);
-        inputBooking.setEndTime(now.plusHours(2));
-        inputBooking.setStatus(BookingStatus.ACTIVE);
-        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("User not found or not authorized"));
-        mockMvc.perform(post("/bookings")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
-                .andExpect(status().isBadRequest());
     }
 } 
