@@ -117,7 +117,7 @@ public class TestConfig {
                 response.getWriter().write("Access Denied");
             }))
         .securityContext(context -> context.requireExplicitSave(false))
-        .anonymous(anonymous -> anonymous.disable());
+        .anonymous(AbstractHttpConfigurer::disable);
     return http.build();
   }
 

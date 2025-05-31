@@ -85,9 +85,7 @@ class BookingServiceTest {
     void whenCreateRecurringBooking_withInvalidStation_thenThrowException() {
         testStation.setIsOperational(false);
         when(stationService.getStationById(1L)).thenReturn(testStation);
-
-        assertThatThrownBy(() -> 
-            bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays))
+        assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Station is not operational");
     }
