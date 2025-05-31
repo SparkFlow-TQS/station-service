@@ -40,7 +40,19 @@ public class BookingController {
     })
     public ResponseEntity<Booking> createBooking(
             @Parameter(description = "Booking details", required = true)
-            @RequestBody Booking booking) {
+            @RequestBody Booking booking,
+            Principal principal) {
+        // Validate required fields first
+        if (booking.getStationId() == null || booking.getUserId() == null || 
+            booking.getStartTime() == null || booking.getEndTime() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        // Then check authentication
+        if (principal == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         try {
             Booking createdBooking = bookingService.createBooking(booking);
             return new ResponseEntity<>(createdBooking, HttpStatus.CREATED);

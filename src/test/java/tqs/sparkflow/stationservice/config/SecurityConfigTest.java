@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -54,13 +55,15 @@ class SecurityConfigTest {
 
     @Test
     void adminEndpoint_requiresAdminRole() throws Exception {
-        mockMvc.perform(get("/admin"))
+        mockMvc.perform(get("/admin")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("user", "user")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void unknownEndpoint_requiresAuthentication() throws Exception {
-        mockMvc.perform(get("/some-protected"))
+        mockMvc.perform(get("/some-protected")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("anonymous", "anonymous")))
                 .andExpect(status().isForbidden());
     }
 

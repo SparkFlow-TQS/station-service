@@ -77,6 +77,7 @@ class BookingControllerTest {
     void whenCreateBooking_thenReturnCreatedBooking() throws Exception {
         Booking inputBooking = new Booking();
         inputBooking.setStationId(1L);
+        inputBooking.setUserId(1L);
         inputBooking.setStartTime(now);
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);

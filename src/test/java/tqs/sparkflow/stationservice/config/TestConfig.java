@@ -25,6 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import jakarta.servlet.http.HttpServletResponse;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -98,8 +99,25 @@ public class TestConfig {
         .authorizeHttpRequests(auth -> 
             auth.requestMatchers("/stations/**", "/api/openchargemap/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/bookings/**").authenticated()
                 .anyRequest().authenticated())
-        .authenticationManager(authenticationManager());
+        .authenticationManager(authenticationManager())
+        .httpBasic(basic -> basic
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access Denied");
+            }))
+        .exceptionHandling(handling -> handling
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access Denied");
+            })
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access Denied");
+            }))
+        .securityContext(context -> context.requireExplicitSave(false))
+        .anonymous(anonymous -> anonymous.disable());
     return http.build();
   }
 
