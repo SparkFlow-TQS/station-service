@@ -1,6 +1,5 @@
 package tqs.sparkflow.stationservice.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import tqs.sparkflow.stationservice.model.Booking;
@@ -20,8 +19,7 @@ public class BookingServiceImpl implements BookingService {
     private final StationService stationService;
     private final RestTemplate restTemplate;
     private final String userServiceUrl;
-
-    @Autowired
+    
     public BookingServiceImpl(BookingRepository bookingRepository, 
                             StationService stationService,
                             RestTemplate restTemplate,

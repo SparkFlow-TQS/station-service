@@ -2,15 +2,12 @@ package tqs.sparkflow.stationservice.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springframework.context.annotation.Primary;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Configuration class for OpenAPI documentation. Defines the API information, contact details, and

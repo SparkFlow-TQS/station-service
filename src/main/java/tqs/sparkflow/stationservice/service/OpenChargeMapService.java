@@ -3,7 +3,6 @@ package tqs.sparkflow.stationservice.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -26,8 +25,7 @@ public class OpenChargeMapService {
   private final StationRepository stationRepository;
   private final String apiKey;
   private final String baseUrl;
-
-  @Autowired
+  
   public OpenChargeMapService(
       RestTemplate restTemplate,
       StationRepository stationRepository,

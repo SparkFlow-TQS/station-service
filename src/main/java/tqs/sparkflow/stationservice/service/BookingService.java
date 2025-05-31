@@ -1,8 +1,6 @@
 package tqs.sparkflow.stationservice.service;
 
 import tqs.sparkflow.stationservice.model.Booking;
-import tqs.sparkflow.stationservice.model.BookingStatus;
-import tqs.sparkflow.stationservice.model.Station;
 
 import java.time.LocalDateTime;
 import java.util.List;
