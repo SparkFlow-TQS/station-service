@@ -68,7 +68,7 @@ public interface BookingService {
    * @param stationId The station ID
    * @return List of bookings for the station that the user has permission to view
    */
-  List<Booking> getBookingsByStationId(Long stationId);
+  List<Booking> getBookingsByStationId(Long stationId, Long requestingUserId);
 
   /**
    * Gets all bookings for a specific user.

@@ -137,7 +137,7 @@ class BookingServiceTest {
     void whenGetBookingsByStationId_thenReturnList() {
         when(bookingRepository.findByStationId(1L)).thenReturn(List.of(testBooking));
 
-        List<Booking> bookings = bookingService.getBookingsByStationId(1L);
+        List<Booking> bookings = bookingService.getBookingsByStationId(1L, 1L);
 
         assertThat(bookings).hasSize(1);
         assertThat(bookings.get(0).getStationId()).isEqualTo(1L);
@@ -180,9 +180,10 @@ class BookingServiceTest {
 
     @Test
     void whenGetBookingsByStationId_withUserNotAuthorized_thenThrowException() {
-        org.mockito.Mockito.doThrow(new IllegalStateException("User not found or not authorized"))
-            .when(restTemplate).getForObject(anyString(), eq(Object.class));
-        assertThatThrownBy(() -> bookingService.getBookingsByStationId(99L))
+        when(restTemplate.getForObject(anyString(), eq(Object.class)))
+            .thenThrow(new IllegalStateException("User not found or not authorized"));
+            
+        assertThatThrownBy(() -> bookingService.getBookingsByStationId(99L, 99L))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("User not found or not authorized");
     }

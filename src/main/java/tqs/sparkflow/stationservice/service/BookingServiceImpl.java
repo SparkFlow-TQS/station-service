@@ -110,6 +110,13 @@ public class BookingServiceImpl implements BookingService {
   @Override
   public List<Booking> getAllBookings(Long userId) {
     validateUser(userId);
+    try {
+      restTemplate.getForObject(
+          userServiceUrl + "/users/" + userId + "/has-role/ADMIN",
+          Boolean.class);
+    } catch (Exception e) {
+      throw new IllegalStateException("User not authorized to access all bookings");
+    }
     return bookingRepository.findAll();
   }
 
@@ -128,8 +135,16 @@ public class BookingServiceImpl implements BookingService {
   }
 
   @Override
-  public List<Booking> getBookingsByStationId(Long stationId) {
-    validateUser(stationId);
+  public List<Booking> getBookingsByStationId(Long stationId, Long requestingUserId) {
+    validateUser(requestingUserId);
+    try {
+      restTemplate.getForObject(
+          userServiceUrl + "/users/" + requestingUserId + "/has-role/ADMIN",
+          Boolean.class);
+    } catch (Exception e) {
+      // If not admin, only return bookings for this user
+      return bookingRepository.findByStationIdAndUserId(stationId, requestingUserId);
+    }
     return bookingRepository.findByStationId(stationId);
   }
 

@@ -64,7 +64,7 @@ public class BookingController {
 
     // Then check authentication
     if (principal == null) {
-      return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     try {
@@ -227,9 +227,15 @@ public class BookingController {
   })
   public ResponseEntity<List<Booking>> getBookingsByStationId(
         @Parameter(description = "Station ID", required = true)
-        @PathVariable Long stationId) {
+        @PathVariable Long stationId,
+        Principal principal) {
+    if (principal == null) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
     try {
-      List<Booking> bookings = bookingService.getBookingsByStationId(stationId);
+      Long requestingUserId = Long.valueOf(principal.getName());
+      List<Booking> bookings = bookingService.getBookingsByStationId(stationId, requestingUserId);
       if (bookings.isEmpty()) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
       }

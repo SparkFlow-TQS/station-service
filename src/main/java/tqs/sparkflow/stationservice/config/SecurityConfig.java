@@ -65,8 +65,10 @@ public class SecurityConfig {
                         "/webjars/**")
                     .permitAll()
                     // Then other endpoints
-                    .requestMatchers("/stations/**", "/api/openchargemap/**", "/bookings/**")
+                    .requestMatchers("/stations/**", "/api/openchargemap/**")
                     .permitAll()
+                    .requestMatchers("/bookings/**")
+                    .hasAnyRole("USER", "ADMIN")
                     .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
                     .anyRequest()

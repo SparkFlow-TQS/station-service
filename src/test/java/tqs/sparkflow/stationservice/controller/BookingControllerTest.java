@@ -10,8 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +37,11 @@ import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.service.BookingService;
 import tqs.sparkflow.stationservice.service.StationService;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.security.Principal;
+import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @WebMvcTest(BookingController.class)
 class BookingControllerTest {
@@ -59,16 +66,20 @@ class BookingControllerTest {
 
     private Booking testBooking;
     private LocalDateTime now;
+    private Set<Integer> recurringDays;
 
     @BeforeEach
     void setUp() {
         now = LocalDateTime.now();
+        recurringDays = new HashSet<>(Arrays.asList(1, 2, 3)); // Monday, Tuesday, Wednesday
+
         testBooking = new Booking();
         testBooking.setId(1L);
         testBooking.setStationId(1L);
         testBooking.setUserId(1L);
         testBooking.setStartTime(now);
         testBooking.setEndTime(now.plusHours(2));
+        testBooking.setRecurringDays(recurringDays);
         testBooking.setStatus(BookingStatus.ACTIVE);
 
         // Mock user validation to return true
@@ -146,13 +157,37 @@ class BookingControllerTest {
     @Test
     @WithMockUser(username = "1")
     void whenGetBookingsByStationId_thenReturnList() throws Exception {
-        List<Booking> bookings = Arrays.asList(testBooking);
-        when(bookingService.getBookingsByStationId(anyLong())).thenReturn(bookings);
+        when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of(testBooking));
 
         mockMvc.perform(get("/bookings/station/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
+    }
+
+    @Test
+    @WithMockUser(username = "99")
+    void whenGetBookingsByStationId_withUserNotAuthorized_thenReturnBadRequest() throws Exception {
+        when(bookingService.getBookingsByStationId(99L, 99L))
+            .thenThrow(new IllegalStateException("User not found or not authorized"));
+
+        mockMvc.perform(get("/bookings/station/99"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenGetBookingsByStationId_withNoBookings_thenReturnNoContent() throws Exception {
+        when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/bookings/station/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void whenGetBookingsByStationId_withoutAuthentication_thenReturnUnauthorized() throws Exception {
+        mockMvc.perform(get("/bookings/station/1"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -254,14 +289,6 @@ class BookingControllerTest {
         mockMvc.perform(post("/bookings/999/cancel")
                 .with(SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingsByStationId_withNoResults_thenNoContent() throws Exception {
-        when(bookingService.getBookingsByStationId(anyLong())).thenReturn(List.of());
-        mockMvc.perform(get("/bookings/station/1"))
-                .andExpect(status().isNoContent());
     }
 
     @Test
