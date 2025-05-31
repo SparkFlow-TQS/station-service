@@ -53,11 +53,10 @@ public class Booking {
 
   /**
    * Default constructor required by JPA.
-   * 
    * <p>
    * This constructor is used by JPA to create entity instances during persistence operations.
    * It should not be used directly in application code.
-   *
+   * <p>
    * This method is intentionally left empty.
    */
   @SuppressWarnings("java:S1186")

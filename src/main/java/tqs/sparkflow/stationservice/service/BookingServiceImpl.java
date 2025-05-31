@@ -10,6 +10,7 @@ import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -18,13 +19,20 @@ public class BookingServiceImpl implements BookingService {
   private final RestTemplate restTemplate;
   private final String userServiceUrl;
 
-  public BookingServiceImpl(BookingRepository bookingRepository,
-                            StationService stationService,
-                            RestTemplate restTemplate,
-                            String userServiceUrl) {
+  /**
+   * Creates a new instance of BookingServiceImpl.
+   *
+   * @param bookingRepository The repository for booking operations
+   * @param stationService The service for station operations
+   * @param userServiceUrl The URL of the user service
+   */
+  public BookingServiceImpl(
+      BookingRepository bookingRepository,
+      StationService stationService,
+      @Value("${user.service.url}") String userServiceUrl) {
     this.bookingRepository = bookingRepository;
     this.stationService = stationService;
-    this.restTemplate = restTemplate;
+    this.restTemplate = new RestTemplate();
     this.userServiceUrl = userServiceUrl;
   }
 

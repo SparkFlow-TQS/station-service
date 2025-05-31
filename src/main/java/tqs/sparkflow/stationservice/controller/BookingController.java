@@ -33,6 +33,13 @@ public class BookingController {
     this.bookingService = bookingService;
   }
 
+  /**
+   * Creates a new booking for a charging station.
+   *
+   * @param booking The booking details
+   * @param principal The authenticated user
+   * @return ResponseEntity containing the created booking or error status
+   */
   @PostMapping
   @Operation(summary = "Create a new booking", description = "Creates a new booking for a charging station")
   @ApiResponses(value = {
@@ -65,6 +72,16 @@ public class BookingController {
     }
   }
 
+  /**
+   * Creates a recurring booking for a charging station.
+   *
+   * @param userId The ID of the user making the booking
+   * @param stationId The ID of the station to book
+   * @param startTime The start time of the booking
+   * @param endTime The end time of the booking
+   * @param recurringDays The days of the week when the booking should recur
+   * @return ResponseEntity containing the created booking or error status
+   */
   @PostMapping("/recurring")
   @Operation(summary = "Create a recurring booking", description = "Creates a recurring booking for a charging station")
   @ApiResponses(value = {
@@ -93,6 +110,13 @@ public class BookingController {
     }
   }
 
+  /**
+   * Retrieves a booking by its ID.
+   *
+   * @param id The ID of the booking to retrieve
+   * @param principal The authenticated user
+   * @return ResponseEntity containing the booking if found and user has permission
+   */
   @GetMapping("/{id}")
   @Operation(summary = "Get booking by ID", description = "Retrieves a booking by its ID")
   @ApiResponses(value = {
@@ -112,6 +136,12 @@ public class BookingController {
       .orElse(ResponseEntity.notFound().build());
     }
 
+  /**
+   * Retrieves all bookings for a user.
+   *
+   * @param userId The ID of the user whose bookings to retrieve
+   * @return ResponseEntity containing the list of bookings or error status
+   */
   @GetMapping
   @Operation(summary = "Get all bookings", description = "Retrieves all bookings for a user")
   @ApiResponses(value = {
@@ -136,6 +166,12 @@ public class BookingController {
     }
   }
 
+  /**
+   * Cancels an existing booking.
+   *
+   * @param id The ID of the booking to cancel
+   * @return ResponseEntity with no content if successful
+   */
   @PostMapping("/{id}/cancel")
   @Operation(summary = "Cancel a booking", description = "Cancels an existing booking")
   @ApiResponses(value = {
@@ -155,9 +191,15 @@ public class BookingController {
     }
   }
 
-    @GetMapping("/station/{stationId}")
-    @Operation(summary = "Get bookings by station ID", description = "Retrieves all bookings for a specific station")
-    @ApiResponses(value = {
+  /**
+   * Retrieves all bookings for a specific station.
+   *
+   * @param stationId The ID of the station
+   * @return ResponseEntity containing the list of bookings or error status
+   */
+  @GetMapping("/station/{stationId}")
+  @Operation(summary = "Get bookings by station ID", description = "Retrieves all bookings for a specific station")
+  @ApiResponses(value = {
     @ApiResponse(responseCode = "200", description = "Bookings found",
         content = @Content(schema = @Schema(implementation = Booking.class))),
         @ApiResponse(responseCode = "204", description = "No bookings found for this station"),
@@ -179,6 +221,12 @@ public class BookingController {
     }
   }
 
+  /**
+   * Retrieves all bookings for a specific user.
+   *
+   * @param userId The ID of the user whose bookings to retrieve
+   * @return ResponseEntity containing the list of bookings or error status
+   */
   @GetMapping("/user/{userId}")
   @Operation(summary = "Get bookings by user ID", description = "Retrieves all bookings for a specific user")
   @ApiResponses(value = {

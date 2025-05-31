@@ -32,6 +32,11 @@ public class OpenApiConfig {
                 .description("API for managing charging stations and bookings"));
   }
 
+  /**
+   * Configures SpringDoc properties for API documentation.
+   *
+   * @return configured SpringDocConfigProperties instance
+   */
   @Bean
   @Primary
   public SpringDocConfigProperties springDocConfigProperties() {
@@ -41,6 +46,11 @@ public class OpenApiConfig {
     return properties;
   }
 
+  /**
+   * Configures Swagger UI properties for API documentation.
+   *
+   * @return configured SwaggerUiConfigProperties instance
+   */
   @Bean
   @Primary
   public SwaggerUiConfigProperties swaggerUiConfigProperties() {

@@ -26,6 +26,14 @@ public class OpenChargeMapService {
   private final String apiKey;
   private final String baseUrl;
   
+  /**
+   * Creates a new instance of OpenChargeMapService.
+   *
+   * @param restTemplate The RestTemplate for making HTTP requests
+   * @param stationRepository The repository for station operations
+   * @param apiKey The OpenChargeMap API key
+   * @param baseUrl The base URL for the OpenChargeMap API
+   */
   public OpenChargeMapService(
       RestTemplate restTemplate,
       StationRepository stationRepository,
