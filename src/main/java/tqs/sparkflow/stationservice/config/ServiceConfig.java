@@ -7,11 +7,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServiceConfig {
 
-    @Value("${user.service.url:http://user-service:8081}")
-    private String userServiceUrl;
+  @Value("${user.service.url:http://user-service:8081}")
+  private String userServiceUrl;
 
-    @Bean
-    public String userServiceUrl() {
-        return userServiceUrl;
-    }
+  @Bean
+  public String userServiceUrl() {
+    return userServiceUrl;
+  }
 } 

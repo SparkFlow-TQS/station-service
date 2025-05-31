@@ -38,8 +38,8 @@ public class StationService {
       throw new NullPointerException("Station ID cannot be null");
     }
     return stationRepository
-        .findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Station not found with id: " + id));
+      .findById(id)
+      .orElseThrow(() -> new IllegalArgumentException("Station not found with id: " + id));
   }
 
   /**
@@ -51,10 +51,10 @@ public class StationService {
    */
   public Station getStationByExternalId(String externalId) {
     return stationRepository
-        .findByExternalId(externalId)
-        .orElseThrow(
-            () ->
-                new IllegalArgumentException("Station not found with external id: " + externalId));
+      .findByExternalId(externalId)
+      .orElseThrow(
+        () ->
+          new IllegalArgumentException("Station not found with external id: " + externalId));
   }
 
   /**
@@ -131,9 +131,9 @@ public class StationService {
   public List<Station> searchStations(
       String name, String city, String country, String connectorType) {
     return stationRepository
-        .findByNameContainingAndCityContainingAndCountryContainingAndConnectorTypeContaining(
-            Optional.ofNullable(name).orElse(""), Optional.ofNullable(city).orElse(""),
-            Optional.ofNullable(country).orElse(""), Optional.ofNullable(connectorType).orElse(""));
+      .findByNameContainingAndCityContainingAndCountryContainingAndConnectorTypeContaining(
+        Optional.ofNullable(name).orElse(""), Optional.ofNullable(city).orElse(""),
+        Optional.ofNullable(country).orElse(""), Optional.ofNullable(connectorType).orElse(""));
   }
 
   /**
@@ -160,17 +160,17 @@ public class StationService {
     }
     
     return stationRepository.findAll().stream()
-        .filter(station -> {
-            if (station.getLatitude() == null || station.getLongitude() == null) {
-                return false;
-            }
-            double distance = calculateDistance(
-                latitude, longitude,
-                station.getLatitude(), station.getLongitude()
-            );
-            return distance <= radius;
-        })
-        .toList();
+      .filter(station -> {
+        if (station.getLatitude() == null || station.getLongitude() == null) {
+          return false;
+        }
+        double distance = calculateDistance(
+            latitude, longitude,
+            station.getLatitude(), station.getLongitude()
+        );
+        return distance <= radius;
+      })
+      .toList();
   }
 
   /**

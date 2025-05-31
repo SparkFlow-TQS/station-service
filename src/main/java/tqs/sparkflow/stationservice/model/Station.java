@@ -53,7 +53,8 @@ public class Station {
   private Boolean isOperational;
 
   /** Creates a new Station. */
-  public Station() {}
+  public Station() {
+  }
 
   /**
    * Creates a new Station with the given details.

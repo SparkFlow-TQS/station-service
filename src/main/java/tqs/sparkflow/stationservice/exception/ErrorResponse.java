@@ -2,6 +2,9 @@ package tqs.sparkflow.stationservice.exception;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents an error response returned by the application.
+ */
 public class ErrorResponse {
   private final int status;
   private final String error;
@@ -9,6 +12,14 @@ public class ErrorResponse {
   private final String path;
   private final LocalDateTime timestamp;
 
+  /**
+   * Creates a new ErrorResponse.
+   *
+   * @param status The HTTP status code
+   * @param error The error type
+   * @param message The error message
+   * @param path The request path
+   */
   public ErrorResponse(int status, String error, String message, String path) {
     this.status = status;
     this.error = error;
