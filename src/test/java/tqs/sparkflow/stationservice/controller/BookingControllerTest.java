@@ -197,4 +197,99 @@ class BookingControllerTest {
                 .with(SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isNotFound()); // Controller maps IllegalStateException to 404
     }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenGetAllBookings_withNoBookings_thenNoContent() throws Exception {
+        when(bookingService.getAllBookings(1L)).thenReturn(List.of());
+        mockMvc.perform(get("/bookings").param("userId", "1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenCreateBooking_withMalformedJson_thenBadRequest() throws Exception {
+        String malformedJson = "{\"stationId\":1,\"userId\":1,\"startTime\":\"not-a-date\"}";
+        mockMvc.perform(post("/bookings")
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(malformedJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenCreateBooking_withNonOperationalStation_thenBadRequest() throws Exception {
+        Booking inputBooking = new Booking();
+        inputBooking.setStationId(2L);
+        inputBooking.setUserId(1L);
+        inputBooking.setStartTime(now);
+        inputBooking.setEndTime(now.plusHours(2));
+        inputBooking.setStatus(BookingStatus.ACTIVE);
+        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Station is not operational"));
+        mockMvc.perform(post("/bookings")
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(inputBooking)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenCreateBooking_withOverlappingBooking_thenBadRequest() throws Exception {
+        Booking inputBooking = new Booking();
+        inputBooking.setStationId(1L);
+        inputBooking.setUserId(1L);
+        inputBooking.setStartTime(now);
+        inputBooking.setEndTime(now.plusHours(2));
+        inputBooking.setStatus(BookingStatus.ACTIVE);
+        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Time slot is already booked"));
+        mockMvc.perform(post("/bookings")
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(inputBooking)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenCancelBooking_withNonExistentBooking_thenNotFound() throws Exception {
+        when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("Booking not found"));
+        mockMvc.perform(post("/bookings/999/cancel")
+                .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenGetBookingsByStationId_withNoResults_thenNoContent() throws Exception {
+        when(bookingService.getBookingsByStationId(anyLong())).thenReturn(List.of());
+        mockMvc.perform(get("/bookings/station/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenGetBookingsByUserId_withNoResults_thenNoContent() throws Exception {
+        when(bookingService.getBookingsByUserId(anyLong())).thenReturn(List.of());
+        mockMvc.perform(get("/bookings/user/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "1")
+    void whenCreateBooking_withUserNotFound_thenBadRequest() throws Exception {
+        Booking inputBooking = new Booking();
+        inputBooking.setStationId(1L);
+        inputBooking.setUserId(999L);
+        inputBooking.setStartTime(now);
+        inputBooking.setEndTime(now.plusHours(2));
+        inputBooking.setStatus(BookingStatus.ACTIVE);
+        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("User not found or not authorized"));
+        mockMvc.perform(post("/bookings")
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(inputBooking)))
+                .andExpect(status().isBadRequest());
+    }
 } 

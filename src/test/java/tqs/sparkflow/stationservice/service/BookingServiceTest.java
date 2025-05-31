@@ -50,10 +50,6 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Set up default behavior for restTemplate
-        when(restTemplate.getForObject(anyString(), eq(Object.class))).thenReturn(new Object());
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
-        
         now = LocalDateTime.now();
         recurringDays = new HashSet<>(Arrays.asList(1, 2, 3)); // Monday, Tuesday, Wednesday
 
@@ -111,7 +107,6 @@ class BookingServiceTest {
     @Test
     void whenGetBookingById_thenReturnBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
 
         Optional<Booking> found = bookingService.getBookingById(1L, 1L);
 
@@ -133,7 +128,6 @@ class BookingServiceTest {
     void whenCancelBooking_thenReturnCancelledBooking() {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArgument(0));
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
 
         Booking cancelledBooking = bookingService.cancelBooking(1L);
 
