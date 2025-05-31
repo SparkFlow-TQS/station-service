@@ -40,10 +40,11 @@ public interface BookingService {
      * Validates that the requesting user has permission to view the booking.
      *
      * @param id The booking ID
+     * @param requestingUserId The ID of the user requesting the booking
      * @return The booking if found and user has permission
      * @throws IllegalStateException if the user is not authorized to view the booking
      */
-    Optional<Booking> getBookingById(Long id);
+    Optional<Booking> getBookingById(Long id, Long requestingUserId);
 
     /**
      * Gets all bookings.

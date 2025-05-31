@@ -17,6 +17,7 @@ import tqs.sparkflow.stationservice.service.BookingService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/bookings")
@@ -89,8 +90,10 @@ public class BookingController {
     })
     public ResponseEntity<Booking> getBookingById(
             @Parameter(description = "Booking ID", required = true)
-            @PathVariable Long id) {
-        return bookingService.getBookingById(id)
+            @PathVariable Long id,
+            Principal principal) {
+        Long requestingUserId = Long.valueOf(principal.getName());
+        return bookingService.getBookingById(id, requestingUserId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

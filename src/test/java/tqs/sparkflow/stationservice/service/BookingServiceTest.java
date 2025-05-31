@@ -109,7 +109,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
         when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
 
-        Optional<Booking> found = bookingService.getBookingById(1L);
+        Optional<Booking> found = bookingService.getBookingById(1L, 1L);
 
         assertThat(found).isPresent();
         assertThat(found.get().getId()).isEqualTo(1L);
@@ -154,5 +154,93 @@ class BookingServiceTest {
 
         assertThat(bookings).hasSize(1);
         assertThat(bookings.get(0).getUserId()).isEqualTo(1L);
+    }
+
+    @Test
+    void whenCreateBooking_withUserNotFound_thenThrowException() {
+        // Simulate user validation failure
+        org.mockito.Mockito.doThrow(new IllegalStateException("User not found or not authorized"))
+            .when(restTemplate).getForObject(anyString(), eq(Object.class));
+        Booking booking = new Booking();
+        booking.setUserId(99L);
+        booking.setStationId(1L);
+        booking.setStartTime(now);
+        booking.setEndTime(now.plusHours(2));
+        booking.setRecurringDays(recurringDays);
+        assertThatThrownBy(() -> bookingService.createBooking(booking))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("User not found or not authorized");
+    }
+
+    @Test
+    void whenGetAllBookings_withUserNotAuthorized_thenThrowException() {
+        org.mockito.Mockito.doThrow(new IllegalStateException("User not found or not authorized"))
+            .when(restTemplate).getForObject(anyString(), eq(Object.class));
+        assertThatThrownBy(() -> bookingService.getAllBookings(99L))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("User not found or not authorized");
+    }
+
+    @Test
+    void whenGetBookingsByStationId_withUserNotAuthorized_thenThrowException() {
+        org.mockito.Mockito.doThrow(new IllegalStateException("User not found or not authorized"))
+            .when(restTemplate).getForObject(anyString(), eq(Object.class));
+        assertThatThrownBy(() -> bookingService.getBookingsByStationId(99L))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("User not found or not authorized");
+    }
+
+    @Test
+    void whenGetBookingsByUserId_withUserNotAuthorized_thenThrowException() {
+        org.mockito.Mockito.doThrow(new IllegalStateException("User not found or not authorized"))
+            .when(restTemplate).getForObject(anyString(), eq(Object.class));
+        assertThatThrownBy(() -> bookingService.getBookingsByUserId(99L))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("User not found or not authorized");
+    }
+
+    @Test
+    void whenGetBookingById_withPermissionDenied_thenThrowException() {
+        // Simulate a booking with a different userId than the one requesting
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setUserId(2L); // booking belongs to user 2
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        // Simulate permission denied by throwing exception in validateUserPermission
+        org.mockito.Mockito.doThrow(new IllegalStateException("User not authorized to access this booking"))
+            .when(restTemplate).getForObject(anyString(), eq(Boolean.class));
+        assertThatThrownBy(() -> {
+            // Simulate requesting user is not the booking owner
+            // This will trigger validateUserPermission
+            bookingService.getBookingById(1L, 1L);
+        })
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("User not authorized to access this booking");
+    }
+
+    @Test
+    void whenCancelBooking_withBookingNotFound_thenThrowException() {
+        when(bookingRepository.findById(2L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> bookingService.cancelBooking(2L))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Booking not found");
+    }
+
+    @Test
+    void whenCreateRecurringBooking_withNullRecurringDays_thenReturnCreatedBooking() {
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(List.of());
+        when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
+        Booking createdBooking = bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), null);
+        assertThat(createdBooking).isNotNull();
+    }
+
+    @Test
+    void whenCreateRecurringBooking_withEmptyRecurringDays_thenReturnCreatedBooking() {
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(List.of());
+        when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
+        Booking createdBooking = bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), new java.util.HashSet<>());
+        assertThat(createdBooking).isNotNull();
     }
 } 

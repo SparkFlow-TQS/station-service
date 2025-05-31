@@ -86,10 +86,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Optional<Booking> getBookingById(Long id) {
+    public Optional<Booking> getBookingById(Long id, Long requestingUserId) {
         Optional<Booking> booking = bookingRepository.findById(id);
         if (booking.isPresent()) {
-            validateUserPermission(booking.get().getUserId(), booking.get().getUserId());
+            validateUserPermission(requestingUserId, booking.get().getUserId());
         }
         return booking;
     }
