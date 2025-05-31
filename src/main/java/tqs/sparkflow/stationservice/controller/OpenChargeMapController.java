@@ -43,7 +43,8 @@ public class OpenChargeMapController {
    */
   @Operation(
       summary = "Populate stations from OpenChargeMap",
-      description = "Retrieves charging stations from OpenChargeMap API within a specified radius of given coordinates and stores them in the local database")
+      description = "Retrieves charging stations from OpenChargeMap API within "
+          + "a specified radius of given coordinates and stores them in the local database")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200",

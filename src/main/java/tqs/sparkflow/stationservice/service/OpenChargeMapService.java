@@ -87,13 +87,16 @@ public class OpenChargeMapService {
     }
 
     try {
-      String url = String.format("%s?key=%s&latitude=%f&longitude=%f&distance=%d", baseUrl, apiKey, latitude, longitude, radius);
+      String url = String.format(
+          "%s?key=%s&latitude=%f&longitude=%f&distance=%d",
+          baseUrl, apiKey, latitude, longitude, radius);
       ResponseEntity<List<Map<String, Object>>> response =
           restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+              url,
+              HttpMethod.GET,
+              null,
+              new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+          );
 
       List<Map<String, Object>> responseBody = response.getBody();
       if (responseBody == null || responseBody.isEmpty()) {

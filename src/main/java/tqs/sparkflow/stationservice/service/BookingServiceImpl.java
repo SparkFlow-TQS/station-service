@@ -10,7 +10,6 @@ import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -24,15 +23,17 @@ public class BookingServiceImpl implements BookingService {
    *
    * @param bookingRepository The repository for booking operations
    * @param stationService The service for station operations
+   * @param restTemplate The RestTemplate for making HTTP requests
    * @param userServiceUrl The URL of the user service
-   */
+  */
   public BookingServiceImpl(
       BookingRepository bookingRepository,
       StationService stationService,
-      @Value("${user.service.url}") String userServiceUrl) {
+      RestTemplate restTemplate,
+      String userServiceUrl) {
     this.bookingRepository = bookingRepository;
     this.stationService = stationService;
-    this.restTemplate = new RestTemplate();
+    this.restTemplate = restTemplate;
     this.userServiceUrl = userServiceUrl;
   }
 
@@ -47,7 +48,12 @@ public class BookingServiceImpl implements BookingService {
   private void validateUserPermission(Long userId, Long bookingUserId) {
     if (!userId.equals(bookingUserId)) {
       try {
-        restTemplate.getForObject(userServiceUrl + "/users/" + userId + "/has-role/ADMIN", Boolean.class);
+        restTemplate.getForObject(
+            userServiceUrl 
+            + "/users/" 
+            + userId 
+            + "/has-role/ADMIN",
+            Boolean.class);
       } catch (Exception e) {
         throw new IllegalStateException("User not authorized to access this booking");
       }
@@ -64,7 +70,8 @@ public class BookingServiceImpl implements BookingService {
       throw new IllegalStateException("Station is not operational");
     }
 
-    List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(stationId, startTime, endTime);
+    List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
+                                                            stationId, startTime, endTime);
     if (!overlappingBookings.isEmpty()) {
       throw new IllegalStateException("Time slot is already booked");
     }
@@ -83,9 +90,12 @@ public class BookingServiceImpl implements BookingService {
   @Override
   public Booking createBooking(Booking booking) {
     validateUser(booking.getUserId());
-    return createRecurringBooking(booking.getUserId(), booking.getStationId(),
-                                  booking.getStartTime(), booking.getEndTime(),
-                                  booking.getRecurringDays());
+    return createRecurringBooking(
+        booking.getUserId(),
+        booking.getStationId(),
+        booking.getStartTime(),
+        booking.getEndTime(),
+        booking.getRecurringDays());
   }
 
   @Override
