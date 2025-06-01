@@ -266,10 +266,12 @@ public class Station extends BaseStationFields {
     this.isOperational = isOperational;
   }
 
+  @Override
   public Double getPrice() {
     return price;
   }
 
+  @Override
   public void setPrice(Double price) {
     this.price = price;
   }

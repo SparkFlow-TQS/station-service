@@ -397,37 +397,40 @@ class StationServiceTest {
 
   @Test
   void whenFilterByConnectorType_thenReturnMatchingStations() {
-    // Arrange
-    StationFilterDTO filters = new StationFilterDTO();
-    filters.setConnectorType("Type 2");
+    // Given
+    StationFilterDTO filter = new StationFilterDTO();
+    filter.setConnectorType("Type 2");
+    List<Station> expectedStations = Arrays.asList(station1, station3);
     when(stationRepository.findStationsByFilters("Type 2", null, null, null, null, null, null, null, null))
-        .thenReturn(Arrays.asList(station1, station3));
+        .thenReturn(expectedStations);
 
-    // Act
-    List<Station> result = stationService.getStationsByFilters(filters);
+    // When
+    List<Station> result = stationService.getStationsByFilters(filter);
 
-    // Assert
-    assertThat(result).hasSize(2);
-    assertThat(result).allMatch(station -> station.getConnectorType().equals("Type 2"));
+    // Then
+    assertThat(result)
+        .hasSize(2)
+        .allMatch(station -> station.getConnectorType().equals("Type 2"));
     verify(stationRepository).findStationsByFilters("Type 2", null, null, null, null, null, null, null, null);
   }
 
   @Test
   void whenFilterByPriceRange_thenReturnMatchingStations() {
-    // Arrange
-    StationFilterDTO filters = new StationFilterDTO();
-    filters.setMinPrice(0.25);
-    filters.setMaxPrice(0.30);
+    // Given
+    StationFilterDTO filter = new StationFilterDTO();
+    filter.setMinPrice(0.25);
+    filter.setMaxPrice(0.30);
+    List<Station> expectedStations = Arrays.asList(station1, station3);
     when(stationRepository.findStationsByFilters(null, null, null, null, null, null, null, 0.25, 0.30))
-        .thenReturn(Arrays.asList(station1, station3));
+        .thenReturn(expectedStations);
 
-    // Act
-    List<Station> result = stationService.getStationsByFilters(filters);
+    // When
+    List<Station> result = stationService.getStationsByFilters(filter);
 
-    // Assert
-    assertThat(result).hasSize(2);
-    assertThat(result).allMatch(station -> 
-        station.getPrice() >= 0.25 && station.getPrice() <= 0.30);
+    // Then
+    assertThat(result)
+        .hasSize(2)
+        .allMatch(station -> station.getPrice() >= 0.25 && station.getPrice() <= 0.30);
     verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, null, 0.25, 0.30);
   }
 
@@ -474,18 +477,20 @@ class StationServiceTest {
 
   @Test
   void whenFilterByOperationalStatus_thenReturnMatchingStations() {
-    // Arrange
-    StationFilterDTO filters = new StationFilterDTO();
-    filters.setIsOperational(true);
+    // Given
+    StationFilterDTO filter = new StationFilterDTO();
+    filter.setIsOperational(true);
+    List<Station> expectedStations = Arrays.asList(station1, station2);
     when(stationRepository.findStationsByFilters(null, null, null, true, null, null, null, null, null))
-        .thenReturn(Arrays.asList(station1, station2));
+        .thenReturn(expectedStations);
 
-    // Act
-    List<Station> result = stationService.getStationsByFilters(filters);
+    // When
+    List<Station> result = stationService.getStationsByFilters(filter);
 
-    // Assert
-    assertThat(result).hasSize(2);
-    assertThat(result).allMatch(Station::getIsOperational);
+    // Then
+    assertThat(result)
+        .hasSize(2)
+        .allMatch(Station::getIsOperational);
     verify(stationRepository).findStationsByFilters(null, null, null, true, null, null, null, null, null);
   }
 
