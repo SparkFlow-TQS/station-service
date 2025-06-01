@@ -109,4 +109,100 @@ class StationTest {
     assertThat(station.getIsOperational()).isEqualTo(isOperational);
     assertThat(station.getPrice()).isEqualTo(price);
   }
+
+  @Test
+  void whenUsingBuilder_thenCreatesStationWithAllFields() {
+    // Given
+    String externalId = "ext123";
+    String name = "Test Station";
+    String address = "123 Test St";
+    String city = "Test City";
+    String country = "Test Country";
+    Double latitude = 40.7128;
+    Double longitude = -74.0060;
+    String connectorType = "Type 2";
+    Integer power = 50;
+    Boolean isOperational = true;
+    Double price = 0.35;
+    String status = "Available";
+
+    // When
+    Station station = new Station.Builder()
+        .externalId(externalId)
+        .name(name)
+        .address(address)
+        .city(city)
+        .country(country)
+        .latitude(latitude)
+        .longitude(longitude)
+        .connectorType(connectorType)
+        .power(power)
+        .isOperational(isOperational)
+        .price(price)
+        .status(status)
+        .build();
+
+    // Then
+    assertThat(station.getExternalId()).isEqualTo(externalId);
+    assertThat(station.getName()).isEqualTo(name);
+    assertThat(station.getAddress()).isEqualTo(address);
+    assertThat(station.getCity()).isEqualTo(city);
+    assertThat(station.getCountry()).isEqualTo(country);
+    assertThat(station.getLatitude()).isEqualTo(latitude);
+    assertThat(station.getLongitude()).isEqualTo(longitude);
+    assertThat(station.getConnectorType()).isEqualTo(connectorType);
+    assertThat(station.getPower()).isEqualTo(power);
+    assertThat(station.getIsOperational()).isEqualTo(isOperational);
+    assertThat(station.getPrice()).isEqualTo(price);
+    assertThat(station.getStatus()).isEqualTo(status);
+  }
+
+  @Test
+  void whenUsingBuilderWithPartialFields_thenCreatesStationWithOnlySetFields() {
+    // Given
+    String name = "Test Station";
+    String address = "123 Test St";
+    Double latitude = 40.7128;
+
+    // When
+    Station station = new Station.Builder()
+        .name(name)
+        .address(address)
+        .latitude(latitude)
+        .build();
+
+    // Then
+    assertThat(station.getName()).isEqualTo(name);
+    assertThat(station.getAddress()).isEqualTo(address);
+    assertThat(station.getLatitude()).isEqualTo(latitude);
+    assertThat(station.getExternalId()).isNull();
+    assertThat(station.getCity()).isNull();
+    assertThat(station.getCountry()).isNull();
+    assertThat(station.getLongitude()).isNull();
+    assertThat(station.getConnectorType()).isNull();
+    assertThat(station.getPower()).isNull();
+    assertThat(station.getIsOperational()).isNull();
+    assertThat(station.getPrice()).isNull();
+    assertThat(station.getStatus()).isNull();
+  }
+
+  @Test
+  void whenUsingBuilderWithEmptyStation_thenCreatesEmptyStation() {
+    // When
+    Station station = new Station.Builder().build();
+
+    // Then
+    assertThat(station.getExternalId()).isNull();
+    assertThat(station.getName()).isNull();
+    assertThat(station.getAddress()).isNull();
+    assertThat(station.getCity()).isNull();
+    assertThat(station.getCountry()).isNull();
+    assertThat(station.getLatitude()).isNull();
+    assertThat(station.getLongitude()).isNull();
+    assertThat(station.getConnectorType()).isNull();
+    assertThat(station.getPower()).isNull();
+    assertThat(station.getIsOperational()).isNull();
+    assertThat(station.getPrice()).isNull();
+    assertThat(station.getStatus()).isNull();
+  }
 }
