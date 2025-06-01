@@ -15,6 +15,14 @@ public class BaseStationFields {
     @Min(value = 0, message = "Price must be non-negative")
     protected Double price;
 
+    protected String connectorType;
+    protected Integer minPower;
+    protected Integer maxPower;
+    protected Boolean isOperational;
+    protected String status;
+    protected String city;
+    protected String country;
+
     public Double getLatitude() {
         return latitude;
     }
@@ -37,5 +45,61 @@ public class BaseStationFields {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getConnectorType() {
+        return connectorType;
+    }
+
+    public void setConnectorType(String connectorType) {
+        this.connectorType = connectorType;
+    }
+
+    public Integer getMinPower() {
+        return minPower;
+    }
+
+    public void setMinPower(Integer minPower) {
+        this.minPower = minPower;
+    }
+
+    public Integer getMaxPower() {
+        return maxPower;
+    }
+
+    public void setMaxPower(Integer maxPower) {
+        this.maxPower = maxPower;
+    }
+
+    public Boolean getIsOperational() {
+        return isOperational;
+    }
+
+    public void setIsOperational(Boolean isOperational) {
+        this.isOperational = isOperational;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 } 
