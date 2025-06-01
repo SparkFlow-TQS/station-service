@@ -161,7 +161,7 @@ public class Station extends BaseStationFields {
     this.connectorType = connectorType;
     this.power = power;
     this.isOperational = isOperational;
-    this.price = price;
+    setPrice(price);
   }
 
   public Long getId() {
@@ -212,18 +212,22 @@ public class Station extends BaseStationFields {
     this.country = country;
   }
 
+  @Override
   public Double getLatitude() {
     return latitude;
   }
 
+  @Override
   public void setLatitude(Double latitude) {
     this.latitude = latitude;
   }
 
+  @Override
   public Double getLongitude() {
     return longitude;
   }
 
+  @Override
   public void setLongitude(Double longitude) {
     this.longitude = longitude;
   }
@@ -236,10 +240,12 @@ public class Station extends BaseStationFields {
     this.status = status;
   }
 
+  @Override
   public String getConnectorType() {
     return connectorType;
   }
 
+  @Override
   public void setConnectorType(String connectorType) {
     this.connectorType = connectorType;
   }
@@ -270,6 +276,81 @@ public class Station extends BaseStationFields {
 
   @Override
   public String toString() {
-    return "Station{id=" + id + ", name='" + name + '\'' + '}';
+    return "Station{id=" + id + ", name='" + name + "'}";
+  }
+
+  /**
+   * Builder for creating Station instances.
+   */
+  public static class Builder {
+    private final Station station;
+
+    public Builder() {
+      station = new Station();
+    }
+
+    public Builder externalId(String externalId) {
+      station.setExternalId(externalId);
+      return this;
+    }
+
+    public Builder name(String name) {
+      station.setName(name);
+      return this;
+    }
+
+    public Builder address(String address) {
+      station.setAddress(address);
+      return this;
+    }
+
+    public Builder city(String city) {
+      station.setCity(city);
+      return this;
+    }
+
+    public Builder country(String country) {
+      station.setCountry(country);
+      return this;
+    }
+
+    public Builder latitude(Double latitude) {
+      station.setLatitude(latitude);
+      return this;
+    }
+
+    public Builder longitude(Double longitude) {
+      station.setLongitude(longitude);
+      return this;
+    }
+
+    public Builder connectorType(String connectorType) {
+      station.setConnectorType(connectorType);
+      return this;
+    }
+
+    public Builder power(Integer power) {
+      station.setPower(power);
+      return this;
+    }
+
+    public Builder isOperational(Boolean isOperational) {
+      station.setIsOperational(isOperational);
+      return this;
+    }
+
+    public Builder price(Double price) {
+      station.setPrice(price);
+      return this;
+    }
+
+    public Builder status(String status) {
+      station.setStatus(status);
+      return this;
+    }
+
+    public Station build() {
+      return station;
+    }
   }
 }
