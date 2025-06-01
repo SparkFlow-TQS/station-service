@@ -37,11 +37,6 @@ import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.service.BookingService;
 import tqs.sparkflow.stationservice.service.StationService;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import java.security.Principal;
-import static org.mockito.Mockito.mock;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @WebMvcTest(BookingController.class)
 class BookingControllerTest {

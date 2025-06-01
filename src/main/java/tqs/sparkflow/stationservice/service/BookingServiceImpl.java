@@ -17,6 +17,8 @@ public class BookingServiceImpl implements BookingService {
   private final StationService stationService;
   private final RestTemplate restTemplate;
   private final String userServiceUrl;
+  private static final String USERS_PATH = "/users/";
+  private static final String ADMIN_ROLE_CHECK = "/has-role/ADMIN";
 
   /**
    * Creates a new instance of BookingServiceImpl.
@@ -39,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
 
   private void validateUser(Long userId) {
     try {
-      restTemplate.getForObject(userServiceUrl + "/users/" + userId, Object.class);
+      restTemplate.getForObject(userServiceUrl + USERS_PATH + userId, Object.class);
     } catch (Exception e) {
       throw new IllegalStateException("User not found or not authorized");
     }
@@ -50,9 +52,9 @@ public class BookingServiceImpl implements BookingService {
       try {
         restTemplate.getForObject(
             userServiceUrl 
-            + "/users/" 
+            + USERS_PATH 
             + userId 
-            + "/has-role/ADMIN",
+            + ADMIN_ROLE_CHECK,
             Boolean.class);
       } catch (Exception e) {
         throw new IllegalStateException("User not authorized to access this booking");
@@ -112,7 +114,7 @@ public class BookingServiceImpl implements BookingService {
     validateUser(userId);
     try {
       restTemplate.getForObject(
-          userServiceUrl + "/users/" + userId + "/has-role/ADMIN",
+          userServiceUrl + USERS_PATH + userId + ADMIN_ROLE_CHECK,
           Boolean.class);
     } catch (Exception e) {
       throw new IllegalStateException("User not authorized to access all bookings");
@@ -139,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
     validateUser(requestingUserId);
     try {
       restTemplate.getForObject(
-          userServiceUrl + "/users/" + requestingUserId + "/has-role/ADMIN",
+          userServiceUrl + USERS_PATH + requestingUserId + ADMIN_ROLE_CHECK,
           Boolean.class);
     } catch (Exception e) {
       // If not admin, only return bookings for this user
