@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 /** Represents a charging station. */
 @Entity
 @Table(name = "stations")
-public class Station {
+public class Station extends BaseStationFields {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -270,6 +270,6 @@ public class Station {
 
   @Override
   public String toString() {
-    return "Station{" + "id=" + id + ", name='" + name + '\'' + '}';
+    return "Station{id=" + id + ", name='" + name + '\'' + '}';
   }
 }

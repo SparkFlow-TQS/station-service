@@ -2,8 +2,9 @@ package tqs.sparkflow.stationservice.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import tqs.sparkflow.stationservice.model.BaseStationFields;
 
-public class StationFilterDTO {
+public class StationFilterDTO extends BaseStationFields {
     private String connectorType;
     private Integer minPower;
     private Integer maxPower;
