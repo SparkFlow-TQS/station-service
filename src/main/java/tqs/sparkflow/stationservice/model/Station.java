@@ -267,16 +267,6 @@ public class Station extends BaseStationFields {
   }
 
   @Override
-  public Double getPrice() {
-    return super.getPrice();
-  }
-
-  @Override
-  public void setPrice(Double price) {
-    super.setPrice(price);
-  }
-
-  @Override
   public String toString() {
     return "Station{id=" + id + ", name='" + name + "'}";
   }
