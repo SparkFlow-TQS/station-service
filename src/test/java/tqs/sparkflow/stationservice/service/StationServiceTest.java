@@ -7,11 +7,13 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
@@ -23,6 +25,50 @@ class StationServiceTest {
   @Mock private StationRepository stationRepository;
 
   @InjectMocks private StationService stationService;
+
+  private Station station1;
+  private Station station2;
+  private Station station3;
+
+  @BeforeEach
+  void setUp() {
+    // Create test stations
+    station1 = new Station();
+    station1.setId(1L);
+    station1.setConnectorType("Type 2");
+    station1.setPower(50);
+    station1.setPrice(0.30);
+    station1.setIsOperational(true);
+    station1.setStatus("Available");
+    station1.setCity("Aveiro");
+    station1.setCountry("Portugal");
+    station1.setLatitude(40.623361);
+    station1.setLongitude(-8.650256);
+
+    station2 = new Station();
+    station2.setId(2L);
+    station2.setConnectorType("CCS");
+    station2.setPower(150);
+    station2.setPrice(0.35);
+    station2.setIsOperational(true);
+    station2.setStatus("In Use");
+    station2.setCity("Porto");
+    station2.setCountry("Portugal");
+    station2.setLatitude(41.1579);
+    station2.setLongitude(-8.6291);
+
+    station3 = new Station();
+    station3.setId(3L);
+    station3.setConnectorType("Type 2");
+    station3.setPower(22);
+    station3.setPrice(0.25);
+    station3.setIsOperational(false);
+    station3.setStatus("Offline");
+    station3.setCity("Lisbon");
+    station3.setCountry("Portugal");
+    station3.setLatitude(38.7223);
+    station3.setLongitude(-9.1393);
+  }
 
   @Test
   @XrayTest(key = "STATION-SVC-1")
@@ -347,6 +393,171 @@ class StationServiceTest {
     assertThatThrownBy(() -> stationService.getStationByExternalId(externalId))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Station not found with external id: " + externalId);
+  }
+
+  @Test
+  void whenFilterByConnectorType_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setConnectorType("Type 2");
+    when(stationRepository.findStationsByFilters("Type 2", null, null, null, null, null, null, null, null))
+        .thenReturn(Arrays.asList(station1, station3));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(2);
+    assertThat(result).allMatch(station -> station.getConnectorType().equals("Type 2"));
+    verify(stationRepository).findStationsByFilters("Type 2", null, null, null, null, null, null, null, null);
+  }
+
+  @Test
+  void whenFilterByPriceRange_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setMinPrice(0.25);
+    filters.setMaxPrice(0.30);
+    when(stationRepository.findStationsByFilters(null, null, null, null, null, null, null, 0.25, 0.30))
+        .thenReturn(Arrays.asList(station1, station3));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(2);
+    assertThat(result).allMatch(station -> 
+        station.getPrice() >= 0.25 && station.getPrice() <= 0.30);
+    verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, null, 0.25, 0.30);
+  }
+
+  @Test
+  void whenFilterByPowerRange_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setMinPower(40);
+    filters.setMaxPower(60);
+    when(stationRepository.findStationsByFilters(null, 40, 60, null, null, null, null, null, null))
+        .thenReturn(List.of(station1));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getPower()).isEqualTo(50);
+    verify(stationRepository).findStationsByFilters(null, 40, 60, null, null, null, null, null, null);
+  }
+
+  @Test
+  void whenFilterByLocation_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setLatitude(40.623361);
+    filters.setLongitude(-8.650256);
+    filters.setRadius(10);
+    when(stationRepository.findStationsByFiltersWithLocation(
+        null, null, null, null, null, null, null, null, null, 
+        40.623361, -8.650256, 10))
+        .thenReturn(List.of(station1));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getId()).isEqualTo(1L);
+    verify(stationRepository).findStationsByFiltersWithLocation(
+        null, null, null, null, null, null, null, null, null,
+        40.623361, -8.650256, 10);
+  }
+
+  @Test
+  void whenFilterByOperationalStatus_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setIsOperational(true);
+    when(stationRepository.findStationsByFilters(null, null, null, true, null, null, null, null, null))
+        .thenReturn(Arrays.asList(station1, station2));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(2);
+    assertThat(result).allMatch(Station::getIsOperational);
+    verify(stationRepository).findStationsByFilters(null, null, null, true, null, null, null, null, null);
+  }
+
+  @Test
+  void whenFilterByCity_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setCity("Aveiro");
+    when(stationRepository.findStationsByFilters(null, null, null, null, null, "Aveiro", null, null, null))
+        .thenReturn(List.of(station1));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getCity()).isEqualTo("Aveiro");
+    verify(stationRepository).findStationsByFilters(null, null, null, null, null, "Aveiro", null, null, null);
+  }
+
+  @Test
+  void whenFilterByMultipleCriteria_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setConnectorType("Type 2");
+    filters.setMinPrice(0.25);
+    filters.setMaxPrice(0.35);
+    filters.setIsOperational(true);
+    when(stationRepository.findStationsByFilters("Type 2", null, null, true, null, null, null, 0.25, 0.35))
+        .thenReturn(List.of(station1));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getConnectorType()).isEqualTo("Type 2");
+    assertThat(result.get(0).getPrice()).isBetween(0.25, 0.35);
+    assertThat(result.get(0).getIsOperational()).isTrue();
+    verify(stationRepository).findStationsByFilters("Type 2", null, null, true, null, null, null, 0.25, 0.35);
+  }
+
+  @Test
+  void whenNoFiltersProvided_thenReturnAllStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    when(stationRepository.findStationsByFilters(null, null, null, null, null, null, null, null, null))
+        .thenReturn(Arrays.asList(station1, station2, station3));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(3);
+    verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, null, null, null);
+  }
+
+  @Test
+  void whenFilterByStatus_thenReturnMatchingStations() {
+    // Arrange
+    StationFilterDTO filters = new StationFilterDTO();
+    filters.setStatus("Available");
+    when(stationRepository.findStationsByFilters(null, null, null, null, "Available", null, null, null, null))
+        .thenReturn(List.of(station1));
+
+    // Act
+    List<Station> result = stationService.getStationsByFilters(filters);
+
+    // Assert
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getStatus()).isEqualTo("Available");
+    verify(stationRepository).findStationsByFilters(null, null, null, null, "Available", null, null, null, null);
   }
 
   private Station createTestStation(Long id, String name) {
