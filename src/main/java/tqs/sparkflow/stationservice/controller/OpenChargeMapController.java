@@ -8,7 +8,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 
 /**
@@ -40,7 +43,8 @@ public class OpenChargeMapController {
    */
   @Operation(
       summary = "Populate stations from OpenChargeMap",
-      description = "Retrieves charging stations from OpenChargeMap API within a specified radius of given coordinates and stores them in the local database")
+      description = "Retrieves charging stations from OpenChargeMap API within "
+          + "a specified radius of given coordinates and stores them in the local database")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200",

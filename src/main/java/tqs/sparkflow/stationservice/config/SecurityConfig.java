@@ -55,18 +55,22 @@ public class SecurityConfig {
                                     + "object-src 'none'")))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/stations/**", "/api/openchargemap/**")
-                    .permitAll()
-                    .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
+                auth
+                    // Swagger UI endpoints first
                     .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/swagger-resources/**",
-                        "/webjars/**",
-                        "/v2/api-docs/**")
+                        "/webjars/**")
                     .permitAll()
+                    // Then other endpoints
+                    .requestMatchers("/stations/**", "/api/openchargemap/**")
+                    .permitAll()
+                    .requestMatchers("/bookings/**")
+                    .hasAnyRole("USER", "ADMIN")
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(

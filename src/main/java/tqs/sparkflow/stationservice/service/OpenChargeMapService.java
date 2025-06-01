@@ -3,7 +3,6 @@ package tqs.sparkflow.stationservice.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -26,8 +25,15 @@ public class OpenChargeMapService {
   private final StationRepository stationRepository;
   private final String apiKey;
   private final String baseUrl;
-
-  @Autowired
+  
+  /**
+   * Creates a new instance of OpenChargeMapService.
+   *
+   * @param restTemplate The RestTemplate for making HTTP requests
+   * @param stationRepository The repository for station operations
+   * @param apiKey The OpenChargeMap API key
+   * @param baseUrl The base URL for the OpenChargeMap API
+   */
   public OpenChargeMapService(
       RestTemplate restTemplate,
       StationRepository stationRepository,
@@ -81,13 +87,16 @@ public class OpenChargeMapService {
     }
 
     try {
-      String url = String.format("%s?key=%s&latitude=%f&longitude=%f&distance=%d", baseUrl, apiKey, latitude, longitude, radius);
+      String url = String.format(
+          "%s?key=%s&latitude=%f&longitude=%f&distance=%d",
+          baseUrl, apiKey, latitude, longitude, radius);
       ResponseEntity<List<Map<String, Object>>> response =
           restTemplate.exchange(
               url,
               HttpMethod.GET,
               null,
-              new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+              new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+          );
 
       List<Map<String, Object>> responseBody = response.getBody();
       if (responseBody == null || responseBody.isEmpty()) {
@@ -119,16 +128,16 @@ public class OpenChargeMapService {
       return null;
     }
     return new Station(
-        ocmStation.getId(),
-        ocmStation.getName(),
-        ocmStation.getAddress(),
-        ocmStation.getCity(),
-        ocmStation.getCountry(),
-        ocmStation.getLatitude(),
-        ocmStation.getLongitude(),
-        ocmStation.getConnectorType(),
-        null,
-        true);
+      ocmStation.getId(),
+      ocmStation.getName(),
+      ocmStation.getAddress(),
+      ocmStation.getCity(),
+      ocmStation.getCountry(),
+      ocmStation.getLatitude(),
+      ocmStation.getLongitude(),
+      ocmStation.getConnectorType(),
+      null,
+      true);
   }
 
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
@@ -139,20 +148,20 @@ public class OpenChargeMapService {
 
   private Station convertMapToStation(Map<String, Object> data) {
     try {
-        Map<String, Object> addressInfo = getAddressInfo(data);
-        List<Map<String, Object>> connections = getConnections(data);
+      Map<String, Object> addressInfo = getAddressInfo(data);
+      List<Map<String, Object>> connections = getConnections(data);
 
-        Station station = new Station();
-        setStationId(data, station);
-        setStationName(addressInfo, station);
-        setStationAddress(addressInfo, station);
-        setStationCoordinates(addressInfo, station);
-        station.setStatus("Available");
-        setStationConnectorType(connections, station);
+      Station station = new Station();
+      setStationId(data, station);
+      setStationName(addressInfo, station);
+      setStationAddress(addressInfo, station);
+      setStationCoordinates(addressInfo, station);
+      station.setStatus("Available");
+      setStationConnectorType(connections, station);
 
-        return station;
+      return station;
     } catch (Exception e) {
-        throw new IllegalStateException("Error converting station data: " + e.getMessage());
+      throw new IllegalStateException("Error converting station data: " + e.getMessage());
     }
   }
 
@@ -167,9 +176,9 @@ public class OpenChargeMapService {
   private void setStationId(Map<String, Object> data, Station station) {
     Object id = data.get("ID");
     if (id instanceof Number) {
-        station.setId(((Number) id).longValue());
+      station.setId(((Number) id).longValue());
     } else if (id != null) {
-        station.setId(Long.parseLong(id.toString()));
+      station.setId(Long.parseLong(id.toString()));
     }
   }
 
@@ -192,11 +201,11 @@ public class OpenChargeMapService {
 
   private void setStationConnectorType(List<Map<String, Object>> connections, Station station) {
     if (connections != null && !connections.isEmpty()) {
-        Map<String, Object> firstConnection = connections.get(0);
-        Object connectorType = firstConnection.get("ConnectionTypeID");
-        station.setConnectorType(connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
+      Map<String, Object> firstConnection = connections.get(0);
+      Object connectorType = firstConnection.get("ConnectionTypeID");
+      station.setConnectorType(connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
     } else {
-        station.setConnectorType(UNKNOWN_VALUE);
+      station.setConnectorType(UNKNOWN_VALUE);
     }
   }
 }

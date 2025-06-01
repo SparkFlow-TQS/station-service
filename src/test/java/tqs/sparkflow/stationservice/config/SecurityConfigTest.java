@@ -2,7 +2,6 @@ package tqs.sparkflow.stationservice.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
@@ -13,15 +12,20 @@ import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(classes = {TestConfig.class})
 @AutoConfigureMockMvc
-@Import(SecurityConfig.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = "openchargemap.api.url=http://dummy-url-for-tests")
+@TestPropertySource(properties = {
+    "openchargemap.api.url=http://dummy-url-for-tests",
+    "user.service.url=http://dummy-user-service-url",
+    "spring.main.allow-bean-definition-overriding=true"
+})
 class SecurityConfigTest {
 
     @Autowired
@@ -32,6 +36,9 @@ class SecurityConfigTest {
 
     @MockBean
     private OpenChargeMapService openChargeMapService;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @Test
     void contextLoads() {
@@ -47,13 +54,15 @@ class SecurityConfigTest {
 
     @Test
     void adminEndpoint_requiresAdminRole() throws Exception {
-        mockMvc.perform(get("/admin"))
+        mockMvc.perform(get("/admin")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("user", "user")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void unknownEndpoint_requiresAuthentication() throws Exception {
-        mockMvc.perform(get("/some-protected"))
+        mockMvc.perform(get("/some-protected")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("anonymous", "anonymous")))
                 .andExpect(status().isForbidden());
     }
 

@@ -8,11 +8,24 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import jakarta.servlet.http.HttpServletResponse;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -33,29 +46,78 @@ public class TestConfig {
 
   @Bean
   @Primary
+  public String userServiceUrl() {
+    return "http://dummy-user-service-url";
+  }
+
+  @Bean
+  @Primary
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  @Primary
+  public UserDetailsService userDetailsService() {
+    UserDetails admin = User.builder()
+        .username("admin")
+        .password(passwordEncoder().encode("admin"))
+        .roles("ADMIN")
+        .build();
+    
+    UserDetails user = User.builder()
+        .username("user")
+        .password(passwordEncoder().encode("user"))
+        .roles("USER")
+        .build();
+
+    return new InMemoryUserDetailsManager(admin, user);
+  }
+
+  @Bean
+  @Primary
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService());
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
+  }
+
+  @Bean
+  @Primary
+  public AuthenticationManager authenticationManager() {
+    return new ProviderManager(authenticationProvider());
+  }
+
+  @Bean
+  @Primary
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable())
-        .headers(
-            headers ->
-                headers
-                    .contentTypeOptions(content -> {})
-                    .frameOptions(frame -> frame.deny())
-                    .xssProtection(xss -> {})
-                    .contentSecurityPolicy(
-                        csp ->
-                            csp.policyDirectives(
-                                "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
-                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                                    + "style-src 'self' 'unsafe-inline'; "
-                                    + "img-src 'self' data:; "
-                                    + "font-src 'self'; "
-                                    + "connect-src 'self' *; "
-                                    + "base-uri 'self'; "
-                                    + "form-action 'self'; "
-                                    + "frame-ancestors 'none'; "
-                                    + "object-src 'none'")))
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .headers(headers -> headers.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> 
+            auth.requestMatchers("/stations/**", "/api/openchargemap/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/bookings/**").authenticated()
+                .anyRequest().authenticated())
+        .authenticationManager(authenticationManager())
+        .httpBasic(basic -> basic
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access Denied");
+            }))
+        .exceptionHandling(handling -> handling
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access Denied");
+            })
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Access Denied");
+            }))
+        .securityContext(context -> context.requireExplicitSave(false))
+        .anonymous(AbstractHttpConfigurer::disable);
     return http.build();
   }
 

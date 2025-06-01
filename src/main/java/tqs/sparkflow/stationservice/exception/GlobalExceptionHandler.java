@@ -2,6 +2,7 @@ package tqs.sparkflow.stationservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -65,6 +66,25 @@ public class GlobalExceptionHandler {
             HttpStatus.BAD_REQUEST.value(),
             BAD_REQUEST_ERROR,
             ex.getMessage(),
+            request.getDescription(false));
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handles HttpMessageNotReadableException (malformed JSON, etc).
+   *
+   * @param ex The exception to handle
+   * @param request The web request
+   * @return A response entity with the error details
+   */
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
+      HttpMessageNotReadableException ex, WebRequest request) {
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            BAD_REQUEST_ERROR,
+            "Malformed JSON request",
             request.getDescription(false));
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
