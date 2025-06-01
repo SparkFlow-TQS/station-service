@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 
 /**
  * Controller for managing charging stations.
@@ -234,5 +235,24 @@ public class StationController {
   public ResponseEntity<List<Station>> getStationsByConnectorType(
       @Parameter(description = "Type of connector to search for", required = true) @PathVariable String connectorType) {
     return ResponseEntity.ok(stationService.getStationsByConnectorType(connectorType));
+  }
+
+  /**
+   * Gets stations based on filter criteria.
+   *
+   * @param filter The filter criteria
+   * @return List of stations matching the filter criteria
+   */
+  @Operation(summary = "Get stations by filters", description = "Retrieves stations based on various filter criteria")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Successfully retrieved filtered stations",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = Station.class))),
+      @ApiResponse(responseCode = "400", description = "Invalid filter parameters")
+  })
+  @PostMapping("/filter")
+  public ResponseEntity<List<Station>> getStationsByFilters(
+      @Parameter(description = "Filter criteria", required = true) @RequestBody StationFilterDTO filter) {
+    return ResponseEntity.ok(stationService.getStationsByFilters(filter));
   }
 }

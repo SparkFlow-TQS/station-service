@@ -51,6 +51,9 @@ public class Station {
 
   private Integer power;
   private Boolean isOperational;
+  
+  @Min(value = 0, message = "Price must be non-negative")
+  private Double price; // Price per kWh in euros
 
   /** Creates a new Station. */
   public Station() {
@@ -119,6 +122,46 @@ public class Station {
     this.connectorType = connectorType;
     this.power = power;
     this.isOperational = isOperational;
+  }
+
+  /**
+   * Creates a new Station with the given details.
+   *
+   * @param externalId The external ID from OpenChargeMap
+   * @param name The name of the station
+   * @param address The address of the station
+   * @param city The city where the station is located
+   * @param country The country where the station is located
+   * @param latitude The latitude of the station
+   * @param longitude The longitude of the station
+   * @param connectorType The type of connector available at the station
+   * @param power The power rating of the station in kW
+   * @param isOperational Whether the station is operational
+   * @param price The price per kWh in euros
+   */
+  public Station(
+      String externalId,
+      String name,
+      String address,
+      String city,
+      String country,
+      Double latitude,
+      Double longitude,
+      String connectorType,
+      Integer power,
+      Boolean isOperational,
+      Double price) {
+    this.externalId = externalId;
+    this.name = name;
+    this.address = address;
+    this.city = city;
+    this.country = country;
+    this.latitude = latitude;
+    this.longitude = longitude;
+    this.connectorType = connectorType;
+    this.power = power;
+    this.isOperational = isOperational;
+    this.price = price;
   }
 
   public Long getId() {
@@ -215,6 +258,14 @@ public class Station {
 
   public void setIsOperational(Boolean isOperational) {
     this.isOperational = isOperational;
+  }
+
+  public Double getPrice() {
+    return price;
+  }
+
+  public void setPrice(Double price) {
+    this.price = price;
   }
 
   @Override
