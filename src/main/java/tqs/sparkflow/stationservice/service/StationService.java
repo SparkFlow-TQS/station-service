@@ -3,9 +3,9 @@ package tqs.sparkflow.stationservice.service;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
-import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 
 /** Service for managing charging stations. */
 @Service

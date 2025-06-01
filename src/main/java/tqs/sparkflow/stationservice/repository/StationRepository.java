@@ -47,16 +47,16 @@ public interface StationRepository extends JpaRepository<Station, Long> {
    */
   List<Station> findByConnectorType(String connectorType);
 
-  @Query("SELECT s FROM Station s WHERE " +
-         "(:connectorType IS NULL OR s.connectorType = :connectorType) AND " +
-         "(:minPower IS NULL OR s.power >= :minPower) AND " +
-         "(:maxPower IS NULL OR s.power <= :maxPower) AND " +
-         "(:isOperational IS NULL OR s.isOperational = :isOperational) AND " +
-         "(:status IS NULL OR s.status = :status) AND " +
-         "(:city IS NULL OR s.city = :city) AND " +
-         "(:country IS NULL OR s.country = :country) AND " +
-         "(:minPrice IS NULL OR s.price >= :minPrice) AND " +
-         "(:maxPrice IS NULL OR s.price <= :maxPrice)")
+  @Query("SELECT s FROM Station s WHERE "
+         + "(:connectorType IS NULL OR s.connectorType = :connectorType) AND "
+         + "(:minPower IS NULL OR s.power >= :minPower) AND "
+         + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
+         + "(:isOperational IS NULL OR s.isOperational = :isOperational) AND "
+         + "(:status IS NULL OR s.status = :status) AND "
+         + "(:city IS NULL OR s.city = :city) AND "
+         + "(:country IS NULL OR s.country = :country) AND "
+         + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
+         + "(:maxPrice IS NULL OR s.price <= :maxPrice)")
   List<Station> findStationsByFilters(
       @Param("connectorType") String connectorType,
       @Param("minPower") Integer minPower,
@@ -69,18 +69,18 @@ public interface StationRepository extends JpaRepository<Station, Long> {
       @Param("maxPrice") Double maxPrice
   );
 
-  @Query(value = "SELECT * FROM stations s WHERE " +
-         "(:connectorType IS NULL OR s.connector_type = :connectorType) AND " +
-         "(:minPower IS NULL OR s.power >= :minPower) AND " +
-         "(:maxPower IS NULL OR s.power <= :maxPower) AND " +
-         "(:isOperational IS NULL OR s.is_operational = :isOperational) AND " +
-         "(:status IS NULL OR s.status = :status) AND " +
-         "(:city IS NULL OR s.city = :city) AND " +
-         "(:country IS NULL OR s.country = :country) AND " +
-         "(:minPrice IS NULL OR s.price >= :minPrice) AND " +
-         "(:maxPrice IS NULL OR s.price <= :maxPrice) AND " +
-         "(:latitude IS NULL OR :longitude IS NULL OR :radius IS NULL OR " +
-         "ST_Distance_Sphere(point(s.longitude, s.latitude), point(:longitude, :latitude)) <= :radius * 1000)",
+  @Query(value = "SELECT * FROM stations s WHERE "
+         + "(:connectorType IS NULL OR s.connector_type = :connectorType) AND "
+         + "(:minPower IS NULL OR s.power >= :minPower) AND "
+         + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
+         + "(:isOperational IS NULL OR s.is_operational = :isOperational) AND "
+         + "(:status IS NULL OR s.status = :status) AND "
+         + "(:city IS NULL OR s.city = :city) AND "
+         + "(:country IS NULL OR s.country = :country) AND "
+         + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
+         + "(:maxPrice IS NULL OR s.price <= :maxPrice) AND "
+         + "(:latitude IS NULL OR :longitude IS NULL OR :radius IS NULL OR "
+         + "ST_Distance_Sphere(point(s.longitude, s.latitude), point(:longitude, :latitude)) <= :radius * 1000)",
          nativeQuery = true)
   List<Station> findStationsByFiltersWithLocation(
       @Param("connectorType") String connectorType,

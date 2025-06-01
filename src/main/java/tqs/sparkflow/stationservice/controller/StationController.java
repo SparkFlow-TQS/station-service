@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
-import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 
 /**
  * Controller for managing charging stations.

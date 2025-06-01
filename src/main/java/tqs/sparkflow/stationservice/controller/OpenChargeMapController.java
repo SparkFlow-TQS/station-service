@@ -16,7 +16,8 @@ import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 
 /**
  * Controller for OpenChargeMap API integration.
- * This controller provides endpoints to interact with the OpenChargeMap API and populate the local database with charging stations.
+ * This controller provides endpoints to interact with the OpenChargeMap API
+ * and populate the local database with charging stations.
  */
 @RestController
 @RequestMapping("/api/openchargemap")
