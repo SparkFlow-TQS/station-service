@@ -5,6 +5,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -13,6 +15,7 @@ import jakarta.validation.constraints.NotNull;
 /** Represents a charging station. */
 @Entity
 @Table(name = "stations")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Station extends BaseStationFields {
 
   @Id
@@ -52,9 +55,6 @@ public class Station extends BaseStationFields {
   private Integer power;
   private Boolean isOperational;
   
-  @Min(value = 0, message = "Price must be non-negative")
-  private Double price; // Price per kWh in euros
-
   /** Creates a new Station. */
   public Station() {
   }
@@ -268,12 +268,12 @@ public class Station extends BaseStationFields {
 
   @Override
   public Double getPrice() {
-    return price;
+    return super.getPrice();
   }
 
   @Override
   public void setPrice(Double price) {
-    this.price = price;
+    super.setPrice(price);
   }
 
   @Override

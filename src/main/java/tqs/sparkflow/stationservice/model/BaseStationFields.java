@@ -1,8 +1,10 @@
 package tqs.sparkflow.stationservice.model;
 
+import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
+@MappedSuperclass
 public class BaseStationFields {
     @Min(value = -90, message = "Latitude must be between -90 and 90 degrees")
     @Max(value = 90, message = "Latitude must be between -90 and 90 degrees")
