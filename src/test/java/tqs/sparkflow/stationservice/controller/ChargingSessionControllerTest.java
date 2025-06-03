@@ -9,15 +9,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import tqs.sparkflow.stationservice.config.ControllerTestConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.service.ChargingSessionService;
 
 @WebMvcTest(ChargingSessionController.class)
+@Import(ControllerTestConfig.class)
+@ActiveProfiles("controller-test")
 class ChargingSessionControllerTest {
 
     @Autowired
@@ -29,32 +34,36 @@ class ChargingSessionControllerTest {
     @MockBean
     private ChargingSessionService chargingSessionService;
 
+    private ChargingSession testSession;
+
+    @BeforeEach
+    void setUp() {
+        testSession = new ChargingSession();
+        testSession.setStationId("STATION-001");
+        testSession.setUserId("USER-001");
+    }
+
     @Test
     void whenUnlockStation_thenReturnSuccess() throws Exception {
         // Given
-        String stationId = "STATION-001";
-        String userId = "USER-001";
-        ChargingSession session = new ChargingSession();
-        when(chargingSessionService.unlockStation(stationId, userId)).thenReturn(session);
+        when(chargingSessionService.unlockStation(anyString(), anyString())).thenReturn(testSession);
 
         // When/Then
         mockMvc.perform(post("/api/v1/charging-sessions/unlock")
-                .param("stationId", stationId)
-                .param("userId", userId)
+                .param("stationId", "STATION-001")
+                .param("userId", "USER-001")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.stationId").value(stationId));
+                .andExpect(jsonPath("$.stationId").value("STATION-001"));
     }
 
     @Test
     void whenStartCharging_thenReturnSuccess() throws Exception {
         // Given
-        String sessionId = "SESSION-001";
-        ChargingSession session = new ChargingSession();
-        when(chargingSessionService.startCharging(sessionId)).thenReturn(session);
+        when(chargingSessionService.startCharging(anyString())).thenReturn(testSession);
 
         // When/Then
-        mockMvc.perform(post("/api/v1/charging-sessions/{sessionId}/start", sessionId)
+        mockMvc.perform(post("/api/v1/charging-sessions/{sessionId}/start", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -62,12 +71,10 @@ class ChargingSessionControllerTest {
     @Test
     void whenEndCharging_thenReturnSuccess() throws Exception {
         // Given
-        String sessionId = "SESSION-001";
-        ChargingSession session = new ChargingSession();
-        when(chargingSessionService.endCharging(sessionId)).thenReturn(session);
+        when(chargingSessionService.endCharging(anyString())).thenReturn(testSession);
 
         // When/Then
-        mockMvc.perform(post("/api/v1/charging-sessions/{sessionId}/end", sessionId)
+        mockMvc.perform(post("/api/v1/charging-sessions/{sessionId}/end", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -75,12 +82,10 @@ class ChargingSessionControllerTest {
     @Test
     void whenGetStatus_thenReturnCurrentStatus() throws Exception {
         // Given
-        String sessionId = "SESSION-001";
-        ChargingSession session = new ChargingSession();
-        when(chargingSessionService.getSessionStatus(sessionId)).thenReturn(session);
+        when(chargingSessionService.getSessionStatus(anyString())).thenReturn(testSession);
 
         // When/Then
-        mockMvc.perform(get("/api/v1/charging-sessions/{sessionId}/status", sessionId)
+        mockMvc.perform(get("/api/v1/charging-sessions/{sessionId}/status", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

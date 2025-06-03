@@ -46,13 +46,13 @@ class ChargingSessionServiceTest {
     @Test
     void whenStartCharging_thenSessionStatusIsUpdated() {
         // Given
-        String sessionId = "SESSION-001";
+        Long sessionId = 1L;
         ChargingSession session = new ChargingSession();
-        when(chargingSessionRepository.findById(Long.valueOf(sessionId))).thenReturn(java.util.Optional.of(session));
+        when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
 
         // When
-        ChargingSession result = chargingSessionService.startCharging(sessionId);
+        ChargingSession result = chargingSessionService.startCharging(sessionId.toString());
 
         // Then
         assertNotNull(result);
@@ -63,13 +63,13 @@ class ChargingSessionServiceTest {
     @Test
     void whenEndCharging_thenSessionIsCompleted() {
         // Given
-        String sessionId = "SESSION-001";
+        Long sessionId = 1L;
         ChargingSession session = new ChargingSession();
-        when(chargingSessionRepository.findById(Long.valueOf(sessionId))).thenReturn(java.util.Optional.of(session));
+        when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
 
         // When
-        ChargingSession result = chargingSessionService.endCharging(sessionId);
+        ChargingSession result = chargingSessionService.endCharging(sessionId.toString());
 
         // Then
         assertNotNull(result);
@@ -80,14 +80,14 @@ class ChargingSessionServiceTest {
     @Test
     void whenErrorOccurs_thenErrorIsReported() {
         // Given
-        String sessionId = "SESSION-001";
+        Long sessionId = 1L;
         String errorMessage = "Connection error";
         ChargingSession session = new ChargingSession();
-        when(chargingSessionRepository.findById(Long.valueOf(sessionId))).thenReturn(java.util.Optional.of(session));
+        when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
 
         // When
-        ChargingSession result = chargingSessionService.reportError(sessionId, errorMessage);
+        ChargingSession result = chargingSessionService.reportError(sessionId.toString(), errorMessage);
 
         // Then
         assertNotNull(result);

@@ -90,6 +90,25 @@ public class GlobalExceptionHandler {
   }
 
   /**
+   * Handles ChargingSessionNotFoundException.
+   *
+   * @param ex The exception to handle
+   * @param request The web request
+   * @return A response entity with the error details
+   */
+  @ExceptionHandler(ChargingSessionNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleChargingSessionNotFoundException(
+      ChargingSessionNotFoundException ex, WebRequest request) {
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            "Not Found",
+            ex.getMessage(),
+            request.getDescription(false));
+    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+  }
+
+  /**
    * Handles general exceptions.
    *
    * @param ex The exception to handle
@@ -105,15 +124,5 @@ public class GlobalExceptionHandler {
             ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-
-  @ExceptionHandler(ChargingSessionNotFoundException.class)
-  public ResponseEntity<String> handleChargingSessionNotFoundException(ChargingSessionNotFoundException ex) {
-    return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-  }
-
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleGenericException(Exception ex) {
-    return new ResponseEntity<>("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

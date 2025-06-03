@@ -98,6 +98,7 @@ public class TestConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> 
             auth.requestMatchers("/stations/**", "/api/openchargemap/**").permitAll()
+                .requestMatchers("/api/v1/charging-sessions/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/bookings/**").authenticated()
                 .anyRequest().authenticated())
