@@ -14,8 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.config.WebConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
@@ -29,8 +27,8 @@ class ChargingSessionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    // @Autowired
+    // private ObjectMapper objectMapper;
 
     @MockBean
     private ChargingSessionService chargingSessionService;
