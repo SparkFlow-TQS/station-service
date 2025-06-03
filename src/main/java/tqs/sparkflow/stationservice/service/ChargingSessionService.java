@@ -7,6 +7,10 @@ import tqs.sparkflow.stationservice.exception.ChargingSessionNotFoundException;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 
+/**
+ * Service class responsible for managing charging sessions.
+ * Handles the lifecycle of a charging session from unlocking a station to completing the charging process.
+ */
 @Service
 public class ChargingSessionService {
   private static final String SESSION_NOT_FOUND_MESSAGE = "Session not found: ";
@@ -16,6 +20,13 @@ public class ChargingSessionService {
     this.chargingSessionRepository = chargingSessionRepository;
   }
 
+  /**
+   * Creates a new charging session by unlocking a station.
+   * 
+   * @param stationId The ID of the station to unlock
+   * @param userId The ID of the user requesting the unlock
+   * @return The created charging session in UNLOCKED state
+   */
   @Transactional
   public ChargingSession unlockStation(String stationId, String userId) {
     ChargingSession session = new ChargingSession();
@@ -25,6 +36,14 @@ public class ChargingSessionService {
     return chargingSessionRepository.save(session);
   }
 
+  /**
+   * Starts a charging session.
+   * Updates the session status to CHARGING and sets the start time.
+   * 
+   * @param sessionId The ID of the session to start
+   * @return The updated charging session
+   * @throws ChargingSessionNotFoundException if the session is not found
+   */
   @Transactional
   public ChargingSession startCharging(String sessionId) {
     ChargingSession session = chargingSessionRepository.findById(Long.valueOf(sessionId))
@@ -35,6 +54,14 @@ public class ChargingSessionService {
     return chargingSessionRepository.save(session);
   }
 
+  /**
+   * Ends a charging session.
+   * Updates the session status to COMPLETED and sets the end time.
+   * 
+   * @param sessionId The ID of the session to end
+   * @return The updated charging session
+   * @throws ChargingSessionNotFoundException if the session is not found
+   */
   @Transactional
   public ChargingSession endCharging(String sessionId) {
     ChargingSession session = chargingSessionRepository.findById(Long.valueOf(sessionId))
@@ -45,6 +72,15 @@ public class ChargingSessionService {
     return chargingSessionRepository.save(session);
   }
 
+  /**
+   * Reports an error for a charging session.
+   * Updates the session status to ERROR and records the error message.
+   * 
+   * @param sessionId The ID of the session to report error for
+   * @param errorMessage The error message to record
+   * @return The updated charging session
+   * @throws ChargingSessionNotFoundException if the session is not found
+   */
   @Transactional
   public ChargingSession reportError(String sessionId, String errorMessage) {
     ChargingSession session = chargingSessionRepository.findById(Long.valueOf(sessionId))
@@ -55,6 +91,13 @@ public class ChargingSessionService {
     return chargingSessionRepository.save(session);
   }
 
+  /**
+   * Retrieves the current status of a charging session.
+   * 
+   * @param sessionId The ID of the session to get status for
+   * @return The charging session with its current status
+   * @throws ChargingSessionNotFoundException if the session is not found
+   */
   public ChargingSession getSessionStatus(String sessionId) {
     return chargingSessionRepository.findById(Long.valueOf(sessionId))
       .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));

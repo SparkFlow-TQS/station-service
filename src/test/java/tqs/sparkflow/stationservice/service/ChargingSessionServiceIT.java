@@ -143,6 +143,14 @@ class ChargingSessionServiceIT {
             .hasMessageContaining("Session not found: 999");
     }
 
+    /**
+     * Tests the complete charging session flow from unlocking to completion.
+     * Verifies that:
+     * 1. A station can be unlocked and creates a session in UNLOCKED state
+     * 2. The session can transition to CHARGING state with a start time
+     * 3. The session can be completed with an end time
+     * 4. All state transitions maintain the correct timestamps
+     */
     @Test
     void whenCompleteChargingFlow_thenAllStatesAreCorrect() {
         // Given

@@ -126,6 +126,12 @@ class ChargingSessionControllerIT {
         assertThat(response.getBody().getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
     }
 
+    /**
+     * Tests the error handling when attempting to start charging for a non-existent session.
+     * Verifies that:
+     * 1. The API returns a 404 Not Found status
+     * 2. No response body is returned (Void)
+     */
     @Test
     void whenStartCharging_withNonExistentSession_thenReturnNotFound() {
         // When
@@ -140,6 +146,12 @@ class ChargingSessionControllerIT {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Tests the error handling when attempting to end a non-existent session.
+     * Verifies that:
+     * 1. The API returns a 404 Not Found status
+     * 2. No response body is returned (Void)
+     */
     @Test
     void whenEndCharging_withNonExistentSession_thenReturnNotFound() {
         // When
@@ -154,6 +166,12 @@ class ChargingSessionControllerIT {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Tests the error handling when attempting to get status of a non-existent session.
+     * Verifies that:
+     * 1. The API returns a 404 Not Found status
+     * 2. No response body is returned (Void)
+     */
     @Test
     void whenGetStatus_withNonExistentSession_thenReturnNotFound() {
         // When
