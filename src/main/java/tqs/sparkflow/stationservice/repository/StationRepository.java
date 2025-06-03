@@ -3,6 +3,8 @@ package tqs.sparkflow.stationservice.repository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tqs.sparkflow.stationservice.model.Station;
 
@@ -44,4 +46,54 @@ public interface StationRepository extends JpaRepository<Station, Long> {
    * @return A list of stations with the given connector type
    */
   List<Station> findByConnectorType(String connectorType);
+
+  @Query("SELECT s FROM Station s WHERE "
+         + "(:connectorType IS NULL OR s.connectorType = :connectorType) AND "
+         + "(:minPower IS NULL OR s.power >= :minPower) AND "
+         + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
+         + "(:isOperational IS NULL OR s.isOperational = :isOperational) AND "
+         + "(:status IS NULL OR s.status = :status) AND "
+         + "(:city IS NULL OR s.city = :city) AND "
+         + "(:country IS NULL OR s.country = :country) AND "
+         + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
+         + "(:maxPrice IS NULL OR s.price <= :maxPrice)")
+  List<Station> findStationsByFilters(
+      @Param("connectorType") String connectorType,
+      @Param("minPower") Integer minPower,
+      @Param("maxPower") Integer maxPower,
+      @Param("isOperational") Boolean isOperational,
+      @Param("status") String status,
+      @Param("city") String city,
+      @Param("country") String country,
+      @Param("minPrice") Double minPrice,
+      @Param("maxPrice") Double maxPrice
+  );
+
+  @Query(value = "SELECT * FROM stations s WHERE "
+         + "(:connectorType IS NULL OR s.connector_type = :connectorType) AND "
+         + "(:minPower IS NULL OR s.power >= :minPower) AND "
+         + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
+         + "(:isOperational IS NULL OR s.is_operational = :isOperational) AND "
+         + "(:status IS NULL OR s.status = :status) AND "
+         + "(:city IS NULL OR s.city = :city) AND "
+         + "(:country IS NULL OR s.country = :country) AND "
+         + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
+         + "(:maxPrice IS NULL OR s.price <= :maxPrice) AND "
+         + "(:latitude IS NULL OR :longitude IS NULL OR :radius IS NULL OR "
+         + "ST_Distance_Sphere(point(s.longitude, s.latitude), point(:longitude, :latitude)) <= :radius * 1000)",
+         nativeQuery = true)
+  List<Station> findStationsByFiltersWithLocation(
+      @Param("connectorType") String connectorType,
+      @Param("minPower") Integer minPower,
+      @Param("maxPower") Integer maxPower,
+      @Param("isOperational") Boolean isOperational,
+      @Param("status") String status,
+      @Param("city") String city,
+      @Param("country") String country,
+      @Param("minPrice") Double minPrice,
+      @Param("maxPrice") Double maxPrice,
+      @Param("latitude") Double latitude,
+      @Param("longitude") Double longitude,
+      @Param("radius") Integer radius
+  );
 }

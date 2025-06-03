@@ -3,6 +3,7 @@ package tqs.sparkflow.stationservice.service;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
@@ -212,5 +213,42 @@ public class StationService {
       throw new IllegalArgumentException("Connector type cannot be empty");
     }
     return stationRepository.findByConnectorType(connectorType);
+  }
+
+  /**
+   * Gets stations based on filter criteria.
+   *
+   * @param filter The filter criteria
+   * @return List of stations matching the filter criteria
+   */
+  public List<Station> getStationsByFilters(StationFilterDTO filter) {
+    if (filter.getLatitude() != null && filter.getLongitude() != null && filter.getRadius() != null) {
+      return stationRepository.findStationsByFiltersWithLocation(
+          filter.getConnectorType(),
+          filter.getMinPower(),
+          filter.getMaxPower(),
+          filter.getIsOperational(),
+          filter.getStatus(),
+          filter.getCity(),
+          filter.getCountry(),
+          filter.getMinPrice(),
+          filter.getMaxPrice(),
+          filter.getLatitude(),
+          filter.getLongitude(),
+          filter.getRadius()
+      );
+    } else {
+      return stationRepository.findStationsByFilters(
+          filter.getConnectorType(),
+          filter.getMinPower(),
+          filter.getMaxPower(),
+          filter.getIsOperational(),
+          filter.getStatus(),
+          filter.getCity(),
+          filter.getCountry(),
+          filter.getMinPrice(),
+          filter.getMaxPrice()
+      );
+    }
   }
 }

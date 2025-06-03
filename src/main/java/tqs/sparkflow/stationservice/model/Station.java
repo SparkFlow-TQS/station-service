@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -13,7 +15,8 @@ import jakarta.validation.constraints.NotNull;
 /** Represents a charging station. */
 @Entity
 @Table(name = "stations")
-public class Station {
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Station extends BaseStationFields {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +54,7 @@ public class Station {
 
   private Integer power;
   private Boolean isOperational;
-
+  
   /** Creates a new Station. */
   public Station() {
   }
@@ -121,6 +124,46 @@ public class Station {
     this.isOperational = isOperational;
   }
 
+  /**
+   * Creates a new Station with the given details.
+   *
+   * @param externalId The external ID from OpenChargeMap
+   * @param name The name of the station
+   * @param address The address of the station
+   * @param city The city where the station is located
+   * @param country The country where the station is located
+   * @param latitude The latitude of the station
+   * @param longitude The longitude of the station
+   * @param connectorType The type of connector available at the station
+   * @param power The power rating of the station in kW
+   * @param isOperational Whether the station is operational
+   * @param price The price per kWh in euros
+   */
+  public Station(
+      String externalId,
+      String name,
+      String address,
+      String city,
+      String country,
+      Double latitude,
+      Double longitude,
+      String connectorType,
+      Integer power,
+      Boolean isOperational,
+      Double price) {
+    this.externalId = externalId;
+    this.name = name;
+    this.address = address;
+    this.city = city;
+    this.country = country;
+    this.latitude = latitude;
+    this.longitude = longitude;
+    this.connectorType = connectorType;
+    this.power = power;
+    this.isOperational = isOperational;
+    setPrice(price);
+  }
+
   public Long getId() {
     return id;
   }
@@ -169,18 +212,22 @@ public class Station {
     this.country = country;
   }
 
+  @Override
   public Double getLatitude() {
     return latitude;
   }
 
+  @Override
   public void setLatitude(Double latitude) {
     this.latitude = latitude;
   }
 
+  @Override
   public Double getLongitude() {
     return longitude;
   }
 
+  @Override
   public void setLongitude(Double longitude) {
     this.longitude = longitude;
   }
@@ -193,10 +240,12 @@ public class Station {
     this.status = status;
   }
 
+  @Override
   public String getConnectorType() {
     return connectorType;
   }
 
+  @Override
   public void setConnectorType(String connectorType) {
     this.connectorType = connectorType;
   }
@@ -219,6 +268,81 @@ public class Station {
 
   @Override
   public String toString() {
-    return "Station{" + "id=" + id + ", name='" + name + '\'' + '}';
+    return "Station{id=" + id + ", name='" + name + "'}";
+  }
+
+  /**
+   * Builder for creating Station instances.
+   */
+  public static class Builder {
+    private final Station station;
+
+    public Builder() {
+      station = new Station();
+    }
+
+    public Builder externalId(String externalId) {
+      station.setExternalId(externalId);
+      return this;
+    }
+
+    public Builder name(String name) {
+      station.setName(name);
+      return this;
+    }
+
+    public Builder address(String address) {
+      station.setAddress(address);
+      return this;
+    }
+
+    public Builder city(String city) {
+      station.setCity(city);
+      return this;
+    }
+
+    public Builder country(String country) {
+      station.setCountry(country);
+      return this;
+    }
+
+    public Builder latitude(Double latitude) {
+      station.setLatitude(latitude);
+      return this;
+    }
+
+    public Builder longitude(Double longitude) {
+      station.setLongitude(longitude);
+      return this;
+    }
+
+    public Builder connectorType(String connectorType) {
+      station.setConnectorType(connectorType);
+      return this;
+    }
+
+    public Builder power(Integer power) {
+      station.setPower(power);
+      return this;
+    }
+
+    public Builder isOperational(Boolean isOperational) {
+      station.setIsOperational(isOperational);
+      return this;
+    }
+
+    public Builder price(Double price) {
+      station.setPrice(price);
+      return this;
+    }
+
+    public Builder status(String status) {
+      station.setStatus(status);
+      return this;
+    }
+
+    public Station build() {
+      return station;
+    }
   }
 }
