@@ -13,8 +13,13 @@ import java.util.Collections;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import tqs.sparkflow.stationservice.config.ControllerTestConfig;
 
 @WebMvcTest(OpenChargeMapController.class)
+@Import(ControllerTestConfig.class)
+@ActiveProfiles("controller-test")
 class OpenChargeMapControllerTest {
     @Autowired
     private MockMvc mockMvc;

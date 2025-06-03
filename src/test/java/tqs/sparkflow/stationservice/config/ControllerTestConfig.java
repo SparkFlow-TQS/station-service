@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -21,8 +22,10 @@ public class ControllerTestConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers("/api/v1/charging-sessions/**").permitAll()
+                    .requestMatchers("/api/openchargemap/**").permitAll()
                     .anyRequest().authenticated());
         return http.build();
     }

@@ -37,8 +37,13 @@ import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.service.BookingService;
 import tqs.sparkflow.stationservice.service.StationService;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import tqs.sparkflow.stationservice.config.ControllerTestConfig;
 
 @WebMvcTest(BookingController.class)
+@Import(ControllerTestConfig.class)
+@ActiveProfiles("controller-test")
 class BookingControllerTest {
 
     @Autowired
@@ -85,19 +90,11 @@ class BookingControllerTest {
     @Test
     @WithMockUser(username = "1")
     void whenCreateBooking_thenReturnCreatedBooking() throws Exception {
-        Booking inputBooking = new Booking();
-        inputBooking.setStationId(1L);
-        inputBooking.setUserId(1L);
-        inputBooking.setStartTime(now);
-        inputBooking.setEndTime(now.plusHours(2));
-        inputBooking.setStatus(BookingStatus.ACTIVE);
-
         when(bookingService.createBooking(any(Booking.class))).thenReturn(testBooking);
 
         mockMvc.perform(post("/bookings")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
+                .content(objectMapper.writeValueAsString(testBooking)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(testBooking.getId()))
                 .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()))
@@ -140,12 +137,12 @@ class BookingControllerTest {
 
     @Test
     @WithMockUser(username = "1")
-    void whenCancelBooking_thenReturnUpdatedBooking() throws Exception {
+    void whenCancelBooking_thenReturnNoContent() throws Exception {
         testBooking.setStatus(BookingStatus.CANCELLED);
         when(bookingService.cancelBooking(anyLong())).thenReturn(testBooking);
 
         mockMvc.perform(post("/bookings/1/cancel")
-                .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
 
@@ -180,9 +177,10 @@ class BookingControllerTest {
     }
 
     @Test
-    void whenGetBookingsByStationId_withoutAuthentication_thenReturnUnauthorized() throws Exception {
-        mockMvc.perform(get("/bookings/station/1"))
-                .andExpect(status().isUnauthorized());
+    void whenGetBookingsByStationId_withoutAuthentication_thenReturnForbidden() throws Exception {
+        mockMvc.perform(get("/bookings/station/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -198,15 +196,10 @@ class BookingControllerTest {
     }
 
     @Test
-    void whenCreateBooking_withoutAuth_thenForbidden() throws Exception {
-        Booking inputBooking = new Booking();
-        inputBooking.setStationId(1L);
-        inputBooking.setStartTime(now);
-        inputBooking.setEndTime(now.plusHours(2));
-        inputBooking.setStatus(BookingStatus.ACTIVE);
+    void whenCreateBooking_withoutAuthentication_thenReturnForbidden() throws Exception {
         mockMvc.perform(post("/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
+                .content(objectMapper.writeValueAsString(testBooking)))
                 .andExpect(status().isForbidden());
     }
 
@@ -228,7 +221,7 @@ class BookingControllerTest {
         // Simulate permission denied
         when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("User not authorized to cancel this booking"));
         mockMvc.perform(post("/bookings/1/cancel")
-                .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound()); // Controller maps IllegalStateException to 404
     }
 
@@ -282,7 +275,7 @@ class BookingControllerTest {
     void whenCancelBooking_withNonExistentBooking_thenNotFound() throws Exception {
         when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("Booking not found"));
         mockMvc.perform(post("/bookings/999/cancel")
-                .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
