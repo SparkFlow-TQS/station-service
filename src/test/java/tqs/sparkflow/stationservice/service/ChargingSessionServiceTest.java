@@ -31,8 +31,13 @@ class ChargingSessionServiceTest {
         // Given
         String stationId = "STATION-001";
         String userId = "USER-001";
-        ChargingSession expectedSession = new ChargingSession();
-        when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(expectedSession);
+        when(chargingSessionRepository.save(any(ChargingSession.class))).thenAnswer(invocation -> {
+            ChargingSession savedSession = invocation.getArgument(0);
+            assertEquals(stationId, savedSession.getStationId());
+            assertEquals(userId, savedSession.getUserId());
+            assertEquals(ChargingSession.ChargingSessionStatus.UNLOCKED, savedSession.getStatus());
+            return savedSession;
+        });
 
         // When
         ChargingSession result = chargingSessionService.unlockStation(stationId, userId);
@@ -145,7 +150,6 @@ class ChargingSessionServiceTest {
         // Given
         String stationId = "STATION-001";
         String userId = "USER-001";
-        ChargingSession expectedSession = new ChargingSession();
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenAnswer(invocation -> {
             ChargingSession savedSession = invocation.getArgument(0);
             assertEquals(stationId, savedSession.getStationId());

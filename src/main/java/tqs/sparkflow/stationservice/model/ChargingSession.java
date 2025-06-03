@@ -27,20 +27,20 @@ public class ChargingSession {
   /**
    * The ID of the charging station associated with this session.
    */
-  @Schema(description = "ID of the charging station", example = "STATION-001", required = true)
+  @Schema(description = "ID of the charging station", example = "STATION-001")
   private String stationId;
   
   /**
    * The ID of the user who initiated this charging session.
    */
-  @Schema(description = "ID of the user who initiated the session", example = "USER-001", required = true)
+  @Schema(description = "ID of the user who initiated the session", example = "USER-001")
   private String userId;
   
   /**
    * The current status of the charging session.
    * See {@link ChargingSessionStatus} for possible values.
    */
-  @Schema(description = "Current status of the charging session", example = "CHARGING", required = true)
+  @Schema(description = "Current status of the charging session", example = "CHARGING")
   private ChargingSessionStatus status;
   
   /**
