@@ -44,7 +44,7 @@ class StationControllerIT {
 
   @BeforeEach
   void setUp() {
-    baseUrl = "http://localhost:" + port + "/stations";
+    baseUrl = "http://localhost:" + port + "/api/v1/stations";
     stationRepository.deleteAll();
   }
 

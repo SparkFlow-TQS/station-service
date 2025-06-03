@@ -16,13 +16,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import tqs.sparkflow.stationservice.config.ControllerTestConfig;
+import tqs.sparkflow.stationservice.config.TestConfig;
+import tqs.sparkflow.stationservice.config.WebConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.service.ChargingSessionService;
 
 @WebMvcTest(ChargingSessionController.class)
-@Import(ControllerTestConfig.class)
-@ActiveProfiles("controller-test")
+@Import({TestConfig.class, WebConfig.class})
+@ActiveProfiles("test")
 class ChargingSessionControllerTest {
 
     @Autowired

@@ -39,11 +39,12 @@ import tqs.sparkflow.stationservice.service.StationService;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import tqs.sparkflow.stationservice.config.ControllerTestConfig;
+import tqs.sparkflow.stationservice.config.TestConfig;
+import tqs.sparkflow.stationservice.config.WebConfig;
 
 @WebMvcTest(BookingController.class)
-@Import(ControllerTestConfig.class)
-@ActiveProfiles("controller-test")
+@Import({TestConfig.class, WebConfig.class})
+@ActiveProfiles("test")
 class BookingControllerTest {
 
     @Autowired
@@ -92,7 +93,7 @@ class BookingControllerTest {
     void whenCreateBooking_thenReturnCreatedBooking() throws Exception {
         when(bookingService.createBooking(any(Booking.class))).thenReturn(testBooking);
 
-        mockMvc.perform(post("/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testBooking)))
                 .andExpect(status().isCreated())
@@ -108,7 +109,7 @@ class BookingControllerTest {
         List<Booking> bookings = Arrays.asList(testBooking);
         when(bookingService.getAllBookings(1L)).thenReturn(bookings);
 
-        mockMvc.perform(get("/bookings")
+        mockMvc.perform(get("/api/v1/bookings")
                 .param("userId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
@@ -120,7 +121,7 @@ class BookingControllerTest {
     void whenGetBookingById_thenReturnBooking() throws Exception {
         when(bookingService.getBookingById(anyLong(), anyLong())).thenReturn(Optional.of(testBooking));
 
-        mockMvc.perform(get("/bookings/1"))
+        mockMvc.perform(get("/api/v1/bookings/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testBooking.getId()))
                 .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()));
@@ -131,7 +132,7 @@ class BookingControllerTest {
     void whenGetBookingById_notFound_thenReturn404() throws Exception {
         when(bookingService.getBookingById(anyLong(), anyLong())).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/bookings/999"))
+        mockMvc.perform(get("/api/v1/bookings/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -141,7 +142,7 @@ class BookingControllerTest {
         testBooking.setStatus(BookingStatus.CANCELLED);
         when(bookingService.cancelBooking(anyLong())).thenReturn(testBooking);
 
-        mockMvc.perform(post("/bookings/1/cancel")
+        mockMvc.perform(post("/api/v1/bookings/1/cancel")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
@@ -151,7 +152,7 @@ class BookingControllerTest {
     void whenGetBookingsByStationId_thenReturnList() throws Exception {
         when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of(testBooking));
 
-        mockMvc.perform(get("/bookings/station/1"))
+        mockMvc.perform(get("/api/v1/bookings/station/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
@@ -163,7 +164,7 @@ class BookingControllerTest {
         when(bookingService.getBookingsByStationId(99L, 99L))
             .thenThrow(new IllegalStateException("User not found or not authorized"));
 
-        mockMvc.perform(get("/bookings/station/99"))
+        mockMvc.perform(get("/api/v1/bookings/station/99"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -172,13 +173,13 @@ class BookingControllerTest {
     void whenGetBookingsByStationId_withNoBookings_thenReturnNoContent() throws Exception {
         when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/bookings/station/1"))
+        mockMvc.perform(get("/api/v1/bookings/station/1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void whenGetBookingsByStationId_withoutAuthentication_thenReturnForbidden() throws Exception {
-        mockMvc.perform(get("/bookings/station/1")
+        mockMvc.perform(get("/api/v1/bookings/station/1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
@@ -189,7 +190,7 @@ class BookingControllerTest {
         List<Booking> bookings = Arrays.asList(testBooking);
         when(bookingService.getBookingsByUserId(anyLong())).thenReturn(bookings);
 
-        mockMvc.perform(get("/bookings/user/1"))
+        mockMvc.perform(get("/api/v1/bookings/user/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].userId").value(testBooking.getUserId()));
@@ -197,7 +198,7 @@ class BookingControllerTest {
 
     @Test
     void whenCreateBooking_withoutAuthentication_thenReturnForbidden() throws Exception {
-        mockMvc.perform(post("/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testBooking)))
                 .andExpect(status().isForbidden());
@@ -208,7 +209,7 @@ class BookingControllerTest {
     void whenCreateBooking_withInvalidInput_thenBadRequest() throws Exception {
         Booking inputBooking = new Booking(); // missing required fields
         when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Invalid input"));
-        mockMvc.perform(post("/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking)))
@@ -220,7 +221,7 @@ class BookingControllerTest {
     void whenCancelBooking_withoutPermission_thenForbidden() throws Exception {
         // Simulate permission denied
         when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("User not authorized to cancel this booking"));
-        mockMvc.perform(post("/bookings/1/cancel")
+        mockMvc.perform(post("/api/v1/bookings/1/cancel")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound()); // Controller maps IllegalStateException to 404
     }
@@ -229,7 +230,7 @@ class BookingControllerTest {
     @WithMockUser(username = "1")
     void whenGetAllBookings_withNoBookings_thenNoContent() throws Exception {
         when(bookingService.getAllBookings(1L)).thenReturn(List.of());
-        mockMvc.perform(get("/bookings").param("userId", "1"))
+        mockMvc.perform(get("/api/v1/bookings").param("userId", "1"))
                 .andExpect(status().isNoContent());
     }
 
@@ -237,7 +238,7 @@ class BookingControllerTest {
     @WithMockUser(username = "1")
     void whenCreateBooking_withMalformedJson_thenBadRequest() throws Exception {
         String malformedJson = "{\"stationId\":1,\"userId\":1,\"startTime\":\"not-a-date\"}";
-        mockMvc.perform(post("/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(malformedJson))
@@ -263,7 +264,7 @@ class BookingControllerTest {
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);
         when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException(exceptionMessage));
-        mockMvc.perform(post("/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking)))
@@ -274,7 +275,7 @@ class BookingControllerTest {
     @WithMockUser(username = "1")
     void whenCancelBooking_withNonExistentBooking_thenNotFound() throws Exception {
         when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("Booking not found"));
-        mockMvc.perform(post("/bookings/999/cancel")
+        mockMvc.perform(post("/api/v1/bookings/999/cancel")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -283,7 +284,7 @@ class BookingControllerTest {
     @WithMockUser(username = "1")
     void whenGetBookingsByUserId_withNoResults_thenNoContent() throws Exception {
         when(bookingService.getBookingsByUserId(anyLong())).thenReturn(List.of());
-        mockMvc.perform(get("/bookings/user/1"))
+        mockMvc.perform(get("/api/v1/bookings/user/1"))
                 .andExpect(status().isNoContent());
     }
 } 

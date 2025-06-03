@@ -20,7 +20,7 @@ import tqs.sparkflow.stationservice.service.OpenChargeMapService;
  * and populate the local database with charging stations.
  */
 @RestController
-@RequestMapping("/api/openchargemap")
+@RequestMapping("/openchargemap")
 @Tag(name = "OpenChargeMap", description = "OpenChargeMap API integration endpoints")
 public class OpenChargeMapController {
 

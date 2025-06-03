@@ -19,7 +19,7 @@ import tqs.sparkflow.stationservice.service.ChargingSessionService;
  * Provides endpoints for the complete lifecycle of a charging session.
  */
 @RestController
-@RequestMapping("/api/v1/charging-sessions")
+@RequestMapping("/charging-sessions")
 @Tag(name = "Charging Session", description = "APIs for managing charging sessions")
 public class ChargingSessionController {
   private final ChargingSessionService chargingSessionService;
