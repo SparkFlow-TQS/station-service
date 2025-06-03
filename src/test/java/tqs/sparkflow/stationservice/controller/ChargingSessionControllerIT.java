@@ -60,9 +60,13 @@ class ChargingSessionControllerIT {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStationId()).isEqualTo(stationId);
-        assertThat(response.getBody().getUserId()).isEqualTo(userId);
-        assertThat(response.getBody().getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
+        ChargingSession responseSession = response.getBody();
+        assertThat(responseSession).isNotNull()
+            .satisfies(s -> {
+                assertThat(s.getStationId()).isEqualTo(stationId);
+                assertThat(s.getUserId()).isEqualTo(userId);
+                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
+            });
     }
 
     @Test
@@ -81,8 +85,12 @@ class ChargingSessionControllerIT {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.CHARGING);
-        assertThat(response.getBody().getStartTime()).isNotNull();
+        ChargingSession responseSession = response.getBody();
+        assertThat(responseSession).isNotNull()
+            .satisfies(s -> {
+                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.CHARGING);
+                assertThat(s.getStartTime()).isNotNull();
+            });
     }
 
     @Test
@@ -104,8 +112,12 @@ class ChargingSessionControllerIT {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.COMPLETED);
-        assertThat(response.getBody().getEndTime()).isNotNull();
+        ChargingSession responseSession = response.getBody();
+        assertThat(responseSession).isNotNull()
+            .satisfies(s -> {
+                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.COMPLETED);
+                assertThat(s.getEndTime()).isNotNull();
+            });
     }
 
     @Test
@@ -123,7 +135,11 @@ class ChargingSessionControllerIT {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
+        ChargingSession responseSession = response.getBody();
+        assertThat(responseSession).isNotNull()
+            .satisfies(s -> {
+                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
+            });
     }
 
     /**

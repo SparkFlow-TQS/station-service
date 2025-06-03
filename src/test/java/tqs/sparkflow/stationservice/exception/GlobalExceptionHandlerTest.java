@@ -25,9 +25,13 @@ class GlobalExceptionHandlerTest {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getStatus()).isEqualTo(500);
-    assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
-    assertThat(response.getBody().getMessage()).isEqualTo("Test error");
+    ErrorResponse errorResponse = response.getBody();
+    assertThat(errorResponse).isNotNull()
+        .satisfies(error -> {
+            assertThat(error.getStatus()).isEqualTo(500);
+            assertThat(error.getError()).isEqualTo("Internal Server Error");
+            assertThat(error.getMessage()).isEqualTo("Test error");
+        });
   }
 
   @Test
@@ -41,9 +45,13 @@ class GlobalExceptionHandlerTest {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getStatus()).isEqualTo(400);
-    assertThat(response.getBody().getError()).isEqualTo("Bad Request");
-    assertThat(response.getBody().getMessage()).isEqualTo("Invalid state");
+    ErrorResponse errorResponse = response.getBody();
+    assertThat(errorResponse).isNotNull()
+        .satisfies(error -> {
+            assertThat(error.getStatus()).isEqualTo(400);
+            assertThat(error.getError()).isEqualTo("Bad Request");
+            assertThat(error.getMessage()).isEqualTo("Invalid state");
+        });
   }
 
   @Test
@@ -57,8 +65,12 @@ class GlobalExceptionHandlerTest {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getStatus()).isEqualTo(400);
-    assertThat(response.getBody().getError()).isEqualTo("Bad Request");
-    assertThat(response.getBody().getMessage()).isEqualTo("Invalid argument");
+    ErrorResponse errorResponse = response.getBody();
+    assertThat(errorResponse).isNotNull()
+        .satisfies(error -> {
+            assertThat(error.getStatus()).isEqualTo(400);
+            assertThat(error.getError()).isEqualTo("Bad Request");
+            assertThat(error.getMessage()).isEqualTo("Invalid argument");
+        });
   }
 }
