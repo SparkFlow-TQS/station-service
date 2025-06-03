@@ -15,5 +15,25 @@ public class ChargingSessionController {
         this.chargingSessionService = chargingSessionService;
     }
 
-    // Controller endpoints will be implemented later
+    @PostMapping("/unlock")
+    public ResponseEntity<ChargingSession> unlockStation(
+            @RequestParam String stationId,
+            @RequestParam String userId) {
+        return ResponseEntity.ok(chargingSessionService.unlockStation(stationId, userId));
+    }
+
+    @PostMapping("/{sessionId}/start")
+    public ResponseEntity<ChargingSession> startCharging(@PathVariable String sessionId) {
+        return ResponseEntity.ok(chargingSessionService.startCharging(sessionId));
+    }
+
+    @PostMapping("/{sessionId}/end")
+    public ResponseEntity<ChargingSession> endCharging(@PathVariable String sessionId) {
+        return ResponseEntity.ok(chargingSessionService.endCharging(sessionId));
+    }
+
+    @GetMapping("/{sessionId}/status")
+    public ResponseEntity<ChargingSession> getSessionStatus(@PathVariable String sessionId) {
+        return ResponseEntity.ok(chargingSessionService.getSessionStatus(sessionId));
+    }
 } 
