@@ -44,7 +44,7 @@ class StationControllerIT {
 
   @BeforeEach
   void setUp() {
-    baseUrl = "http://localhost:" + port + "/stations";
+    baseUrl = "http://localhost:" + port + "/api/v1/stations";
     stationRepository.deleteAll();
   }
 
@@ -61,8 +61,12 @@ class StationControllerIT {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getName()).isEqualTo(station.getName());
-    assertThat(response.getBody().getConnectorType()).isEqualTo(station.getConnectorType());
+    Station responseStation = response.getBody();
+    assertThat(responseStation).isNotNull()
+        .satisfies(s -> {
+            assertThat(s.getName()).isEqualTo(station.getName());
+            assertThat(s.getConnectorType()).isEqualTo(station.getConnectorType());
+        });
   }
 
   @Test
@@ -94,6 +98,7 @@ class StationControllerIT {
     // Given
     Station station = createTestStation("Test Station");
     station = stationRepository.save(station);
+    final String expectedName = station.getName();
 
     // When
     ResponseEntity<Station> response = restTemplate.getForEntity(baseUrl + "/" + station.getId(),
@@ -102,7 +107,11 @@ class StationControllerIT {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getName()).isEqualTo(station.getName());
+    Station responseStation = response.getBody();
+    assertThat(responseStation).isNotNull()
+        .satisfies(s -> {
+            assertThat(s.getName()).isEqualTo(expectedName);
+        });
   }
 
   @Test
@@ -149,8 +158,12 @@ class StationControllerIT {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody()).hasSize(1);
-    assertThat(response.getBody().get(0).getConnectorType()).isEqualTo("Type 2");
+    List<Station> stations = response.getBody();
+    assertThat(stations).isNotNull()
+        .hasSize(1)
+        .satisfies(list -> {
+            assertThat(list.get(0).getConnectorType()).isEqualTo("Type 2");
+        });
   }
 
   @Test
@@ -167,9 +180,13 @@ class StationControllerIT {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getName()).isEqualTo(station.getName());
-    assertThat(response.getBody().getLatitude()).isEqualTo(station.getLatitude());
-    assertThat(response.getBody().getLongitude()).isEqualTo(station.getLongitude());
+    Station responseStation = response.getBody();
+    assertThat(responseStation).isNotNull()
+        .satisfies(s -> {
+            assertThat(s.getName()).isEqualTo(station.getName());
+            assertThat(s.getLatitude()).isEqualTo(station.getLatitude());
+            assertThat(s.getLongitude()).isEqualTo(station.getLongitude());
+        });
   }
 
   private Station createTestStation(String name) {

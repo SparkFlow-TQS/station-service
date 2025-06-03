@@ -13,8 +13,14 @@ import java.util.Collections;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import tqs.sparkflow.stationservice.config.TestConfig;
+import tqs.sparkflow.stationservice.config.WebConfig;
 
 @WebMvcTest(OpenChargeMapController.class)
+@Import({TestConfig.class, WebConfig.class})
+@ActiveProfiles("test")
 class OpenChargeMapControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -28,7 +34,7 @@ class OpenChargeMapControllerTest {
         when(openChargeMapService.populateStations(40.0, -8.0, 10))
             .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(post("/api/openchargemap/populate")
+        mockMvc.perform(post("/api/v1/openchargemap/populate")
                 .param("latitude", "40.0")
                 .param("longitude", "-8.0")
                 .param("radius", "10")

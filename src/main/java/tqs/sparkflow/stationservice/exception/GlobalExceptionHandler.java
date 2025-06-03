@@ -90,6 +90,25 @@ public class GlobalExceptionHandler {
   }
 
   /**
+   * Handles ChargingSessionNotFoundException.
+   *
+   * @param ex The exception to handle
+   * @param request The web request
+   * @return A response entity with the error details
+   */
+  @ExceptionHandler(ChargingSessionNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleChargingSessionNotFoundException(
+      ChargingSessionNotFoundException ex, WebRequest request) {
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            "Not Found",
+            ex.getMessage(),
+            request.getDescription(false));
+    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+  }
+
+  /**
    * Handles general exceptions.
    *
    * @param ex The exception to handle

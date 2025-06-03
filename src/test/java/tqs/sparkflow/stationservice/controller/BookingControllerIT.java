@@ -10,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
+import tqs.sparkflow.stationservice.StationServiceApplication;
+import tqs.sparkflow.stationservice.config.TestConfig;
+import tqs.sparkflow.stationservice.config.WebConfig;
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Station;
@@ -40,7 +43,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    classes = {StationServiceApplication.class, TestConfig.class, WebConfig.class},
+    properties = {"spring.main.allow-bean-definition-overriding=true"}
+)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class BookingControllerIT {
@@ -119,7 +126,7 @@ class BookingControllerIT {
         inputBooking.setEndTime(now.plusHours(4));
         inputBooking.setStatus(BookingStatus.ACTIVE);
 
-        MvcResult result = mockMvc.perform(post("/bookings")
+        MvcResult result = mockMvc.perform(post("/api/v1/bookings")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking)))
@@ -135,7 +142,7 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void whenGetAllBookings_thenReturnList() throws Exception {
-        mockMvc.perform(get("/bookings")
+        mockMvc.perform(get("/api/v1/bookings")
                 .with(csrf())
                 .param("userId", "1"))
                 .andExpect(status().isOk())
@@ -146,7 +153,7 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void whenGetBookingById_thenReturnBooking() throws Exception {
-        mockMvc.perform(get("/bookings/1")
+        mockMvc.perform(get("/api/v1/bookings/1")
                 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testBooking.getId()))
@@ -156,7 +163,7 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void whenCancelBooking_thenReturnUpdatedBooking() throws Exception {
-        mockMvc.perform(post("/bookings/1/cancel")
+        mockMvc.perform(post("/api/v1/bookings/1/cancel")
                 .with(csrf()))
                 .andExpect(status().isNoContent());
     }
@@ -164,7 +171,7 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void whenGetBookingsByStationId_thenReturnList() throws Exception {
-        mockMvc.perform(get("/bookings/station/1")
+        mockMvc.perform(get("/api/v1/bookings/station/1")
                 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
@@ -174,7 +181,7 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void whenGetBookingsByUserId_thenReturnList() throws Exception {
-        mockMvc.perform(get("/bookings/user/1")
+        mockMvc.perform(get("/api/v1/bookings/user/1")
                 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
@@ -188,7 +195,7 @@ class BookingControllerIT {
         inputBooking.setStartTime(now);
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);
-        mockMvc.perform(post("/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking))
@@ -200,7 +207,7 @@ class BookingControllerIT {
     @WithMockUser(username = "1")
     void whenGetBookingsByStationId_withNoBookings_thenReturnNoContent() throws Exception {
         doReturn(Collections.emptyList()).when(bookingRepository).findByStationId(anyLong());
-        mockMvc.perform(get("/bookings/station/1")
+        mockMvc.perform(get("/api/v1/bookings/station/1")
                 .with(csrf()))
                 .andExpect(status().isNoContent());
     }
@@ -209,7 +216,7 @@ class BookingControllerIT {
     @WithMockUser(username = "1")
     void whenGetBookingsByUserId_withNoBookings_thenReturnNoContent() throws Exception {
         doReturn(Collections.emptyList()).when(bookingRepository).findByUserId(anyLong());
-        mockMvc.perform(get("/bookings/user/1")
+        mockMvc.perform(get("/api/v1/bookings/user/1")
                 .with(csrf()))
                 .andExpect(status().isNoContent());
     }
@@ -217,7 +224,7 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void createRecurringBooking_happyPath() throws Exception {
-        mockMvc.perform(post("/bookings/recurring")
+        mockMvc.perform(post("/api/v1/bookings/recurring")
                 .with(csrf())
                 .param("userId", "1")
                 .param("stationId", "1")
@@ -230,11 +237,11 @@ class BookingControllerIT {
     @Test
     @WithMockUser(username = "1")
     void getBookingsByStationId_andByUserId() throws Exception {
-        mockMvc.perform(get("/bookings/station/1")
+        mockMvc.perform(get("/api/v1/bookings/station/1")
                 .with(csrf()))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/bookings/user/1")
+        mockMvc.perform(get("/api/v1/bookings/user/1")
                 .with(csrf()))
                 .andExpect(status().isOk());
     }

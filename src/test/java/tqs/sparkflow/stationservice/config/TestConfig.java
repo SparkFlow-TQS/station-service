@@ -27,112 +27,128 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Test configuration for the station service.
+ * Provides all necessary beans and security configurations for testing.
+ */
 @TestConfiguration
 @EnableWebSecurity
 @Profile("test")
 public class TestConfig {
 
-  @Bean
-  @Primary
-  public TestRestTemplate testRestTemplate() {
-    return new TestRestTemplate();
-  }
+    @Bean
+    @Primary
+    public TestRestTemplate testRestTemplate() {
+        return new TestRestTemplate();
+    }
 
-  @Bean
-  @Primary
-  public RestTemplate restTemplate() {
-    return new RestTemplate();
-  }
+    @Bean
+    @Primary
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
-  @Bean
-  @Primary
-  public String userServiceUrl() {
-    return "http://dummy-user-service-url";
-  }
+    @Bean
+    @Primary
+    public String userServiceUrl() {
+        return "http://dummy-user-service-url";
+    }
 
-  @Bean
-  @Primary
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    @Primary
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  @Primary
-  public UserDetailsService userDetailsService() {
-    UserDetails admin = User.builder()
-        .username("admin")
-        .password(passwordEncoder().encode("admin"))
-        .roles("ADMIN")
-        .build();
-    
-    UserDetails user = User.builder()
-        .username("user")
-        .password(passwordEncoder().encode("user"))
-        .roles("USER")
-        .build();
+    @Bean
+    @Primary
+    public UserDetailsService userDetailsService() {
+        UserDetails admin = User.builder()
+            .username("admin")
+            .password(passwordEncoder().encode("admin"))
+            .roles("ADMIN")
+            .build();
+        
+        UserDetails user = User.builder()
+            .username("user")
+            .password(passwordEncoder().encode("user"))
+            .roles("USER")
+            .build();
 
-    return new InMemoryUserDetailsManager(admin, user);
-  }
+        return new InMemoryUserDetailsManager(admin, user);
+    }
 
-  @Bean
-  @Primary
-  public AuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService());
-    provider.setPasswordEncoder(passwordEncoder());
-    return provider;
-  }
+    @Bean
+    @Primary
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService());
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
 
-  @Bean
-  @Primary
-  public AuthenticationManager authenticationManager() {
-    return new ProviderManager(authenticationProvider());
-  }
+    @Bean
+    @Primary
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(authenticationProvider());
+    }
 
-  @Bean
-  @Primary
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(AbstractHttpConfigurer::disable)
-        .headers(headers -> headers.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> 
-            auth.requestMatchers("/stations/**", "/api/openchargemap/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/bookings/**").authenticated()
-                .anyRequest().authenticated())
-        .authenticationManager(authenticationManager())
-        .httpBasic(basic -> basic
-            .authenticationEntryPoint((request, response, authException) -> {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Access Denied");
-            }))
-        .exceptionHandling(handling -> handling
-            .authenticationEntryPoint((request, response, authException) -> {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Access Denied");
-            })
-            .accessDeniedHandler((request, response, accessDeniedException) -> {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Access Denied");
-            }))
-        .securityContext(context -> context.requireExplicitSave(false))
-        .anonymous(AbstractHttpConfigurer::disable);
-    return http.build();
-  }
+    /**
+     * Creates a security filter chain for tests.
+     * Configures security settings including CSRF, headers, session management,
+     * and endpoint authorization rules.
+     * 
+     * @param http the HttpSecurity to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if an error occurs during configuration
+     */
+    @Bean
+    @Primary
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> 
+                auth.requestMatchers("/api/v1/stations/**").permitAll()
+                    .requestMatchers("/api/v1/charging-sessions/**").permitAll()
+                    .requestMatchers("/api/v1/openchargemap/**").permitAll()
+                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/v1/bookings/**").authenticated()
+                    .anyRequest().authenticated()
+            )
+            .authenticationManager(authenticationManager())
+            .httpBasic(basic -> basic
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("Access Denied");
+                }))
+            .exceptionHandling(handling -> handling
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("Access Denied");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("Access Denied");
+                }))
+            .securityContext(context -> context.requireExplicitSave(false))
+            .anonymous(AbstractHttpConfigurer::disable)
+            .build();
+    }
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("*"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(Arrays.asList("*"));
-    configuration.setExposedHeaders(Arrays.asList("Authorization"));
-    configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-  }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

@@ -166,11 +166,23 @@ public class OpenChargeMapService {
   }
 
   private Map<String, Object> getAddressInfo(Map<String, Object> data) {
-    return (Map<String, Object>) data.get("AddressInfo");
+    Object addressInfo = data.get("AddressInfo");
+    if (addressInfo == null || !(addressInfo instanceof Map)) {
+      throw new IllegalStateException("AddressInfo is not a valid map");
+    }
+    @SuppressWarnings("unchecked")
+    Map<String, Object> result = (Map<String, Object>) addressInfo;
+    return result;
   }
 
   private List<Map<String, Object>> getConnections(Map<String, Object> data) {
-    return (List<Map<String, Object>>) data.get("Connections");
+    Object connections = data.get("Connections");
+    if (connections == null || !(connections instanceof List)) {
+      throw new IllegalStateException("Connections is not a valid list");
+    }
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> result = (List<Map<String, Object>>) connections;
+    return result;
   }
 
   private void setStationId(Map<String, Object> data, Station station) {

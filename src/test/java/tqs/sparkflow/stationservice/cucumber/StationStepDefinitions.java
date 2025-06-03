@@ -46,7 +46,7 @@ public class StationStepDefinitions {
 
   @When("I request all stations")
   public void iRequestAllStations() {
-    response = restTemplate.exchange("http://localhost:" + port + "/stations", HttpMethod.GET, null,
+    response = restTemplate.exchange("http://localhost:" + port + "/api/v1/stations", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Station>>() {});
   }
 
@@ -71,7 +71,7 @@ public class StationStepDefinitions {
   @When("I request the station with ID {string}")
   public void iRequestTheStationWithId(String id) {
     singleResponse =
-        restTemplate.getForEntity("http://localhost:" + port + "/stations/" + id, Station.class);
+        restTemplate.getForEntity("http://localhost:" + port + "/api/v1/stations/" + id, Station.class);
   }
 
   @Then("I should receive the station details")

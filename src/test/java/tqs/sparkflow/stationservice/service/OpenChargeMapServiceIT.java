@@ -2,10 +2,10 @@ package tqs.sparkflow.stationservice.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import org.mockito.ArgumentMatchers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,8 +57,12 @@ class OpenChargeMapServiceIT {
     List<Map<String, Object>> mockResponse = createMockResponse();
     ResponseEntity<List<Map<String, Object>>> responseEntity =
         new ResponseEntity<>(mockResponse, HttpStatus.OK);
-    when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
-        any(ParameterizedTypeReference.class))).thenReturn(responseEntity);
+    when(restTemplate.exchange(
+        anyString(),
+        eq(HttpMethod.GET),
+        eq(null),
+        ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+            .thenReturn(responseEntity);
 
     // When
     List<Station> result = openChargeMapService.populateStations(38.7223, -9.1393, 10);
@@ -98,8 +102,11 @@ class OpenChargeMapServiceIT {
   @Test
   void whenApiKeyInvalid_thenThrowsException() {
     // Given
-    when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
-        any(ParameterizedTypeReference.class)))
+    when(restTemplate.exchange(
+        anyString(),
+        eq(HttpMethod.GET),
+        eq(null),
+        ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
             .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
     // When/Then

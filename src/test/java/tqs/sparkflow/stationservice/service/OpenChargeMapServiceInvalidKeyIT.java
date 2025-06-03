@@ -1,10 +1,12 @@
 package tqs.sparkflow.stationservice.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import tqs.sparkflow.stationservice.StationServiceApplication;
 import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.repository.StationRepository;
+import org.mockito.ArgumentMatchers;
 
 @SpringBootTest(
     classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
@@ -53,7 +56,7 @@ class OpenChargeMapServiceInvalidKeyIT {
             anyString(),
             eq(HttpMethod.GET),
             eq(null),
-            any(ParameterizedTypeReference.class)))
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
         .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
     // When/Then

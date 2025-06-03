@@ -48,27 +48,27 @@ class SecurityConfigTest {
 
     @Test
     void publicEndpoint_isAccessible() throws Exception {
-        mockMvc.perform(get("/stations"))
+        mockMvc.perform(get("/api/v1/stations"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void adminEndpoint_requiresAdminRole() throws Exception {
-        mockMvc.perform(get("/admin")
+        mockMvc.perform(get("/api/v1/admin")
                 .with(SecurityMockMvcRequestPostProcessors.httpBasic("user", "user")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void unknownEndpoint_requiresAuthentication() throws Exception {
-        mockMvc.perform(get("/some-protected")
+        mockMvc.perform(get("/api/v1/some-protected")
                 .with(SecurityMockMvcRequestPostProcessors.httpBasic("anonymous", "anonymous")))
                 .andExpect(status().isForbidden());
     }
 
     @RestController
     static class TestStationsController {
-        @GetMapping("/stations")
+        @GetMapping("/api/v1/stations")
         public String stations() {
             return "ok";
         }
