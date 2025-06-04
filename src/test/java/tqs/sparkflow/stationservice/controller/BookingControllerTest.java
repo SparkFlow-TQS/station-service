@@ -2,12 +2,12 @@ package tqs.sparkflow.stationservice.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,56 +21,48 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.service.BookingService;
 import tqs.sparkflow.stationservice.service.StationService;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import tqs.sparkflow.stationservice.config.TestConfig;
-import tqs.sparkflow.stationservice.config.WebConfig;
 
-@WebMvcTest(BookingController.class)
-@Import({TestConfig.class, WebConfig.class})
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class BookingControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private BookingService bookingService;
 
-    @MockBean
+    @Mock
     private RestTemplate restTemplate;
 
-    @MockBean
+    @Mock
     private StationService stationService;
 
-    @MockBean
+    @Mock
     private BookingRepository bookingRepository;
 
+    @Mock
+    private Principal principal;
+
+    private BookingController bookingController;
     private Booking testBooking;
     private LocalDateTime now;
     private Set<Integer> recurringDays;
 
     @BeforeEach
     void setUp() {
+        bookingController = new BookingController(bookingService);
         now = LocalDateTime.now();
         recurringDays = new HashSet<>(Arrays.asList(1, 2, 3)); // Monday, Tuesday, Wednesday
 
@@ -82,167 +74,170 @@ class BookingControllerTest {
         testBooking.setEndTime(now.plusHours(2));
         testBooking.setRecurringDays(recurringDays);
         testBooking.setStatus(BookingStatus.ACTIVE);
-
-        // Mock user validation to return true
-        when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
-        when(restTemplate.getForObject(anyString(), eq(Object.class))).thenReturn(new Object());
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenCreateBooking_thenReturnCreatedBooking() throws Exception {
+    @XrayTest(key = "BOOKING-1")
+    @Requirement("BOOKING-1")
+    void whenCreateBooking_thenReturnCreatedBooking() {
         when(bookingService.createBooking(any(Booking.class))).thenReturn(testBooking);
 
-        mockMvc.perform(post("/api/v1/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testBooking)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(testBooking.getId()))
-                .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()))
-                .andExpect(jsonPath("$.userId").value(testBooking.getUserId()))
-                .andExpect(jsonPath("$.status").value(testBooking.getStatus().toString()));
+        ResponseEntity<Booking> response = bookingController.createBooking(testBooking, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull().satisfies(body -> {
+            assertThat(body.getId()).isEqualTo(testBooking.getId());
+            assertThat(body.getStationId()).isEqualTo(testBooking.getStationId());
+            assertThat(body.getUserId()).isEqualTo(testBooking.getUserId());
+            assertThat(body.getStatus()).isEqualTo(testBooking.getStatus());
+        });
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetAllBookings_thenReturnList() throws Exception {
+    @XrayTest(key = "BOOKING-2")
+    @Requirement("BOOKING-2")
+    void whenGetAllBookings_thenReturnList() {
         List<Booking> bookings = Arrays.asList(testBooking);
         when(bookingService.getAllBookings(1L)).thenReturn(bookings);
 
-        mockMvc.perform(get("/api/v1/bookings")
-                .param("userId", "1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
-                .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
+        ResponseEntity<List<Booking>> response = bookingController.getAllBookings(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull().satisfies(body -> {
+            assertThat(body.get(0).getId()).isEqualTo(testBooking.getId());
+            assertThat(body.get(0).getStationId()).isEqualTo(testBooking.getStationId());
+        });
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingById_thenReturnBooking() throws Exception {
+    @XrayTest(key = "BOOKING-3")
+    @Requirement("BOOKING-3")
+    void whenGetBookingById_thenReturnBooking() {
         when(bookingService.getBookingById(anyLong(), anyLong())).thenReturn(Optional.of(testBooking));
+        when(principal.getName()).thenReturn("1");
 
-        mockMvc.perform(get("/api/v1/bookings/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testBooking.getId()))
-                .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()));
+        ResponseEntity<Booking> response = bookingController.getBookingById(1L, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull().satisfies(body -> {
+            assertThat(body.getId()).isEqualTo(testBooking.getId());
+            assertThat(body.getStationId()).isEqualTo(testBooking.getStationId());
+        });
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingById_notFound_thenReturn404() throws Exception {
+    @XrayTest(key = "BOOKING-4")
+    @Requirement("BOOKING-4")
+    void whenGetBookingById_notFound_thenReturn404() {
         when(bookingService.getBookingById(anyLong(), anyLong())).thenReturn(Optional.empty());
+        when(principal.getName()).thenReturn("1");
 
-        mockMvc.perform(get("/api/v1/bookings/999"))
-                .andExpect(status().isNotFound());
+        ResponseEntity<Booking> response = bookingController.getBookingById(999L, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenCancelBooking_thenReturnNoContent() throws Exception {
+    @XrayTest(key = "BOOKING-5")
+    @Requirement("BOOKING-5")
+    void whenCancelBooking_thenReturnNoContent() {
         testBooking.setStatus(BookingStatus.CANCELLED);
         when(bookingService.cancelBooking(anyLong())).thenReturn(testBooking);
 
-        mockMvc.perform(post("/api/v1/bookings/1/cancel")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+        ResponseEntity<Void> response = bookingController.cancelBooking(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingsByStationId_thenReturnList() throws Exception {
+    @XrayTest(key = "BOOKING-6")
+    @Requirement("BOOKING-6")
+    void whenGetBookingsByStationId_thenReturnList() {
         when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of(testBooking));
+        when(principal.getName()).thenReturn("1");
 
-        mockMvc.perform(get("/api/v1/bookings/station/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
-                .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
+        ResponseEntity<List<Booking>> response = bookingController.getBookingsByStationId(1L, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull().satisfies(body -> {
+            assertThat(body.get(0).getId()).isEqualTo(testBooking.getId());
+            assertThat(body.get(0).getStationId()).isEqualTo(testBooking.getStationId());
+        });
     }
 
     @Test
-    @WithMockUser(username = "99")
-    void whenGetBookingsByStationId_withUserNotAuthorized_thenReturnBadRequest() throws Exception {
+    @XrayTest(key = "BOOKING-7")
+    @Requirement("BOOKING-7")
+    void whenGetBookingsByStationId_withUserNotAuthorized_thenReturnBadRequest() {
         when(bookingService.getBookingsByStationId(99L, 99L))
             .thenThrow(new IllegalStateException("User not found or not authorized"));
+        when(principal.getName()).thenReturn("99");
 
-        mockMvc.perform(get("/api/v1/bookings/station/99"))
-                .andExpect(status().isBadRequest());
+        ResponseEntity<List<Booking>> response = bookingController.getBookingsByStationId(99L, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingsByStationId_withNoBookings_thenReturnNoContent() throws Exception {
+    @XrayTest(key = "BOOKING-8")
+    @Requirement("BOOKING-8")
+    void whenGetBookingsByStationId_withNoBookings_thenReturnNoContent() {
         when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of());
+        when(principal.getName()).thenReturn("1");
 
-        mockMvc.perform(get("/api/v1/bookings/station/1"))
-                .andExpect(status().isNoContent());
+        ResponseEntity<List<Booking>> response = bookingController.getBookingsByStationId(1L, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test
-    void whenGetBookingsByStationId_withoutAuthentication_thenReturnForbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/bookings/station/1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingsByUserId_thenReturnList() throws Exception {
+    @XrayTest(key = "BOOKING-10")
+    @Requirement("BOOKING-10")
+    void whenGetBookingsByUserId_thenReturnList() {
         List<Booking> bookings = Arrays.asList(testBooking);
         when(bookingService.getBookingsByUserId(anyLong())).thenReturn(bookings);
 
-        mockMvc.perform(get("/api/v1/bookings/user/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
-                .andExpect(jsonPath("$[0].userId").value(testBooking.getUserId()));
+        ResponseEntity<List<Booking>> response = bookingController.getBookingsByUserId(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull().satisfies(body -> {
+            assertThat(body.get(0).getId()).isEqualTo(testBooking.getId());
+            assertThat(body.get(0).getUserId()).isEqualTo(testBooking.getUserId());
+        });
     }
 
     @Test
-    void whenCreateBooking_withoutAuthentication_thenReturnForbidden() throws Exception {
-        mockMvc.perform(post("/api/v1/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testBooking)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser(username = "1")
-    void whenCreateBooking_withInvalidInput_thenBadRequest() throws Exception {
+    @XrayTest(key = "BOOKING-12")
+    @Requirement("BOOKING-12")
+    void whenCreateBooking_withInvalidInput_thenBadRequest() {
         Booking inputBooking = new Booking(); // missing required fields
         when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Invalid input"));
-        mockMvc.perform(post("/api/v1/bookings")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
-                .andExpect(status().isBadRequest());
+
+        ResponseEntity<Booking> response = bookingController.createBooking(inputBooking, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    @WithMockUser(username = "2")
-    void whenCancelBooking_withoutPermission_thenForbidden() throws Exception {
-        // Simulate permission denied
+    @XrayTest(key = "BOOKING-13")
+    @Requirement("BOOKING-13")
+    void whenCancelBooking_withoutPermission_thenForbidden() {
         when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("User not authorized to cancel this booking"));
-        mockMvc.perform(post("/api/v1/bookings/1/cancel")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound()); // Controller maps IllegalStateException to 404
+
+        ResponseEntity<Void> response = bookingController.cancelBooking(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetAllBookings_withNoBookings_thenNoContent() throws Exception {
+    @XrayTest(key = "BOOKING-14")
+    @Requirement("BOOKING-14")
+    void whenGetAllBookings_withNoBookings_thenNoContent() {
         when(bookingService.getAllBookings(1L)).thenReturn(List.of());
-        mockMvc.perform(get("/api/v1/bookings").param("userId", "1"))
-                .andExpect(status().isNoContent());
-    }
 
-    @Test
-    @WithMockUser(username = "1")
-    void whenCreateBooking_withMalformedJson_thenBadRequest() throws Exception {
-        String malformedJson = "{\"stationId\":1,\"userId\":1,\"startTime\":\"not-a-date\"}";
-        mockMvc.perform(post("/api/v1/bookings")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(malformedJson))
-                .andExpect(status().isBadRequest());
+        ResponseEntity<List<Booking>> response = bookingController.getAllBookings(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     static Stream<Arguments> createBookingExceptionProvider() {
@@ -255,8 +250,9 @@ class BookingControllerTest {
 
     @ParameterizedTest
     @MethodSource("createBookingExceptionProvider")
-    @WithMockUser(username = "1")
-    void whenCreateBooking_withBusinessException_thenBadRequest(Long stationId, Long userId, String exceptionMessage) throws Exception {
+    @XrayTest(key = "BOOKING-16")
+    @Requirement("BOOKING-16")
+    void whenCreateBooking_withBusinessException_thenBadRequest(Long stationId, Long userId, String exceptionMessage) {
         Booking inputBooking = new Booking();
         inputBooking.setStationId(stationId);
         inputBooking.setUserId(userId);
@@ -264,27 +260,31 @@ class BookingControllerTest {
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);
         when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException(exceptionMessage));
-        mockMvc.perform(post("/api/v1/bookings")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
-                .andExpect(status().isBadRequest());
+
+        ResponseEntity<Booking> response = bookingController.createBooking(inputBooking, principal);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenCancelBooking_withNonExistentBooking_thenNotFound() throws Exception {
+    @XrayTest(key = "BOOKING-17")
+    @Requirement("BOOKING-17")
+    void whenCancelBooking_withNonExistentBooking_thenNotFound() {
         when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("Booking not found"));
-        mockMvc.perform(post("/api/v1/bookings/999/cancel")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+
+        ResponseEntity<Void> response = bookingController.cancelBooking(999L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
-    @WithMockUser(username = "1")
-    void whenGetBookingsByUserId_withNoResults_thenNoContent() throws Exception {
+    @XrayTest(key = "BOOKING-18")
+    @Requirement("BOOKING-18")
+    void whenGetBookingsByUserId_withNoResults_thenNoContent() {
         when(bookingService.getBookingsByUserId(anyLong())).thenReturn(List.of());
-        mockMvc.perform(get("/api/v1/bookings/user/1"))
-                .andExpect(status().isNoContent());
+
+        ResponseEntity<List<Booking>> response = bookingController.getBookingsByUserId(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 } 

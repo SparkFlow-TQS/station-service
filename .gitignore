@@ -55,10 +55,11 @@ target/
 *.ipr
 *.iws
 *.xml
+!**/src/test/resources/logback-test.xml
 
 ### Environment ###
 .env
 
 ### Logs ###
 nohup.out
-*.log
+*.logstation-mysql-data/

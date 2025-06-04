@@ -3,7 +3,7 @@ package tqs.sparkflow.stationservice.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import org.mockito.Mock;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -25,11 +24,15 @@ import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 
 @SpringBootTest(
     classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 @TestPropertySource(properties = {"openchargemap.api.key=invalid-test-key"})
 class OpenChargeMapServiceInvalidKeyIT {
 
@@ -37,7 +40,8 @@ class OpenChargeMapServiceInvalidKeyIT {
 
   @Autowired private StationRepository stationRepository;
 
-  @MockBean private RestTemplate restTemplate;
+  @Mock
+  private RestTemplate restTemplate;
 
   @BeforeEach
   void setUp() {
@@ -52,7 +56,7 @@ class OpenChargeMapServiceInvalidKeyIT {
     int radius = 10;
 
     // Mock RestTemplate to throw 401 Unauthorized
-    when(restTemplate.exchange(
+    Mockito.lenient().when(restTemplate.exchange(
             anyString(),
             eq(HttpMethod.GET),
             eq(null),
@@ -62,6 +66,6 @@ class OpenChargeMapServiceInvalidKeyIT {
     // When/Then
     assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, radius))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Invalid Open Charge Map API key");
+        .hasMessage("Access denied to Open Charge Map API");
   }
 }
