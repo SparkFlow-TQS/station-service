@@ -5,33 +5,30 @@ import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
+import org.mockito.Mock;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-import tqs.sparkflow.stationservice.config.TestConfig;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.security.test.context.support.WithMockUser;
-import tqs.sparkflow.stationservice.config.WebConfig;
 
-@WebMvcTest(StationController.class)
-@Import({TestConfig.class, WebConfig.class})
-@ActiveProfiles("test")
-@WithMockUser
+@ExtendWith(MockitoExtension.class)
 class StationControllerTest {
 
-    @MockBean
+    @Mock
     private StationService stationService;
 
-    @Autowired
     private StationController stationController;
+
+    @BeforeEach
+    void setUp() {
+        stationController = new StationController(stationService);
+    }
 
     @Test
     @XrayTest(key = "STATION-1")
