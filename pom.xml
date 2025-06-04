@@ -380,7 +380,9 @@
 					<cloud>true</cloud>
 					<projectKey>${XRAY_PROJECT_KEY}</projectKey>
 					<reportFormat>junit</reportFormat>
-					<reportFile>${project.build.directory}/surefire-reports/TEST-tqs.sparkflow.stationservice.StationServiceApplicationTest.xml</reportFile>
+					<reportFile>${project.build.directory}/surefire-reports</reportFile>
+					<autoCreateTests>true</autoCreateTests>
+					<autoCreateTestsLabels>automated</autoCreateTestsLabels>
 				</configuration>
 			</plugin>
 		</plugins>
