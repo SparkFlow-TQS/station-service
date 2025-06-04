@@ -33,7 +33,8 @@ public class OpenApiConfig {
                 .title("Station Service API")
                 .version("0.3.0")
                 .description("API for managing charging stations and bookings"))
-        .addServersItem(new Server().url("/").description("Default server"));
+        .addServersItem(new Server().url("/station").description("Behind nginx proxy"))
+        .addServersItem(new Server().url("/").description("Direct access"));
   }
 
   /**
