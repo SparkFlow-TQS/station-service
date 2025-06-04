@@ -1,9 +1,7 @@
 package tqs.sparkflow.stationservice.config;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -14,6 +12,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Security configuration for the application. Configures security settings including CSRF
@@ -65,11 +67,11 @@ public class SecurityConfig {
                         "/webjars/**")
                     .permitAll()
                     // Then other endpoints
-                    .requestMatchers("/stations/**", "/api/openchargemap/**")
+                    .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**", "/api/v1/openchargemap/**")
                     .permitAll()
-                    .requestMatchers("/bookings/**")
+                    .requestMatchers("/bookings/**", "/api/v1/bookings/**")
                     .hasAnyRole("USER", "ADMIN")
-                    .requestMatchers("/admin/**")
+                    .requestMatchers("/admin/**", "/api/v1/admin/**")
                     .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())

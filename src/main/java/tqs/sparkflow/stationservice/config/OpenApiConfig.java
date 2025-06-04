@@ -1,13 +1,16 @@
 package tqs.sparkflow.stationservice.config;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
 import java.util.Arrays;
+
 import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
 
 /**
  * Configuration class for OpenAPI documentation. Defines the API information, contact details, and
@@ -29,7 +32,8 @@ public class OpenApiConfig {
             new Info()
                 .title("Station Service API")
                 .version("0.3.0")
-                .description("API for managing charging stations and bookings"));
+                .description("API for managing charging stations and bookings"))
+        .addServersItem(new Server().url("/").description("Default server"));
   }
 
   /**
