@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.12</version>
+		<version>3.5.0</version>
 		<relativePath/>
 	</parent>
 	<groupId>tqs.sparkflow</groupId>
@@ -38,9 +38,13 @@
 		<junit-jupiter.version>5.12.1</junit-jupiter.version>
 		<springdoc.version>2.4.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
-		<logback.version>1.4.14</logback.version>
 		<cucumber.version>7.22.2</cucumber.version>
 		<spotless.version>2.43.0</spotless.version>
+		<flyway.version>11.8.2</flyway.version>
+		<mockito.version>5.16.0</mockito.version>
+		<rest-assured.version>5.5.0</rest-assured.version>
+		<testcontainers.version>1.20.0</testcontainers.version>
+		<hibernate.version>6.4.4.Final</hibernate.version>
 	</properties>
 
 	<repositories>
@@ -98,11 +102,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>${logback.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
@@ -120,11 +119,13 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainers.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mysql</artifactId>
+			<version>${testcontainers.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Cucumber Dependencies -->
@@ -150,38 +151,38 @@
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
-			<version>5.5.0</version>
+			<version>${rest-assured.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Mockito -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.16.0</version>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Flyway -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>11.8.2</version>
+			<version>${flyway.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-mysql</artifactId>
-			<version>11.8.2</version>
+			<version>${flyway.version}</version>
 		</dependency>
 		<!-- JUnit Platform Suite -->
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-suite</artifactId>
-			<version>1.12.1</version>
+			<version>${junit-platform.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-suite-api</artifactId>
-			<version>1.12.1</version>
+			<version>${junit-platform.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

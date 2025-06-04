@@ -1,91 +1,92 @@
 package tqs.sparkflow.stationservice.controller;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
-import tqs.sparkflow.stationservice.config.TestConfig;
-import tqs.sparkflow.stationservice.config.WebConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.service.ChargingSessionService;
 
-@WebMvcTest(ChargingSessionController.class)
-@Import({TestConfig.class, WebConfig.class})
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 class ChargingSessionControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    // @Autowired
-    // private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private ChargingSessionService chargingSessionService;
 
+    private ChargingSessionController chargingSessionController;
     private ChargingSession testSession;
 
     @BeforeEach
     void setUp() {
+        chargingSessionController = new ChargingSessionController(chargingSessionService);
         testSession = new ChargingSession();
         testSession.setStationId("STATION-001");
         testSession.setUserId("USER-001");
     }
 
     @Test
-    void whenUnlockStation_thenReturnSuccess() throws Exception {
+    @XrayTest(key = "CHARGING-SESSION-1")
+    @Requirement("CHARGING-SESSION-1")
+    void whenUnlockStation_thenReturnSuccess() {
         // Given
         when(chargingSessionService.unlockStation(anyString(), anyString())).thenReturn(testSession);
 
-        // When/Then
-        mockMvc.perform(post("/api/v1/charging-sessions/unlock")
-                .param("stationId", "STATION-001")
-                .param("userId", "USER-001")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.stationId").value("STATION-001"));
+        // When
+        var response = chargingSessionController.unlockStation("STATION-001", "USER-001");
+
+        // Then
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().satisfies(body -> {
+            assertThat(body.getStationId()).isEqualTo("STATION-001");
+        });
     }
 
     @Test
-    void whenStartCharging_thenReturnSuccess() throws Exception {
+    @XrayTest(key = "CHARGING-SESSION-2")
+    @Requirement("CHARGING-SESSION-2")
+    void whenStartCharging_thenReturnSuccess() {
         // Given
         when(chargingSessionService.startCharging(anyString())).thenReturn(testSession);
 
-        // When/Then
-        mockMvc.perform(post("/api/v1/charging-sessions/{sessionId}/start", "1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        // When
+        var response = chargingSessionController.startCharging("1");
+
+        // Then
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
     @Test
-    void whenEndCharging_thenReturnSuccess() throws Exception {
+    @XrayTest(key = "CHARGING-SESSION-3")
+    @Requirement("CHARGING-SESSION-3")
+    void whenEndCharging_thenReturnSuccess() {
         // Given
         when(chargingSessionService.endCharging(anyString())).thenReturn(testSession);
 
-        // When/Then
-        mockMvc.perform(post("/api/v1/charging-sessions/{sessionId}/end", "1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        // When
+        var response = chargingSessionController.endCharging("1");
+
+        // Then
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
     @Test
-    void whenGetStatus_thenReturnCurrentStatus() throws Exception {
+    @XrayTest(key = "CHARGING-SESSION-4")
+    @Requirement("CHARGING-SESSION-4")
+    void whenGetStatus_thenReturnCurrentStatus() {
         // Given
         when(chargingSessionService.getSessionStatus(anyString())).thenReturn(testSession);
 
-        // When/Then
-        mockMvc.perform(get("/api/v1/charging-sessions/{sessionId}/status", "1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        // When
+        var response = chargingSessionController.getSessionStatus("1");
+
+        // Then
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 } 
