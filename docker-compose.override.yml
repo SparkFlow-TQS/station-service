@@ -1,7 +1,7 @@
 services:
   station-app:
     ports:
-      - "8082:8082"
+      - "${APP_PORT}:${APP_PORT}"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://station-db:3306/sparkflow_station?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
@@ -9,7 +9,7 @@ services:
 
   station-db:
     ports:
-      - "3307:3306"
+      - "${DB_PORT}"
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=sparkflow_station 

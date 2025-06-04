@@ -53,7 +53,7 @@ class OpenChargeMapServiceTest {
         ocmStation.setCountry("Country");
         ocmStation.setLatitude(1.0);
         ocmStation.setLongitude(2.0);
-        ocmStation.setConnectorType("Type2");
+        ocmStation.setQuantityOfChargers(1);
 
         OpenChargeMapResponse response = new OpenChargeMapResponse();
         response.setStations(List.of(ocmStation));

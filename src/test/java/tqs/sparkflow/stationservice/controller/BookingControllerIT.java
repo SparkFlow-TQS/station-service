@@ -53,18 +53,23 @@ class BookingControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @SuppressWarnings("removal")
     @MockBean
     private RestTemplate restTemplate;
 
+    @SuppressWarnings("removal")
     @MockBean
     private StationService stationService;
 
+    @SuppressWarnings("removal")
     @MockBean
     private BookingService bookingService;
 
+    @SuppressWarnings("removal")
     @MockBean
     private BookingRepository bookingRepository;
 
+    @SuppressWarnings("removal")
     @MockBean
     private StationRepository stationRepository;
 

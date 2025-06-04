@@ -135,9 +135,9 @@ public class OpenChargeMapService {
       ocmStation.getCountry(),
       ocmStation.getLatitude(),
       ocmStation.getLongitude(),
-      ocmStation.getConnectorType(),
-      null,
-      true);
+      ocmStation.getQuantityOfChargers(),
+      ocmStation.getStatus()
+    );
   }
 
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
@@ -157,7 +157,7 @@ public class OpenChargeMapService {
       setStationAddress(addressInfo, station);
       setStationCoordinates(addressInfo, station);
       station.setStatus("Available");
-      setStationConnectorType(connections, station);
+      setStationQuantityOfChargers(connections, station);
 
       return station;
     } catch (Exception e) {
@@ -211,13 +211,34 @@ public class OpenChargeMapService {
     station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
   }
 
-  private void setStationConnectorType(List<Map<String, Object>> connections, Station station) {
-    if (connections != null && !connections.isEmpty()) {
-      Map<String, Object> firstConnection = connections.get(0);
-      Object connectorType = firstConnection.get("ConnectionTypeID");
-      station.setConnectorType(connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
-    } else {
-      station.setConnectorType(UNKNOWN_VALUE);
+  private void setStationQuantityOfChargers(List<Map<String, Object>> connections, Station station) {
+    if (connections == null || connections.isEmpty()) {
+      station.setQuantityOfChargers(1); // Default to 1 if no connections
+      return;
     }
+
+    int totalChargers = 0;
+    for (Map<String, Object> connection : connections) {
+      // Get quantity from connection
+      Object quantity = connection.get("Quantity");
+      if (quantity != null) {
+        if (quantity instanceof Number) {
+          totalChargers += ((Number) quantity).intValue();
+        } else if (quantity instanceof String) {
+          try {
+            totalChargers += Integer.parseInt((String) quantity);
+          } catch (NumberFormatException e) {
+            // If parsing fails, count as 1
+            totalChargers += 1;
+          }
+        }
+      } else {
+        // If quantity is null, count as 1
+        totalChargers += 1;
+      }
+    }
+    
+    // Ensure at least 1 charger
+    station.setQuantityOfChargers(totalChargers > 0 ? totalChargers : 1);
   }
 }

@@ -14,7 +14,7 @@ class OpenChargeMapStationTest {
         station.setCountry("Test Country");
         station.setLatitude(38.7223);
         station.setLongitude(-9.1393);
-        station.setConnectorType("Type 2");
+        station.setQuantityOfChargers(1);
 
         assertThat(station.getId()).isEqualTo("1");
         assertThat(station.getName()).isEqualTo("Test Station");
@@ -23,6 +23,6 @@ class OpenChargeMapStationTest {
         assertThat(station.getCountry()).isEqualTo("Test Country");
         assertThat(station.getLatitude()).isEqualTo(38.7223);
         assertThat(station.getLongitude()).isEqualTo(-9.1393);
-        assertThat(station.getConnectorType()).isEqualTo("Type 2");
+        assertThat(station.getQuantityOfChargers()).isEqualTo(1);
     }
 } 

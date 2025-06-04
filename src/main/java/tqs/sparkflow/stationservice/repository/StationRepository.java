@@ -33,22 +33,21 @@ public interface StationRepository extends JpaRepository<Station, Long> {
    * @param name the name to search for
    * @param city the city to search in
    * @param country the country to search in
-   * @param connectorType the type of connector to search for
+   * @param minChargers the minimum number of chargers
    * @return a list of matching stations
    */
-  List<Station> findByNameContainingAndCityContainingAndCountryContainingAndConnectorTypeContaining(
-      String name, String city, String country, String connectorType);
+  List<Station> findByNameContainingAndCityContainingAndCountryContainingAndQuantityOfChargersGreaterThanEqual(
+      String name, String city, String country, Integer minChargers);
 
   /**
-   * Finds stations by connector type.
+   * Finds stations by minimum number of chargers.
    *
-   * @param connectorType The type of connector to search for
-   * @return A list of stations with the given connector type
+   * @param minChargers The minimum number of chargers to search for
+   * @return A list of stations with at least the given number of chargers
    */
-  List<Station> findByConnectorType(String connectorType);
+  List<Station> findByQuantityOfChargersGreaterThanEqual(Integer minChargers);
 
   @Query("SELECT s FROM Station s WHERE "
-         + "(:connectorType IS NULL OR s.connectorType = :connectorType) AND "
          + "(:minPower IS NULL OR s.power >= :minPower) AND "
          + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
          + "(:isOperational IS NULL OR s.isOperational = :isOperational) AND "
@@ -58,7 +57,6 @@ public interface StationRepository extends JpaRepository<Station, Long> {
          + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
          + "(:maxPrice IS NULL OR s.price <= :maxPrice)")
   List<Station> findStationsByFilters(
-      @Param("connectorType") String connectorType,
       @Param("minPower") Integer minPower,
       @Param("maxPower") Integer maxPower,
       @Param("isOperational") Boolean isOperational,
@@ -70,7 +68,6 @@ public interface StationRepository extends JpaRepository<Station, Long> {
   );
 
   @Query(value = "SELECT * FROM stations s WHERE "
-         + "(:connectorType IS NULL OR s.connector_type = :connectorType) AND "
          + "(:minPower IS NULL OR s.power >= :minPower) AND "
          + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
          + "(:isOperational IS NULL OR s.is_operational = :isOperational) AND "
@@ -83,7 +80,6 @@ public interface StationRepository extends JpaRepository<Station, Long> {
          + "ST_Distance_Sphere(point(s.longitude, s.latitude), point(:longitude, :latitude)) <= :radius * 1000)",
          nativeQuery = true)
   List<Station> findStationsByFiltersWithLocation(
-      @Param("connectorType") String connectorType,
       @Param("minPower") Integer minPower,
       @Param("maxPower") Integer maxPower,
       @Param("isOperational") Boolean isOperational,

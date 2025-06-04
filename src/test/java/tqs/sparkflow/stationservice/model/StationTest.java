@@ -18,7 +18,7 @@ class StationTest {
     assertThat(station.getLatitude()).isNull();
     assertThat(station.getLongitude()).isNull();
     assertThat(station.getStatus()).isNull();
-    assertThat(station.getConnectorType()).isNull();
+    assertThat(station.getQuantityOfChargers()).isNull();
   }
 
   @Test
@@ -31,7 +31,7 @@ class StationTest {
     double latitude = 38.7223;
     double longitude = -9.1393;
     String status = "Available";
-    String connectorType = "Type2";
+    int quantityOfChargers = 1;
 
     // When
     station.setId(id);
@@ -40,7 +40,7 @@ class StationTest {
     station.setLatitude(latitude);
     station.setLongitude(longitude);
     station.setStatus(status);
-    station.setConnectorType(connectorType);
+    station.setQuantityOfChargers(quantityOfChargers);
 
     // Then
     assertThat(station.getId()).isEqualTo(id);
@@ -49,7 +49,7 @@ class StationTest {
     assertThat(station.getLatitude()).isEqualTo(latitude);
     assertThat(station.getLongitude()).isEqualTo(longitude);
     assertThat(station.getStatus()).isEqualTo(status);
-    assertThat(station.getConnectorType()).isEqualTo(connectorType);
+    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
   }
 
   @Test
@@ -76,7 +76,7 @@ class StationTest {
     String country = "Test Country";
     Double latitude = 40.7128;
     Double longitude = -74.0060;
-    String connectorType = "Type 2";
+    int quantityOfChargers = 1;
     Integer power = 50;
     Boolean isOperational = true;
     Double price = 0.35;
@@ -90,7 +90,7 @@ class StationTest {
         country,
         latitude,
         longitude,
-        connectorType,
+        quantityOfChargers,
         power,
         isOperational,
         price
@@ -104,7 +104,7 @@ class StationTest {
     assertThat(station.getCountry()).isEqualTo(country);
     assertThat(station.getLatitude()).isEqualTo(latitude);
     assertThat(station.getLongitude()).isEqualTo(longitude);
-    assertThat(station.getConnectorType()).isEqualTo(connectorType);
+    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
     assertThat(station.getPower()).isEqualTo(power);
     assertThat(station.getIsOperational()).isEqualTo(isOperational);
     assertThat(station.getPrice()).isEqualTo(price);
@@ -120,7 +120,7 @@ class StationTest {
     String country = "Test Country";
     Double latitude = 40.7128;
     Double longitude = -74.0060;
-    String connectorType = "Type 2";
+    int quantityOfChargers = 1;
     Integer power = 50;
     Boolean isOperational = true;
     Double price = 0.35;
@@ -135,7 +135,7 @@ class StationTest {
         .country(country)
         .latitude(latitude)
         .longitude(longitude)
-        .connectorType(connectorType)
+        .quantityOfChargers(quantityOfChargers)
         .power(power)
         .isOperational(isOperational)
         .price(price)
@@ -150,7 +150,7 @@ class StationTest {
     assertThat(station.getCountry()).isEqualTo(country);
     assertThat(station.getLatitude()).isEqualTo(latitude);
     assertThat(station.getLongitude()).isEqualTo(longitude);
-    assertThat(station.getConnectorType()).isEqualTo(connectorType);
+    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
     assertThat(station.getPower()).isEqualTo(power);
     assertThat(station.getIsOperational()).isEqualTo(isOperational);
     assertThat(station.getPrice()).isEqualTo(price);
@@ -179,7 +179,7 @@ class StationTest {
     assertThat(station.getCity()).isNull();
     assertThat(station.getCountry()).isNull();
     assertThat(station.getLongitude()).isNull();
-    assertThat(station.getConnectorType()).isNull();
+    assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getPower()).isNull();
     assertThat(station.getIsOperational()).isNull();
     assertThat(station.getPrice()).isNull();
@@ -199,7 +199,7 @@ class StationTest {
     assertThat(station.getCountry()).isNull();
     assertThat(station.getLatitude()).isNull();
     assertThat(station.getLongitude()).isNull();
-    assertThat(station.getConnectorType()).isNull();
+    assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getPower()).isNull();
     assertThat(station.getIsOperational()).isNull();
     assertThat(station.getPrice()).isNull();
