@@ -14,8 +14,6 @@ services:
     depends_on:
       station-db:
         condition: service_healthy
-    networks:
-      - sparkflow-network
 
   station-db:
     image: mysql:8.0
@@ -23,18 +21,11 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     volumes:
-      - station-mysql-data:/var/lib/mysql
-    networks:
-      - sparkflow-network
+      - ./station-mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-networks:
-  sparkflow-network:
-    external: true
 
-volumes:
-  station-mysql-data: 
