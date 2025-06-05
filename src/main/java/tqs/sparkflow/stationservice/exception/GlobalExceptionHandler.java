@@ -2,13 +2,15 @@ package tqs.sparkflow.stationservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +19,60 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
   private static final String BAD_REQUEST_ERROR = "Bad Request";
+
+  /**
+   * Handles validation errors for request body validation.
+   *
+   * @param ex The exception to handle
+   * @param request The web request
+   * @return A response entity with the validation error details
+   */
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(
+      MethodArgumentNotValidException ex, WebRequest request) {
+    Map<String, String> validationErrors = new HashMap<>();
+    ex.getBindingResult().getAllErrors().forEach(error -> {
+      String fieldName = ((FieldError) error).getField();
+      String errorMessage = error.getDefaultMessage();
+      validationErrors.put(fieldName, errorMessage);
+    });
+    
+    String errorMessage = "Validation failed: " + validationErrors.toString();
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Validation Error",
+            errorMessage,
+            request.getDescription(false));
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handles constraint violation exceptions.
+   *
+   * @param ex The exception to handle
+   * @param request The web request
+   * @return A response entity with the constraint violation details
+   */
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+      ConstraintViolationException ex, WebRequest request) {
+    Map<String, String> validationErrors = new HashMap<>();
+    for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+      String fieldName = violation.getPropertyPath().toString();
+      String errorMessage = violation.getMessage();
+      validationErrors.put(fieldName, errorMessage);
+    }
+    
+    String errorMessage = "Constraint validation failed: " + validationErrors.toString();
+    ErrorResponse error =
+        new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Constraint Violation",
+            errorMessage,
+            request.getDescription(false));
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
 
   /**
    * Handles IllegalArgumentException.
@@ -71,25 +127,6 @@ public class GlobalExceptionHandler {
             HttpStatus.BAD_REQUEST.value(),
             BAD_REQUEST_ERROR,
             ex.getMessage(),
-            request.getDescription(false));
-    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handles HttpMessageNotReadableException (malformed JSON, etc).
-   *
-   * @param ex The exception to handle
-   * @param request The web request
-   * @return A response entity with the error details
-   */
-  @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
-      HttpMessageNotReadableException ex, WebRequest request) {
-    ErrorResponse error =
-        new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            BAD_REQUEST_ERROR,
-            "Malformed JSON request",
             request.getDescription(false));
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }

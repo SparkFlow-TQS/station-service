@@ -2,8 +2,9 @@ package tqs.sparkflow.stationservice.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
 import org.springframework.stereotype.Service;
+
 import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.ChargingSession;
@@ -20,6 +21,9 @@ public class StationService {
   private final BookingRepository bookingRepository;
   private final ChargingSessionRepository chargingSessionRepository;
 
+  // Maximum number of stations to return per search to prevent performance issues
+  private static final int MAX_SEARCH_RESULTS = 500;
+
   public StationService(StationRepository stationRepository, BookingRepository bookingRepository, ChargingSessionRepository chargingSessionRepository) {
     this.stationRepository = stationRepository;
     this.bookingRepository = bookingRepository;
@@ -29,10 +33,21 @@ public class StationService {
   /**
    * Gets all stations.
    *
-   * @return List of all stations
+   * @return List of all stations (limited to first 500 for performance)
    */
   public List<Station> getAllStations() {
-    return stationRepository.findAll();
+    List<Station> allStations = stationRepository.findAll();
+    return allStations.size() > MAX_SEARCH_RESULTS ? 
+           allStations.subList(0, MAX_SEARCH_RESULTS) : allStations;
+  }
+
+  /**
+   * Gets the total count of stations in the database.
+   *
+   * @return Total number of stations
+   */
+  public Long getTotalStationCount() {
+    return stationRepository.count();
   }
 
   /**
@@ -140,10 +155,65 @@ public class StationService {
    */
   public List<Station> searchStations(
       String name, String city, String country, Integer minChargers) {
-    return stationRepository
-      .findByNameContainingAndCityContainingAndCountryContainingAndQuantityOfChargersGreaterThanEqual(
-        Optional.ofNullable(name).orElse(""), Optional.ofNullable(city).orElse(""),
-        Optional.ofNullable(country).orElse(""), Optional.ofNullable(minChargers).orElse(1));
+    return stationRepository.findAll()
+        .stream()
+        .filter(station -> matchesNameFilter(station, name))
+        .filter(station -> matchesCityFilter(station, city))
+        .filter(station -> matchesCountryFilter(station, country))
+        .filter(station -> matchesMinChargersFilter(station, minChargers))
+        .limit(MAX_SEARCH_RESULTS)
+        .toList();
+  }
+
+  /**
+   * Checks if station matches the name filter.
+   */
+  private boolean matchesNameFilter(Station station, String name) {
+    if (isEmptyFilter(name)) {
+      return true;
+    }
+    return station.getName() != null 
+        && station.getName().toLowerCase().contains(name.toLowerCase());
+  }
+
+  /**
+   * Checks if station matches the city filter.
+   */
+  private boolean matchesCityFilter(Station station, String city) {
+    if (isEmptyFilter(city)) {
+      return true;
+    }
+    return station.getCity() != null 
+        && station.getCity().toLowerCase().contains(city.toLowerCase());
+  }
+
+  /**
+   * Checks if station matches the country filter.
+   */
+  private boolean matchesCountryFilter(Station station, String country) {
+    if (isEmptyFilter(country)) {
+      return true;
+    }
+    return station.getCountry() != null 
+        && station.getCountry().toLowerCase().contains(country.toLowerCase());
+  }
+
+  /**
+   * Checks if station matches the minimum chargers filter.
+   */
+  private boolean matchesMinChargersFilter(Station station, Integer minChargers) {
+    if (minChargers == null || minChargers <= 0) {
+      return true;
+    }
+    return station.getQuantityOfChargers() != null 
+        && station.getQuantityOfChargers() >= minChargers;
+  }
+
+  /**
+   * Checks if a filter value is empty or null.
+   */
+  private boolean isEmptyFilter(String filter) {
+    return filter == null || filter.trim().isEmpty();
   }
 
   /**
@@ -152,7 +222,7 @@ public class StationService {
    * @param latitude The latitude coordinate
    * @param longitude The longitude coordinate
    * @param radius The search radius in kilometers
-   * @return List of stations within the radius
+   * @return List of stations within the radius (limited to 500 results)
    * @throws IllegalArgumentException if coordinates or radius are invalid
    */
   public List<Station> getNearbyStations(double latitude, double longitude, int radius) {
@@ -165,8 +235,8 @@ public class StationService {
     if (radius <= 0) {
       throw new IllegalArgumentException("Radius must be greater than 0 km");
     }
-    if (radius > 100) {
-      throw new IllegalArgumentException("Radius cannot be greater than 100 km");
+    if (radius > 600) {
+      throw new IllegalArgumentException("Radius cannot be greater than 600 km");
     }
     
     return stationRepository.findAll().stream()
@@ -180,6 +250,7 @@ public class StationService {
         );
         return distance <= radius;
       })
+      .limit(MAX_SEARCH_RESULTS)  // Limit to maximum results
       .toList();
   }
 

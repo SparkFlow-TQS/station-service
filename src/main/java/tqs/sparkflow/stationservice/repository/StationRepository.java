@@ -2,10 +2,12 @@ package tqs.sparkflow.stationservice.repository;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import tqs.sparkflow.stationservice.model.Station;
 
 /** Repository for managing stations. */
@@ -15,9 +17,10 @@ public interface StationRepository extends JpaRepository<Station, Long> {
    * Finds stations by city.
    *
    * @param city The city to find stations in
-   * @return A list of stations in the given city
+   * @return A list of stations in the given city (limited to 500 results)
    */
-  List<Station> findByCity(String city);
+  @Query("SELECT s FROM Station s WHERE s.city = :city ORDER BY s.id LIMIT 500")
+  List<Station> findByCity(@Param("city") String city);
 
   /**
    * Finds a station by its external ID.
@@ -77,7 +80,8 @@ public interface StationRepository extends JpaRepository<Station, Long> {
          + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
          + "(:maxPrice IS NULL OR s.price <= :maxPrice) AND "
          + "(:latitude IS NULL OR :longitude IS NULL OR :radius IS NULL OR "
-         + "ST_Distance_Sphere(point(s.longitude, s.latitude), point(:longitude, :latitude)) <= :radius * 1000)",
+         + "ST_Distance_Sphere(point(s.longitude, s.latitude), point(:longitude, :latitude)) <= :radius * 1000) "
+         + "ORDER BY s.id LIMIT 500",
          nativeQuery = true)
   List<Station> findStationsByFiltersWithLocation(
       @Param("minPower") Integer minPower,

@@ -130,18 +130,21 @@ public class OpenChargeMapService {
    * @return The converted Station
    */
   private Station convertToStation(OpenChargeMapStation ocmStation) {
+    if (ocmStation == null) {
+      return null;
+    }
     Station station = new Station();
+    station.setExternalId(ocmStation.getId());
     station.setName(ocmStation.getName());
     station.setAddress(ocmStation.getAddress());
     station.setCity(ocmStation.getCity());
     station.setCountry(ocmStation.getCountry());
     station.setLatitude(ocmStation.getLatitude());
     station.setLongitude(ocmStation.getLongitude());
-    station.setPrice(ocmStation.getPrice());
-    station.setPower(ocmStation.getPower());
-    station.setIsOperational(ocmStation.getIsOperational());
-    station.setStatus(ocmStation.getStatus());
     station.setQuantityOfChargers(ocmStation.calculateQuantityOfChargers());
+    station.setStatus(ocmStation.getStatus());
+    station.setPower(ocmStation.getPower());
+    station.setIsOperational(true); // Default to operational
     return station;
   }
 

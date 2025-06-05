@@ -298,10 +298,10 @@ class StationTest {
     assertThat(station.getCountry()).isEqualTo(country);
     assertThat(station.getLatitude()).isEqualTo(latitude);
     assertThat(station.getLongitude()).isEqualTo(longitude);
-    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
     assertThat(station.getPower()).isEqualTo(power);
     assertThat(station.getIsOperational()).isEqualTo(isOperational);
     assertThat(station.getPrice()).isEqualTo(price);
+    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
     assertThat(station.getStatus()).isEqualTo(status);
   }
 
@@ -327,10 +327,10 @@ class StationTest {
     assertThat(station.getCity()).isNull();
     assertThat(station.getCountry()).isNull();
     assertThat(station.getLongitude()).isNull();
-    assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getPower()).isNull();
     assertThat(station.getIsOperational()).isNull();
     assertThat(station.getPrice()).isNull();
+    assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getStatus()).isNull();
   }
 
@@ -347,10 +347,10 @@ class StationTest {
     assertThat(station.getCountry()).isNull();
     assertThat(station.getLatitude()).isNull();
     assertThat(station.getLongitude()).isNull();
-    assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getPower()).isNull();
     assertThat(station.getIsOperational()).isNull();
     assertThat(station.getPrice()).isNull();
+    assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getStatus()).isNull();
   }
 }
