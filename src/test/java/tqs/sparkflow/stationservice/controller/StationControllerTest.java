@@ -239,8 +239,6 @@ class StationControllerTest {
     }
 
     private Station createTestStation(Long id, String name) {
-        Station station =
-            new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
-        return station;
+        return new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
     }
 }

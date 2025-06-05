@@ -60,9 +60,7 @@ public class OpenChargeMapService {
         for (OpenChargeMapStation ocmStation : response.getStations()) {
           if (ocmStation != null) {
             Station station = convertToStation(ocmStation);
-            if (station != null) {
-              stations.add(station);
-            }
+            stations.add(station);
           }
         }
       }
@@ -230,11 +228,11 @@ public class OpenChargeMapService {
       // Get quantity from connection
       Object quantity = connection.get("Quantity");
       if (quantity != null) {
-        if (quantity instanceof Number) {
-          totalChargers += ((Number) quantity).intValue();
-        } else if (quantity instanceof String) {
+        if (quantity instanceof Number number) {
+          totalChargers += number.intValue();
+        } else if (quantity instanceof String string) {
           try {
-            totalChargers += Integer.parseInt((String) quantity);
+            totalChargers += Integer.parseInt(string);
           } catch (NumberFormatException e) {
             // If parsing fails, count as 1
             totalChargers += 1;

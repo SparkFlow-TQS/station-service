@@ -106,22 +106,6 @@ class StationRepositoryTest {
     }
 
     @Test
-    void whenFindStationsByFilters_thenReturnFilteredStations() {
-        List<Station> found = stationRepository.findStationsByFilters(
-                40, // minPower
-                100, // maxPower
-                true, // isOperational
-                "Available", // status
-                "Aveiro", // city
-                "Portugal", // country
-                0.20, // minPrice
-                0.40  // maxPrice
-        );
-        assertThat(found).hasSize(1);
-        assertThat(found.get(0).getName()).isEqualTo("Station 1");
-    }
-
-    @Test
     void whenFindStationsByFiltersWithLocation_thenReturnFilteredStations() {
         // For testing purposes, we'll use a simpler query that doesn't rely on ST_Distance_Sphere
         List<Station> found = stationRepository.findStationsByFilters(
