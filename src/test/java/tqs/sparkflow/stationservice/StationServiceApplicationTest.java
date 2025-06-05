@@ -11,5 +11,6 @@ class StationServiceApplicationTest {
     @Test
     void contextLoads() {
         // Test that the context loads successfully
+        System.out.println("Context loaded successfully");
     }
 } 
