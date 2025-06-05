@@ -11,14 +11,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import tqs.sparkflow.stationservice.StationServiceApplication;
-import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.exception.ChargingSessionNotFoundException;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 
 @SpringBootTest(
-    classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
+    classes = {StationServiceApplication.class, TestConfig.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 @Transactional

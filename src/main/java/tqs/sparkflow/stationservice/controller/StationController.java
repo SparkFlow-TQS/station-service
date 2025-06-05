@@ -178,7 +178,7 @@ public class StationController {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param connectorType The connector type
+   * @param minChargers The minimum number of chargers
    * @return List of matching stations
    */
   @Operation(summary = "Search stations", description = "Searches for stations based on various criteria")
@@ -193,8 +193,8 @@ public class StationController {
       @Parameter(description = "Station name to search for") @RequestParam(required = false) String name,
       @Parameter(description = "City to search in") @RequestParam(required = false) String city,
       @Parameter(description = "Country to search in") @RequestParam(required = false) String country,
-      @Parameter(description = "Type of connector to search for") @RequestParam(required = false) String connectorType) {
-    return ResponseEntity.ok(stationService.searchStations(name, city, country, connectorType));
+      @Parameter(description = "Minimum number of chargers") @RequestParam(required = false) Integer minChargers) {
+    return ResponseEntity.ok(stationService.searchStations(name, city, country, minChargers));
   }
 
   /**
@@ -220,25 +220,21 @@ public class StationController {
     return ResponseEntity.ok(stationService.getNearbyStations(latitude, longitude, radius));
   }
 
-  /**
-   * Gets stations by connector type.
-   *
-   * @param connectorType The type of connector to search for
-   * @return List of stations with the given connector type
-   */
-  @Operation(summary = "Get stations by connector type", description = "Retrieves all stations that support a specific connector type")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved stations with the specified connector type",
-          content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = Station.class))),
-      @ApiResponse(responseCode = "400", description = "Invalid connector type")
-  })
-  @GetMapping("/connector/{connectorType}")
-  public ResponseEntity<List<Station>> getStationsByConnectorType(
-      @Parameter(description = "Type of connector to search for", required = true) @PathVariable String connectorType) {
-    return ResponseEntity.ok(stationService.getStationsByConnectorType(connectorType));
-  }
 
+  /**
+   * Gets stations by minimum number of chargers.
+   *
+   * @param minChargers The minimum number of chargers to search for
+   * @return List of stations with at least the given number of chargers
+   * @throws NullPointerException if minChargers is null
+   * @throws IllegalArgumentException if minChargers is less than 1
+   */
+  @GetMapping("/quantity/{minChargers}")
+  public ResponseEntity<List<Station>> getStationsByQuantityOfChargers(
+      @Parameter(description = "Minimum number of chargers", required = true) @PathVariable int minChargers) {
+    return ResponseEntity.ok(stationService.getStationsByMinChargers(minChargers));
+  }
+  
   /**
    * Gets stations based on filter criteria.
    *

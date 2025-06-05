@@ -77,14 +77,11 @@ class StationControllerTest {
         List<Station> expectedStations =
             Arrays.asList(
                 new Station(
-                    "Station 1", "Address 1", "Lisbon", latitude, longitude, "Type 2", "Available"),
+                    "1234567890", "Station 1", "Address 1", "Lisbon", "Portugal", latitude, longitude, 1, "Available"),
                 new Station(
-                    "Station 2",
-                    "Address 2",
-                    "Lisbon",
-                    latitude + 0.01,
+                    "1234567891", "Station 2", "Address 2", "Lisbon", "Portugal", latitude + 0.01,
                     longitude + 0.01,
-                    "Type 2",
+                    1,
                     "Available"));
 
         when(stationService.getNearbyStations(latitude, longitude, radius))
@@ -103,22 +100,22 @@ class StationControllerTest {
     @Test
     @XrayTest(key = "STATION-4")
     @Requirement("STATION-4")
-    void whenGettingStationsByConnectorType_thenReturnsListOfStations() {
+    void whenGettingStationsByQuantityOfChargers_thenReturnsListOfStations() {
         // Given
-        String connectorType = "Type2";
+        int quantityOfChargers = 1;
         List<Station> expectedStations =
             Arrays.asList(
                 createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
-        when(stationService.getStationsByConnectorType(connectorType)).thenReturn(expectedStations);
+        when(stationService.getStationsByMinChargers(quantityOfChargers)).thenReturn(expectedStations);
 
         // When
         ResponseEntity<List<Station>> response =
-            stationController.getStationsByConnectorType(connectorType);
+            stationController.getStationsByQuantityOfChargers(quantityOfChargers);
 
         // Then
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo(expectedStations);
-        verify(stationService).getStationsByConnectorType(connectorType);
+        verify(stationService).getStationsByMinChargers(quantityOfChargers);
     }
 
     @Test
@@ -128,7 +125,7 @@ class StationControllerTest {
         // Given
         Station station =
             new Station(
-                "Test Station", "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
+                "1234567890", "Test Station", "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
         station.setId(1L);
 
         when(stationService.createStation(any(Station.class))).thenReturn(station);
@@ -234,11 +231,11 @@ class StationControllerTest {
     @Requirement("STATION-13")
     void whenSearchingStations_thenReturnsList() {
         List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Search 1"));
-        when(stationService.searchStations("name", "city", "country", "type")).thenReturn(expectedStations);
-        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", "type");
+        when(stationService.searchStations("name", "city", "country", 1)).thenReturn(expectedStations);
+        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", 1);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo(expectedStations);
-        verify(stationService).searchStations("name", "city", "country", "type");
+        verify(stationService).searchStations("name", "city", "country", 1);
     }
 
     private Station createTestStation(Long id, String name) {
@@ -249,9 +246,11 @@ class StationControllerTest {
             .country("Portugal")
             .latitude(38.7223)
             .longitude(-9.1393)
-            .connectorType("Type2")
+            .quantityOfChargers(2)
+            .power(22)
             .status("Available")
             .isOperational(true)
+            .price(0.30)
             .build();
         station.setId(id);
         return station;

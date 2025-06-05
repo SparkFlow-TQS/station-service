@@ -7,16 +7,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.Column;
 
 /** Represents a charging station. */
 @Entity
 @Table(name = "stations")
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Station extends BaseStationFields<Long> {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+public class Station extends BaseStationFields {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,66 +25,19 @@ public class Station extends BaseStationFields<Long> {
   private String externalId;
 
   @NotBlank(message = "Station name cannot be empty")
+  @Column(name = "name")
   private String name;
 
-  private String address;
-
-  @NotBlank(message = "City cannot be empty")
-  private String city;
-
-  @NotBlank(message = "Country cannot be empty")
-  private String country;
-
-  @NotNull(message = "Latitude cannot be null")
-  @Min(value = -90, message = "Latitude must be between -90 and 90 degrees")
-  @Max(value = 90, message = "Latitude must be between -90 and 90 degrees")
-  private Double latitude;
-
-  @NotNull(message = "Longitude cannot be null")
-  @Min(value = -180, message = "Longitude must be between -180 and 180 degrees")
-  @Max(value = 180, message = "Longitude must be between -180 and 180 degrees")
-  private Double longitude;
-
-  @NotBlank(message = "Station status cannot be empty")
-  private String status;
-
-  @NotBlank(message = "Connector type cannot be empty")
-  private String connectorType;
-
+  @Column(name = "power")
   private Integer power;
-  private Boolean isOperational;
-  private Double price;
-  
+
+  @NotNull(message = "Quantity of chargers cannot be null")
+  @Min(value = 1, message = "Quantity of chargers must be at least 1")
+  @Column(name = "quantity_of_chargers")
+  private Integer quantityOfChargers;
+
   /** Creates a new Station. */
   public Station() {
-  }
-
-  /**
-   * Creates a new Station with the given details.
-   *
-   * @param name The name of the station
-   * @param address The address of the station
-   * @param city The city where the station is located
-   * @param latitude The latitude of the station
-   * @param longitude The longitude of the station
-   * @param connectorType The type of connector available at the station
-   * @param status The status of the station
-   */
-  public Station(
-      String name,
-      String address,
-      String city,
-      double latitude,
-      double longitude,
-      String connectorType,
-      String status) {
-    this.name = name;
-    this.address = address;
-    this.city = city;
-    this.latitude = latitude;
-    this.longitude = longitude;
-    this.connectorType = connectorType;
-    this.status = status;
   }
 
   /**
@@ -97,7 +50,41 @@ public class Station extends BaseStationFields<Long> {
    * @param country The country where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param connectorType The type of connector available at the station
+   * @param quantityOfChargers The number of chargers available at the station
+   * @param status The status of the station
+   */
+  public Station(
+      String externalId,
+      String name,
+      String address,
+      String city,
+      String country,
+      double latitude,
+      double longitude,
+      Integer quantityOfChargers,
+      String status) {
+    this.externalId = externalId;
+    this.name = name;
+    this.address = address;
+    setCity(city);
+    setCountry(country);
+    setLatitude(latitude);
+    setLongitude(longitude);
+    this.quantityOfChargers = quantityOfChargers;
+    setStatus(status);
+  }
+
+  /**
+   * Creates a new Station with the given details.
+   *
+   * @param externalId The external ID from OpenChargeMap
+   * @param name The name of the station
+   * @param address The address of the station
+   * @param city The city where the station is located
+   * @param country The country where the station is located
+   * @param latitude The latitude of the station
+   * @param longitude The longitude of the station
+   * @param quantityOfChargers The number of chargers available at the station
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    */
@@ -109,17 +96,17 @@ public class Station extends BaseStationFields<Long> {
       String country,
       Double latitude,
       Double longitude,
-      String connectorType,
+      Integer quantityOfChargers,
       Integer power,
       Boolean isOperational) {
     this.externalId = externalId;
     this.name = name;
     this.address = address;
-    this.city = city;
-    this.country = country;
-    this.latitude = latitude;
-    this.longitude = longitude;
-    this.connectorType = connectorType;
+    setCity(city);
+    setCountry(country);
+    setLatitude(latitude);
+    setLongitude(longitude);
+    this.quantityOfChargers = quantityOfChargers;
     this.power = power;
     this.isOperational = isOperational;
   }
@@ -134,7 +121,7 @@ public class Station extends BaseStationFields<Long> {
    * @param country The country where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param connectorType The type of connector available at the station
+   * @param quantityOfChargers The number of chargers available at the station
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    * @param price The price per kWh in euros
@@ -147,21 +134,21 @@ public class Station extends BaseStationFields<Long> {
       String country,
       Double latitude,
       Double longitude,
-      String connectorType,
+      Integer quantityOfChargers,
       Integer power,
       Boolean isOperational,
       Double price) {
     this.externalId = externalId;
     this.name = name;
     this.address = address;
-    this.city = city;
-    this.country = country;
-    this.latitude = latitude;
-    this.longitude = longitude;
-    this.connectorType = connectorType;
+    setCity(city);
+    setCountry(country);
+    setLatitude(latitude);
+    setLongitude(longitude);
+    this.quantityOfChargers = quantityOfChargers;
     this.power = power;
     this.isOperational = isOperational;
-    setPrice(price);
+    this.price = price;
   }
 
   public Long getId() {
@@ -196,58 +183,12 @@ public class Station extends BaseStationFields<Long> {
     this.address = address;
   }
 
-  public String getCity() {
-    return city;
+  public Integer getQuantityOfChargers() {
+    return quantityOfChargers;
   }
 
-  public void setCity(String city) {
-    this.city = city;
-  }
-
-  public String getCountry() {
-    return country;
-  }
-
-  public void setCountry(String country) {
-    this.country = country;
-  }
-
-  @Override
-  public Double getLatitude() {
-    return latitude;
-  }
-
-  @Override
-  public void setLatitude(Double latitude) {
-    this.latitude = latitude;
-  }
-
-  @Override
-  public Double getLongitude() {
-    return longitude;
-  }
-
-  @Override
-  public void setLongitude(Double longitude) {
-    this.longitude = longitude;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
-  @Override
-  public String getConnectorType() {
-    return connectorType;
-  }
-
-  @Override
-  public void setConnectorType(String connectorType) {
-    this.connectorType = connectorType;
+  public void setQuantityOfChargers(Integer quantityOfChargers) {
+    this.quantityOfChargers = quantityOfChargers;
   }
 
   public Integer getPower() {
@@ -256,22 +197,6 @@ public class Station extends BaseStationFields<Long> {
 
   public void setPower(Integer power) {
     this.power = power;
-  }
-
-  public Boolean getIsOperational() {
-    return isOperational;
-  }
-
-  public void setIsOperational(Boolean isOperational) {
-    this.isOperational = isOperational;
-  }
-
-  public Double getPrice() {
-    return price;
-  }
-
-  public void setPrice(Double price) {
-    this.price = price;
   }
 
   @Override
@@ -324,8 +249,8 @@ public class Station extends BaseStationFields<Long> {
       return this;
     }
 
-    public Builder connectorType(String connectorType) {
-      station.setConnectorType(connectorType);
+    public Builder quantityOfChargers(Integer quantityOfChargers) {
+      station.setQuantityOfChargers(quantityOfChargers);
       return this;
     }
 

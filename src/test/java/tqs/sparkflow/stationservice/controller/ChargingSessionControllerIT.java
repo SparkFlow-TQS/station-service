@@ -13,14 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import tqs.sparkflow.stationservice.StationServiceApplication;
-import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
+    classes = {StationServiceApplication.class, TestConfig.class},
     properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 class ChargingSessionControllerIT {

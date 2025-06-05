@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tqs.sparkflow.stationservice.dto.RoutePlanningRequestDTO;
 import tqs.sparkflow.stationservice.dto.RoutePlanningResponseDTO;
-import tqs.sparkflow.stationservice.dto.StationDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
@@ -38,9 +37,17 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
 
         // Find all stations
         List<Station> allStations = stationRepository.findAll();
+        if (allStations == null || allStations.isEmpty()) {
+            return new RoutePlanningResponseDTO(new ArrayList<>(), distance, batteryUsage);
+        }
 
         // Find optimal charging stations
         List<Station> optimalStations = findOptimalChargingStations(allStations, request, distance);
+
+        // If no optimal stations found and we can't complete the route, return empty list
+        if (optimalStations.isEmpty() && batteryUsage > request.getBatteryCapacity()) {
+            return new RoutePlanningResponseDTO(new ArrayList<>(), distance, batteryUsage);
+        }
 
         return new RoutePlanningResponseDTO(optimalStations, distance, batteryUsage);
     }
@@ -50,8 +57,10 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
         double currentBattery = request.getBatteryCapacity(); // Start with full battery
         double distanceTraveled = 0;
         double remainingDistance = totalDistance;
+        double currentLat = request.getStartLatitude();
+        double currentLon = request.getStartLongitude();
 
-        while (remainingDistance > 0 && currentBattery > MIN_BATTERY_PERCENTAGE * request.getBatteryCapacity()) {
+        while (remainingDistance > 0) {
             // Calculate how far we can go with current battery
             double maxDistanceWithBattery = currentBattery * request.getCarAutonomy();
             
@@ -63,8 +72,8 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
             // Find the best station to stop at
             Station bestStation = findBestChargingStation(
                 stations,
-                request.getStartLatitude() + (distanceTraveled / totalDistance) * (request.getDestLatitude() - request.getStartLatitude()),
-                request.getStartLongitude() + (distanceTraveled / totalDistance) * (request.getDestLongitude() - request.getStartLongitude()),
+                currentLat,
+                currentLon,
                 maxDistanceWithBattery,
                 remainingDistance,
                 request.getDestLatitude(),
@@ -77,30 +86,28 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
 
             // Calculate distance to station
             double distanceToStation = calculateDistance(
-                request.getStartLatitude() + (distanceTraveled / totalDistance) * (request.getDestLatitude() - request.getStartLatitude()),
-                request.getStartLongitude() + (distanceTraveled / totalDistance) * (request.getDestLongitude() - request.getStartLongitude()),
+                currentLat,
+                currentLon,
                 bestStation.getLatitude(),
                 bestStation.getLongitude()
             );
 
-            // Update battery and distance
-            currentBattery -= distanceToStation / request.getCarAutonomy();
-            distanceTraveled += distanceToStation;
-            remainingDistance -= distanceToStation;
-
             // Add station to route
             optimalStations.add(bestStation);
-            
-            // Reset battery to 80% after charging
-            currentBattery = MAX_BATTERY_PERCENTAGE * request.getBatteryCapacity();
+
+            // Update current position and battery
+            currentLat = bestStation.getLatitude();
+            currentLon = bestStation.getLongitude();
+            distanceTraveled += distanceToStation;
+            remainingDistance = calculateDistance(currentLat, currentLon, request.getDestLatitude(), request.getDestLongitude());
+            currentBattery = request.getBatteryCapacity() * MAX_BATTERY_PERCENTAGE; // Assume we charge to 80%
         }
 
         return optimalStations;
     }
 
-    private Station findBestChargingStation(List<Station> stations, double currentLat, double currentLon, 
-                                          double maxDistanceWithBattery, double remainingDistance,
-                                          double destLat, double destLon) {
+    private Station findBestChargingStation(List<Station> stations, double currentLat, double currentLon,
+            double maxDistanceWithBattery, double remainingDistance, double destLat, double destLon) {
         Station bestStation = null;
         double minScore = Double.MAX_VALUE;
 
@@ -108,7 +115,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
             double distanceToStation = calculateDistance(currentLat, currentLon, station.getLatitude(), station.getLongitude());
             double distanceToDestination = calculateDistance(station.getLatitude(), station.getLongitude(), destLat, destLon);
             
-            // Check if station is within range and doesn't deviate too much from route
+            // Check if station is within range
             if (distanceToStation <= maxDistanceWithBattery) {
                 // Calculate detour score (lower is better)
                 double directDistance = calculateDistance(currentLat, currentLon, destLat, destLon);
@@ -118,7 +125,8 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
                 // Only consider stations that don't require too much detour
                 if (detourScore <= MAX_DETOUR_DISTANCE) {
                     // Calculate final score based on detour and distance to destination
-                    double score = detourScore + (distanceToDestination / 100); // Penalize stations far from destination
+                    // Prioritize stations that are closer to the destination
+                    double score = detourScore + (distanceToDestination / 100);
                     
                     if (score < minScore) {
                         minScore = score;

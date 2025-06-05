@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8082:8082"
+      - "${APP_PORT}:${APP_PORT}"
     environment:
       OPENCHARGEMAP_API_KEY: ${OPENCHARGEMAP_API_KEY}
       OPENCHARGEMAP_API_URL: ${OPENCHARGEMAP_API_URL}
@@ -14,20 +14,23 @@ services:
     depends_on:
       station-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 4s
 
   station-db:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-    volumes:
-      - ./station-mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 5
-
+      retries: 6
 
 volumes:
-  station-mysql-data: 
+  station-mysql-data:

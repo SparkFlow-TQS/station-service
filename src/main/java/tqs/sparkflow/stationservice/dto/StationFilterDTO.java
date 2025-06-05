@@ -3,7 +3,7 @@ package tqs.sparkflow.stationservice.dto;
 import jakarta.validation.constraints.Min;
 import tqs.sparkflow.stationservice.model.BaseStationFields;
 
-public class StationFilterDTO extends BaseStationFields<Long> {
+public class StationFilterDTO extends BaseStationFields {
   @Min(value = 0, message = "Minimum price must be non-negative")
   private Double minPrice;
     

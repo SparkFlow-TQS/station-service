@@ -1,42 +1,47 @@
 package tqs.sparkflow.stationservice.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 /**
  * Base class containing common fields for station-related models.
- * @param <T> The type of the ID field (Long for internal stations, String for external stations)
+ * These fields are common between internal stations and OpenChargeMap stations.
  */
-public abstract class BaseStationFields<T> {
-    protected T id;
-    protected String name;
-    protected String address;
+@MappedSuperclass
+public abstract class BaseStationFields {
+    @Column(name = "city", nullable = true)
     protected String city;
+
+    @Column(name = "country", nullable = true)
     protected String country;
+
+    @NotNull(message = "Latitude cannot be null")
+    @Min(value = -90, message = "Latitude must be between -90 and 90 degrees")
+    @Max(value = 90, message = "Latitude must be between -90 and 90 degrees")
+    @Column(name = "latitude")
     protected Double latitude;
+
+    @NotNull(message = "Longitude cannot be null")
+    @Min(value = -180, message = "Longitude must be between -180 and 180 degrees")
+    @Max(value = 180, message = "Longitude must be between -180 and 180 degrees")
+    @Column(name = "longitude")
     protected Double longitude;
-    protected String connectorType;
 
-    public T getId() {
-        return id;
-    }
+    @Column(name = "price")
+    protected Double price;
 
-    public void setId(T id) {
-        this.id = id;
-    }
+    @Column(name = "is_operational")
+    protected Boolean isOperational;
 
-    public String getName() {
-        return name;
-    }
+    @NotBlank(message = "Status cannot be empty")
+    @Column(name = "status")
+    protected String status;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    protected String address;
 
     public String getCity() {
         return city;
@@ -70,11 +75,35 @@ public abstract class BaseStationFields<T> {
         this.longitude = longitude;
     }
 
-    public String getConnectorType() {
-        return connectorType;
+    public Double getPrice() {
+        return price;
     }
 
-    public void setConnectorType(String connectorType) {
-        this.connectorType = connectorType;
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Boolean getIsOperational() {
+        return isOperational;
+    }
+
+    public void setIsOperational(Boolean isOperational) {
+        this.isOperational = isOperational;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 } 

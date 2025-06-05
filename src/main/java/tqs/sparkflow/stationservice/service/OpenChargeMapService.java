@@ -52,18 +52,24 @@ public class OpenChargeMapService {
    * @return List of stations in the city
    */
   public List<Station> getStationsByCity(String city) {
-    String url = String.format("%s?key=%s&city=%s", baseUrl, apiKey, city);
-    OpenChargeMapResponse response = restTemplate.getForObject(url, OpenChargeMapResponse.class);
-    List<Station> stations = new ArrayList<>();
-    if (response != null && response.getStations() != null) {
-      for (OpenChargeMapStation ocmStation : response.getStations()) {
-        Station station = convertToStation(ocmStation);
-        if (station != null) {
-          stations.add(station);
+    try {
+      String url = String.format("%s?key=%s&city=%s", baseUrl, apiKey, city);
+      OpenChargeMapResponse response = restTemplate.getForObject(url, OpenChargeMapResponse.class);
+      List<Station> stations = new ArrayList<>();
+      if (response != null && response.getStations() != null) {
+        for (OpenChargeMapStation ocmStation : response.getStations()) {
+          if (ocmStation != null) {
+            Station station = convertToStation(ocmStation);
+            stations.add(station);
+          }
         }
       }
+      return stations;
+    } catch (HttpClientErrorException e) {
+      throw new IllegalStateException("Error accessing Open Charge Map API: " + e.getMessage());
+    } catch (Exception e) {
+      throw new IllegalStateException("Error fetching stations: " + e.getMessage());
     }
-    return stations;
   }
 
   /**
@@ -124,20 +130,19 @@ public class OpenChargeMapService {
    * @return The converted Station
    */
   private Station convertToStation(OpenChargeMapStation ocmStation) {
-    if (ocmStation == null) {
-      return null;
-    }
-    return new Station(
-      ocmStation.getId(),
-      ocmStation.getName(),
-      ocmStation.getAddress(),
-      ocmStation.getCity(),
-      ocmStation.getCountry(),
-      ocmStation.getLatitude(),
-      ocmStation.getLongitude(),
-      ocmStation.getConnectorType(),
-      null,
-      true);
+    Station station = new Station();
+    station.setName(ocmStation.getName());
+    station.setAddress(ocmStation.getAddress());
+    station.setCity(ocmStation.getCity());
+    station.setCountry(ocmStation.getCountry());
+    station.setLatitude(ocmStation.getLatitude());
+    station.setLongitude(ocmStation.getLongitude());
+    station.setPrice(ocmStation.getPrice());
+    station.setPower(ocmStation.getMaxPower());
+    station.setIsOperational(ocmStation.getIsOperational());
+    station.setStatus(ocmStation.getStatus());
+    station.setQuantityOfChargers(ocmStation.calculateQuantityOfChargers());
+    return station;
   }
 
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
@@ -159,7 +164,7 @@ public class OpenChargeMapService {
       setStationCity(addressInfo, station);
       setStationCountry(addressInfo, station);
       station.setStatus("Available");
-      setStationConnectorType(connections, station);
+      setStationQuantityOfChargers(connections, station);
 
       return station;
     } catch (Exception e) {
@@ -223,13 +228,34 @@ public class OpenChargeMapService {
     station.setCountry(country != null ? country.toString() : UNKNOWN_VALUE);
   }
 
-  private void setStationConnectorType(List<Map<String, Object>> connections, Station station) {
-    if (connections != null && !connections.isEmpty()) {
-      Map<String, Object> firstConnection = connections.get(0);
-      Object connectorType = firstConnection.get("ConnectionTypeID");
-      station.setConnectorType(connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
-    } else {
-      station.setConnectorType(UNKNOWN_VALUE);
+  private void setStationQuantityOfChargers(List<Map<String, Object>> connections, Station station) {
+    if (connections == null || connections.isEmpty()) {
+      station.setQuantityOfChargers(1); // Default to 1 if no connections
+      return;
     }
+
+    int totalChargers = 0;
+    for (Map<String, Object> connection : connections) {
+      // Get quantity from connection
+      Object quantity = connection.get("Quantity");
+      if (quantity != null) {
+        if (quantity instanceof Number) {
+          totalChargers += ((Number) quantity).intValue();
+        } else if (quantity instanceof String) {
+          try {
+            totalChargers += Integer.parseInt((String) quantity);
+          } catch (NumberFormatException e) {
+            // If parsing fails, count as 1
+            totalChargers += 1;
+          }
+        }
+      } else {
+        // If quantity is null, count as 1
+        totalChargers += 1;
+      }
+    }
+    
+    // Ensure at least 1 charger
+    station.setQuantityOfChargers(totalChargers > 0 ? totalChargers : 1);
   }
 }

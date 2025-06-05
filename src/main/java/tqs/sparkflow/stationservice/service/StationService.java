@@ -73,8 +73,8 @@ public class StationService {
     if (station.getName() == null || station.getName().trim().isEmpty()) {
       throw new IllegalArgumentException("Station name cannot be empty");
     }
-    if (station.getConnectorType() == null || station.getConnectorType().trim().isEmpty()) {
-      throw new IllegalArgumentException("Connector type cannot be empty");
+    if (station.getQuantityOfChargers() == null || station.getQuantityOfChargers() < 1) {
+      throw new IllegalArgumentException("Quantity of chargers must be at least 1");
     }
     if (station.getLatitude() != null
         && (station.getLatitude() < -90 || station.getLatitude() > 90)) {
@@ -126,15 +126,15 @@ public class StationService {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param connectorType The connector type
+   * @param minChargers The minimum number of chargers
    * @return List of matching stations
    */
   public List<Station> searchStations(
-      String name, String city, String country, String connectorType) {
+      String name, String city, String country, Integer minChargers) {
     return stationRepository
-      .findByNameContainingAndCityContainingAndCountryContainingAndConnectorTypeContaining(
+      .findByNameContainingAndCityContainingAndCountryContainingAndQuantityOfChargersGreaterThanEqual(
         Optional.ofNullable(name).orElse(""), Optional.ofNullable(city).orElse(""),
-        Optional.ofNullable(country).orElse(""), Optional.ofNullable(connectorType).orElse(""));
+        Optional.ofNullable(country).orElse(""), Optional.ofNullable(minChargers).orElse(1));
   }
 
   /**
@@ -198,21 +198,21 @@ public class StationService {
   }
 
   /**
-   * Gets stations by connector type.
+   * Gets stations by minimum number of chargers.
    *
-   * @param connectorType The type of connector to search for
-   * @return List of stations with the given connector type
-   * @throws NullPointerException if connectorType is null
-   * @throws IllegalArgumentException if connectorType is empty
+   * @param minChargers The minimum number of chargers to search for
+   * @return List of stations with at least the given number of chargers
+   * @throws NullPointerException if minChargers is null
+   * @throws IllegalArgumentException if minChargers is less than 1
    */
-  public List<Station> getStationsByConnectorType(String connectorType) {
-    if (connectorType == null) {
-      throw new NullPointerException("Connector type cannot be null");
+  public List<Station> getStationsByMinChargers(Integer minChargers) {
+    if (minChargers == null) {
+      throw new NullPointerException("Minimum number of chargers cannot be null");
     }
-    if (connectorType.trim().isEmpty()) {
-      throw new IllegalArgumentException("Connector type cannot be empty");
+    if (minChargers < 1) {
+      throw new IllegalArgumentException("Minimum number of chargers must be at least 1");
     }
-    return stationRepository.findByConnectorType(connectorType);
+    return stationRepository.findByQuantityOfChargersGreaterThanEqual(minChargers);
   }
 
   /**
@@ -224,7 +224,6 @@ public class StationService {
   public List<Station> getStationsByFilters(StationFilterDTO filter) {
     if (filter.getLatitude() != null && filter.getLongitude() != null && filter.getRadius() != null) {
       return stationRepository.findStationsByFiltersWithLocation(
-          filter.getConnectorType(),
           filter.getMinPower(),
           filter.getMaxPower(),
           filter.getIsOperational(),
@@ -239,7 +238,6 @@ public class StationService {
       );
     } else {
       return stationRepository.findStationsByFilters(
-          filter.getConnectorType(),
           filter.getMinPower(),
           filter.getMaxPower(),
           filter.getIsOperational(),

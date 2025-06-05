@@ -59,7 +59,16 @@ import static org.mockito.Mockito.when;
     "user.service.url=http://dummy-user-service-url",
     "spring.main.allow-bean-definition-overriding=true",
     "spring.security.user.name=test",
-    "spring.security.user.password=test"
+    "spring.security.user.password=test",
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.jpa.show-sql=true",
+    "spring.jpa.properties.hibernate.format_sql=true",
+    "spring.jpa.properties.hibernate.jdbc.time_zone=UTC",
+    "spring.jpa.properties.hibernate.query.fail_on_pagination_over_collection_fetch=false",
+    "spring.jpa.properties.hibernate.id.new_generator_mappings=false",
+    "spring.flyway.enabled=false",
+    "spring.flyway.baseline-on-migrate=false"
 })
 class SecurityConfigTest {
 
@@ -164,14 +173,13 @@ class SecurityConfigTest {
     private Station createTestStation(String name) {
         Station station = new Station();
         station.setName(name);
+        station.setAddress("Test Address");
+        station.setCity("Test City");
+        station.setCountry("Test Country");
         station.setLatitude(38.7223);
         station.setLongitude(-9.1393);
-        station.setCity("Lisbon");
-        station.setCountry("Portugal");
-        station.setConnectorType("Type 2");
-        station.setStatus("AVAILABLE");
-        station.setAddress("Test Address");
-        station.setIsOperational(true);
+        station.setQuantityOfChargers(2);
+        station.setStatus("Available");
         return station;
     }
 } 

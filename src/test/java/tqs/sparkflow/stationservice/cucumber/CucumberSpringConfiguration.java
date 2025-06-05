@@ -4,7 +4,6 @@ import io.cucumber.spring.CucumberContextConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import tqs.sparkflow.stationservice.StationServiceApplication;
-import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 
 @CucumberContextConfiguration
@@ -13,7 +12,6 @@ import tqs.sparkflow.stationservice.config.TestConfig;
     classes = {
         StationServiceApplication.class,
         TestConfig.class,
-        TestcontainersConfiguration.class,
         CucumberTestConfig.class
     },
     properties = {"spring.main.allow-bean-definition-overriding=true"})
