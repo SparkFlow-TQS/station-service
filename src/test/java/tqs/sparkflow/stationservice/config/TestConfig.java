@@ -80,15 +80,16 @@ public class TestConfig {
     @Bean
     @Primary
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
     @Bean
     @Primary
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(authenticationProvider(userDetailsService()));
+    public AuthenticationManager authenticationManager(AuthenticationProvider authenticationProvider) {
+        return new ProviderManager(authenticationProvider);
     }
 
     /**
@@ -97,14 +98,15 @@ public class TestConfig {
      * and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
+     * @param authenticationManager the AuthenticationManager to use
      * @return the configured SecurityFilterChain
      * @throws Exception if an error occurs during configuration
      */
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         return http
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/v1/**"))
+            .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
@@ -115,7 +117,7 @@ public class TestConfig {
                     .requestMatchers("/api/v1/bookings/**").authenticated()
                     .anyRequest().authenticated()
             )
-            .authenticationManager(authenticationManager())
+            .authenticationManager(authenticationManager)
             .httpBasic(basic -> basic
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -135,9 +137,10 @@ public class TestConfig {
     }
 
     @Bean
+    @Primary
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

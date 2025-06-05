@@ -38,9 +38,6 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
 
         // Find all stations
         List<Station> allStations = stationRepository.findAll();
-        if (allStations == null) {
-            allStations = new ArrayList<>();
-        }
 
         // Find optimal charging stations
         List<Station> optimalStations = findOptimalChargingStations(allStations, request, distance);
