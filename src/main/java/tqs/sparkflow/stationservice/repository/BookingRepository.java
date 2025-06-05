@@ -18,6 +18,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       @Param("endTime") LocalDateTime endTime
   );
 
+  @Query("SELECT b FROM Booking b WHERE b.stationId = :stationId AND b.status = 'ACTIVE' " +
+         "AND b.startTime <= :currentTime AND b.endTime >= :currentTime")
+  List<Booking> findActiveBookingsForStationAtTime(
+      @Param("stationId") Long stationId,
+      @Param("currentTime") LocalDateTime currentTime
+  );
+
   List<Booking> findByStationId(Long stationId);
 
   List<Booking> findByUserId(Long userId);

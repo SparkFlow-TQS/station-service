@@ -34,12 +34,12 @@ class ChargingSessionControllerTest {
     @Test
     @XrayTest(key = "CHARGING-SESSION-1")
     @Requirement("CHARGING-SESSION-1")
-    void whenUnlockStation_thenReturnSuccess() {
+    void whenStartSession_thenReturnSuccess() {
         // Given
-        when(chargingSessionService.unlockStation(anyString(), anyString())).thenReturn(testSession);
+        when(chargingSessionService.createSession(anyString(), anyString())).thenReturn(testSession);
 
         // When
-        var response = chargingSessionController.unlockStation("STATION-001", "USER-001");
+        var response = chargingSessionController.startSession("STATION-001", "USER-001");
 
         // Then
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -51,12 +51,12 @@ class ChargingSessionControllerTest {
     @Test
     @XrayTest(key = "CHARGING-SESSION-2")
     @Requirement("CHARGING-SESSION-2")
-    void whenStartCharging_thenReturnSuccess() {
+    void whenEndSession_thenReturnSuccess() {
         // Given
-        when(chargingSessionService.startCharging(anyString())).thenReturn(testSession);
+        when(chargingSessionService.endSession(anyString())).thenReturn(testSession);
 
         // When
-        var response = chargingSessionController.startCharging("1");
+        var response = chargingSessionController.endSession("1");
 
         // Then
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -65,26 +65,12 @@ class ChargingSessionControllerTest {
     @Test
     @XrayTest(key = "CHARGING-SESSION-3")
     @Requirement("CHARGING-SESSION-3")
-    void whenEndCharging_thenReturnSuccess() {
+    void whenGetSession_thenReturnSession() {
         // Given
-        when(chargingSessionService.endCharging(anyString())).thenReturn(testSession);
+        when(chargingSessionService.getSession(anyString())).thenReturn(testSession);
 
         // When
-        var response = chargingSessionController.endCharging("1");
-
-        // Then
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-    }
-
-    @Test
-    @XrayTest(key = "CHARGING-SESSION-4")
-    @Requirement("CHARGING-SESSION-4")
-    void whenGetStatus_thenReturnCurrentStatus() {
-        // Given
-        when(chargingSessionService.getSessionStatus(anyString())).thenReturn(testSession);
-
-        // When
-        var response = chargingSessionController.getSessionStatus("1");
+        var response = chargingSessionController.getSession("1");
 
         // Then
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

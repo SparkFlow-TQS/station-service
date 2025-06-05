@@ -37,11 +37,11 @@ public class ChargingSession {
   private String userId;
   
   /**
-   * The current status of the charging session.
-   * See {@link ChargingSessionStatus} for possible values.
+   * Flag indicating whether the charging session has finished.
+   * False when session is active, true when completed.
    */
-  @Schema(description = "Current status of the charging session", example = "CHARGING")
-  private ChargingSessionStatus status;
+  @Schema(description = "Whether the charging session has finished", example = "false")
+  private boolean finished = false;
   
   /**
    * The timestamp when charging started.
@@ -57,41 +57,27 @@ public class ChargingSession {
   @Schema(description = "Timestamp when charging ended", example = "2024-03-20T11:30:00", nullable = true)
   private LocalDateTime endTime;
   
-  /**
-   * Error message if the session encountered an error.
-   * Null if no error has occurred.
-   */
-  @Schema(description = "Error message if the session encountered an error", example = "Connection error", nullable = true)
-  private String errorMessage;
 
-  /**
-   * Enum representing the possible states of a charging session.
-   */
-  @Schema(description = "Possible states of a charging session")
-  public enum ChargingSessionStatus {
-    /** Initial state when session is created */
-    @Schema(description = "Initial state when session is created")
-    CREATED,
-    /** Station is unlocked and ready for charging */
-    @Schema(description = "Station is unlocked and ready for charging")
-    UNLOCKED,
-    /** Charging is in progress */
-    @Schema(description = "Charging is in progress")
-    CHARGING,
-    /** Charging has been completed */
-    @Schema(description = "Charging has been completed")
-    COMPLETED,
-    /** An error occurred during the session */
-    @Schema(description = "An error occurred during the session")
-    ERROR
-  }
 
   /**
    * Default constructor required by JPA.
-   * Initializes the session with CREATED status.
+   * Initializes the session as not finished.
    */
   public ChargingSession() {
-    this.status = ChargingSessionStatus.CREATED;
+    this.finished = false;
+  }
+
+  /**
+   * Constructor that creates a new charging session and immediately starts it.
+   * 
+   * @param stationId The ID of the charging station
+   * @param userId The ID of the user starting the session
+   */
+  public ChargingSession(String stationId, String userId) {
+    this.stationId = stationId;
+    this.userId = userId;
+    this.finished = false;
+    this.startTime = LocalDateTime.now();
   }
 
   // Getters and Setters
@@ -119,12 +105,12 @@ public class ChargingSession {
     this.userId = userId;
   }
 
-  public ChargingSessionStatus getStatus() {
-    return status;
+  public boolean isFinished() {
+    return finished;
   }
 
-  public void setStatus(ChargingSessionStatus status) {
-    this.status = status;
+  public void setFinished(boolean finished) {
+    this.finished = finished;
   }
 
   public LocalDateTime getStartTime() {
@@ -143,11 +129,4 @@ public class ChargingSession {
     this.endTime = endTime;
   }
 
-  public String getErrorMessage() {
-    return errorMessage;
-  }
-
-  public void setErrorMessage(String errorMessage) {
-    this.errorMessage = errorMessage;
-  }
 } 
