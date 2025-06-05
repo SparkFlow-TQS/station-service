@@ -1,31 +1,19 @@
 package tqs.sparkflow.stationservice.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import org.mockito.ArgumentMatchers;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.lenient;
 import org.mockito.Mock;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
@@ -34,7 +22,6 @@ import tqs.sparkflow.stationservice.model.OpenChargeMapResponse;
 import tqs.sparkflow.stationservice.model.OpenChargeMapStation;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class OpenChargeMapServiceTest {
