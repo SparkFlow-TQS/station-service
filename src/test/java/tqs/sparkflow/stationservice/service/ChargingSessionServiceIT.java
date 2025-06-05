@@ -15,7 +15,9 @@ import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.exception.ChargingSessionNotFoundException;
 import tqs.sparkflow.stationservice.model.ChargingSession;
+import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
+import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @SpringBootTest(
     classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
@@ -30,145 +32,121 @@ class ChargingSessionServiceIT {
     @Autowired
     private ChargingSessionRepository chargingSessionRepository;
 
+    @Autowired
+    private StationRepository stationRepository;
+
+    private Station testStation;
+
     @BeforeEach
     void setUp() {
         chargingSessionRepository.deleteAll();
+        stationRepository.deleteAll();
+        
+        // Create a test station with valid data
+        testStation = new Station();
+        testStation.setName("Test Station");
+        testStation.setExternalId("TEST-001");
+        testStation.setAddress("Test Address");
+        testStation.setCity("Test City");
+        testStation.setCountry("Test Country");
+        testStation.setLatitude(38.7223);
+        testStation.setLongitude(-9.1393);
+        testStation.setQuantityOfChargers(5);
+        testStation.setPower(22);
+        testStation.setStatus("Available");
+        testStation.setIsOperational(true);
+        testStation = stationRepository.save(testStation);
     }
 
     @Test
-    void whenUnlockStation_thenSessionIsCreated() {
+    void whenCreateSession_thenSessionIsCreated() {
         // Given
-        String stationId = "STATION-001";
-        String userId = "USER-001";
+        String stationId = testStation.getId().toString();
+        String userId = "1";
 
         // When
-        ChargingSession result = chargingSessionService.unlockStation(stationId, userId);
+        ChargingSession result = chargingSessionService.createSession(stationId, userId);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getStationId()).isEqualTo(stationId);
         assertThat(result.getUserId()).isEqualTo(userId);
-        assertThat(result.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
-        assertThat(result.getStartTime()).isNull();
-        assertThat(result.getEndTime()).isNull();
-        assertThat(result.getErrorMessage()).isNull();
-    }
-
-    @Test
-    void whenStartCharging_thenSessionStatusIsUpdated() {
-        // Given
-        ChargingSession session = chargingSessionService.unlockStation("STATION-001", "USER-001");
-
-        // When
-        ChargingSession result = chargingSessionService.startCharging(session.getId().toString());
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.CHARGING);
+        assertThat(result.isFinished()).isFalse();
         assertThat(result.getStartTime()).isNotNull();
+        assertThat(result.getEndTime()).isNull();
     }
 
     @Test
-    void whenEndCharging_thenSessionIsCompleted() {
+    void whenEndSession_thenSessionIsCompleted() {
         // Given
-        ChargingSession session = chargingSessionService.unlockStation("STATION-001", "USER-001");
-        session = chargingSessionService.startCharging(session.getId().toString());
+        String stationId = testStation.getId().toString();
+        String userId = "1";
+        ChargingSession session = chargingSessionService.createSession(stationId, userId);
 
         // When
-        ChargingSession result = chargingSessionService.endCharging(session.getId().toString());
+        ChargingSession result = chargingSessionService.endSession(session.getId().toString());
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.COMPLETED);
+        assertThat(result.isFinished()).isTrue();
         assertThat(result.getEndTime()).isNotNull();
     }
 
     @Test
-    void whenReportError_thenErrorIsRecorded() {
+    void whenGetSession_thenReturnSession() {
         // Given
-        ChargingSession session = chargingSessionService.unlockStation("STATION-001", "USER-001");
-        String errorMessage = "Connection error";
+        String stationId = testStation.getId().toString();
+        String userId = "1";
+        ChargingSession session = chargingSessionService.createSession(stationId, userId);
 
         // When
-        ChargingSession result = chargingSessionService.reportError(session.getId().toString(), errorMessage);
+        ChargingSession result = chargingSessionService.getSession(session.getId().toString());
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.ERROR);
-        assertThat(result.getErrorMessage()).isEqualTo(errorMessage);
+        assertThat(result.getStationId()).isEqualTo(stationId);
+        assertThat(result.getUserId()).isEqualTo(userId);
     }
 
     @Test
-    void whenGetSessionStatus_thenReturnCurrentStatus() {
-        // Given
-        ChargingSession session = chargingSessionService.unlockStation("STATION-001", "USER-001");
-
-        // When
-        ChargingSession result = chargingSessionService.getSessionStatus(session.getId().toString());
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
-    }
-
-    @Test
-    void whenStartCharging_withNonExistentSession_thenThrowException() {
+    void whenEndSession_withNonExistentSession_thenThrowException() {
         // When/Then
-        assertThatThrownBy(() -> chargingSessionService.startCharging("999"))
+        assertThatThrownBy(() -> chargingSessionService.endSession("999"))
             .isInstanceOf(ChargingSessionNotFoundException.class)
             .hasMessageContaining("Session not found: 999");
     }
 
     @Test
-    void whenEndCharging_withNonExistentSession_thenThrowException() {
+    void whenGetSession_withNonExistentSession_thenThrowException() {
         // When/Then
-        assertThatThrownBy(() -> chargingSessionService.endCharging("999"))
-            .isInstanceOf(ChargingSessionNotFoundException.class)
-            .hasMessageContaining("Session not found: 999");
-    }
-
-    @Test
-    void whenReportError_withNonExistentSession_thenThrowException() {
-        // When/Then
-        assertThatThrownBy(() -> chargingSessionService.reportError("999", "Error"))
-            .isInstanceOf(ChargingSessionNotFoundException.class)
-            .hasMessageContaining("Session not found: 999");
-    }
-
-    @Test
-    void whenGetSessionStatus_withNonExistentSession_thenThrowException() {
-        // When/Then
-        assertThatThrownBy(() -> chargingSessionService.getSessionStatus("999"))
+        assertThatThrownBy(() -> chargingSessionService.getSession("999"))
             .isInstanceOf(ChargingSessionNotFoundException.class)
             .hasMessageContaining("Session not found: 999");
     }
 
     /**
-     * Tests the complete charging session flow from unlocking to completion.
+     * Tests the complete charging session flow from creation to completion.
      * Verifies that:
-     * 1. A station can be unlocked and creates a session in UNLOCKED state
-     * 2. The session can transition to CHARGING state with a start time
-     * 3. The session can be completed with an end time
-     * 4. All state transitions maintain the correct timestamps
+     * 1. A session can be created and starts immediately
+     * 2. The session can be completed with an end time
+     * 3. All state transitions maintain the correct timestamps
      */
     @Test
     void whenCompleteChargingFlow_thenAllStatesAreCorrect() {
         // Given
-        String stationId = "STATION-001";
-        String userId = "USER-001";
+        String stationId = testStation.getId().toString();
+        String userId = "1";
 
         // When
-        ChargingSession unlocked = chargingSessionService.unlockStation(stationId, userId);
-        assertThat(unlocked.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
+        ChargingSession created = chargingSessionService.createSession(stationId, userId);
+        assertThat(created.isFinished()).isFalse();
+        assertThat(created.getStartTime()).isNotNull();
         
-        ChargingSession charging = chargingSessionService.startCharging(unlocked.getId().toString());
-        assertThat(charging.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.CHARGING);
-        
-        ChargingSession completed = chargingSessionService.endCharging(charging.getId().toString());
-        assertThat(completed.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.COMPLETED);
+        ChargingSession completed = chargingSessionService.endSession(created.getId().toString());
+        assertThat(completed.isFinished()).isTrue();
         
         // Then
-        assertThat(charging.getStartTime()).isNotNull();
+        assertThat(created.getStartTime()).isNotNull();
         assertThat(completed.getEndTime()).isNotNull();
     }
 } 

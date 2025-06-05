@@ -1,22 +1,28 @@
 package tqs.sparkflow.stationservice.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
+
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import tqs.sparkflow.stationservice.StationServiceApplication;
 import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
+import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
+import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -29,183 +35,165 @@ class ChargingSessionControllerIT {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
     private ChargingSessionRepository chargingSessionRepository;
 
-    private String baseUrl;
+    @Autowired
+    private StationRepository stationRepository;
 
     @BeforeEach
     void setUp() {
-        baseUrl = "http://localhost:" + port + "/api/v1/charging-sessions";
+        RestAssured.port = port;
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         chargingSessionRepository.deleteAll();
+        stationRepository.deleteAll();
     }
 
     @Test
-    void whenUnlockStation_thenReturnSuccess() {
-        // Given
-        String stationId = "STATION-001";
-        String userId = "USER-001";
+    @WithMockUser(username = "1")
+    void whenStartSession_thenReturnSuccess() {
+        // Create a test station first
+        Station station = createTestStation("Test Station");
+        station = stationRepository.save(station);
 
-        // When
-        ResponseEntity<ChargingSession> response = restTemplate.postForEntity(
-            baseUrl + "/unlock?stationId={stationId}&userId={userId}",
-            null,
-            ChargingSession.class,
-            stationId,
-            userId
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        ChargingSession responseSession = response.getBody();
-        assertThat(responseSession).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getStationId()).isEqualTo(stationId);
-                assertThat(s.getUserId()).isEqualTo(userId);
-                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
-            });
+        given()
+            .contentType(ContentType.JSON)
+            .queryParam("stationId", station.getId().toString())
+            .queryParam("userId", "1")
+        .when()
+            .post("/api/v1/charging-sessions/start")
+        .then()
+            .statusCode(200)
+            .body("stationId", equalTo(station.getId().toString()))
+            .body("userId", equalTo("1"))
+            .body("finished", equalTo(false));
     }
 
     @Test
-    void whenStartCharging_thenReturnSuccess() {
-        // Given
-        ChargingSession session = chargingSessionRepository.save(createTestSession("STATION-001", "USER-001"));
+    @WithMockUser(username = "1")
+    void whenEndSession_thenReturnSuccess() {
+        // Create a test station first
+        Station station = createTestStation("Test Station");
+        station = stationRepository.save(station);
 
-        // When
-        ResponseEntity<ChargingSession> response = restTemplate.postForEntity(
-            baseUrl + "/{sessionId}/start",
-            null,
-            ChargingSession.class,
-            session.getId()
-        );
+        // First create a session
+        ChargingSession session = given()
+            .contentType(ContentType.JSON)
+            .queryParam("stationId", station.getId().toString())
+            .queryParam("userId", "1")
+        .when()
+            .post("/api/v1/charging-sessions/start")
+        .then()
+            .statusCode(200)
+            .extract()
+            .as(ChargingSession.class);
 
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        ChargingSession responseSession = response.getBody();
-        assertThat(responseSession).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.CHARGING);
-                assertThat(s.getStartTime()).isNotNull();
-            });
+        // Then end it
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .post("/api/v1/charging-sessions/{sessionId}/end", session.getId())
+        .then()
+            .statusCode(200)
+            .body("finished", equalTo(true));
     }
 
     @Test
-    void whenEndCharging_thenReturnSuccess() {
-        // Given
-        ChargingSession session = chargingSessionRepository.save(createTestSession("STATION-001", "USER-001"));
-        session.setStatus(ChargingSession.ChargingSessionStatus.CHARGING);
-        session.setStartTime(java.time.LocalDateTime.now());
-        session = chargingSessionRepository.save(session);
+    @WithMockUser(username = "1")
+    void whenGetSession_thenReturnSession() {
+        // Create a test station first
+        Station station = createTestStation("Test Station");
+        station = stationRepository.save(station);
 
-        // When
-        ResponseEntity<ChargingSession> response = restTemplate.postForEntity(
-            baseUrl + "/{sessionId}/end",
-            null,
-            ChargingSession.class,
-            session.getId()
-        );
+        // First create a session
+        ChargingSession session = given()
+            .contentType(ContentType.JSON)
+            .queryParam("stationId", station.getId().toString())
+            .queryParam("userId", "1")
+        .when()
+            .post("/api/v1/charging-sessions/start")
+        .then()
+            .statusCode(200)
+            .extract()
+            .as(ChargingSession.class);
 
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        ChargingSession responseSession = response.getBody();
-        assertThat(responseSession).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.COMPLETED);
-                assertThat(s.getEndTime()).isNotNull();
-            });
+        // Then retrieve it
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .get("/api/v1/charging-sessions/{sessionId}", session.getId())
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(session.getId().intValue()))
+            .body("stationId", equalTo(station.getId().toString()))
+            .body("userId", equalTo("1"));
     }
 
     @Test
-    void whenGetStatus_thenReturnCurrentStatus() {
-        // Given
-        ChargingSession session = chargingSessionRepository.save(createTestSession("STATION-001", "USER-001"));
+    @WithMockUser(username = "1")
+    void whenStartSession_withNoFreeChargers_thenReturnBadRequest() {
+        // Create a station with only 1 charger
+        Station station = createTestStation("Test Station");
+        station.setQuantityOfChargers(1);
+        station = stationRepository.save(station);
 
-        // When
-        ResponseEntity<ChargingSession> response = restTemplate.getForEntity(
-            baseUrl + "/{sessionId}/status",
-            ChargingSession.class,
-            session.getId()
-        );
+        // Create a session to occupy the only charger
+        ChargingSession existingSession = new ChargingSession(station.getId().toString(), "2");
+        existingSession.setStartTime(LocalDateTime.now());
+        chargingSessionRepository.save(existingSession);
 
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        ChargingSession responseSession = response.getBody();
-        assertThat(responseSession).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getStatus()).isEqualTo(ChargingSession.ChargingSessionStatus.UNLOCKED);
-            });
+        // Try to start another session - should fail because no chargers are free
+        given()
+            .contentType(ContentType.JSON)
+            .queryParam("stationId", station.getId().toString())
+            .queryParam("userId", "1")
+        .when()
+            .post("/api/v1/charging-sessions/start")
+        .then()
+            .statusCode(400)
+            .body("message", containsString("Cannot start session: no booking or free chargers available"));
     }
 
-    /**
-     * Tests the error handling when attempting to start charging for a non-existent session.
-     * Verifies that:
-     * 1. The API returns a 404 Not Found status
-     * 2. No response body is returned (Void)
-     */
     @Test
-    void whenStartCharging_withNonExistentSession_thenReturnNotFound() {
-        // When
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-            baseUrl + "/{sessionId}/start",
-            null,
-            Void.class,
-            "999"
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    @WithMockUser(username = "1")
+    void whenEndSession_withNonExistentSession_thenReturnNotFound() {
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .post("/api/v1/charging-sessions/{sessionId}/end", "999")
+        .then()
+            .statusCode(404);
     }
 
-    /**
-     * Tests the error handling when attempting to end a non-existent session.
-     * Verifies that:
-     * 1. The API returns a 404 Not Found status
-     * 2. No response body is returned (Void)
-     */
     @Test
-    void whenEndCharging_withNonExistentSession_thenReturnNotFound() {
-        // When
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-            baseUrl + "/{sessionId}/end",
-            null,
-            Void.class,
-            "999"
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    /**
-     * Tests the error handling when attempting to get status of a non-existent session.
-     * Verifies that:
-     * 1. The API returns a 404 Not Found status
-     * 2. No response body is returned (Void)
-     */
-    @Test
-    void whenGetStatus_withNonExistentSession_thenReturnNotFound() {
-        // When
-        ResponseEntity<Void> response = restTemplate.getForEntity(
-            baseUrl + "/{sessionId}/status",
-            Void.class,
-            "999"
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    @WithMockUser(username = "1")
+    void whenGetSession_withNonExistentSession_thenReturnNotFound() {
+        given()
+            .contentType(ContentType.JSON)
+        .when()
+            .get("/api/v1/charging-sessions/{sessionId}", "999")
+        .then()
+            .statusCode(404);
     }
 
     private ChargingSession createTestSession(String stationId, String userId) {
         ChargingSession session = new ChargingSession();
         session.setStationId(stationId);
         session.setUserId(userId);
-        session.setStatus(ChargingSession.ChargingSessionStatus.UNLOCKED);
         return session;
+    }
+
+    private Station createTestStation(String name) {
+        Station station = new Station();
+        station.setName(name);
+        station.setExternalId("1234567890");
+        station.setAddress("Test Address");
+        station.setCity("Test City");
+        station.setCountry("Test Country");
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
+        station.setQuantityOfChargers(5); // Default to 5 chargers
+        station.setPower(22);
+        station.setStatus("Available");
+        return station;
     }
 } 

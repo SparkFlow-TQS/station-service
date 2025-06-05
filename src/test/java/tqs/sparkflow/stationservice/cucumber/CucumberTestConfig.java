@@ -12,6 +12,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 import tqs.sparkflow.stationservice.service.OpenChargeMapService;
 import tqs.sparkflow.stationservice.service.StationService;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
+import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @TestConfiguration
@@ -45,8 +47,8 @@ public class CucumberTestConfig {
 
   @Bean
   @Primary
-  public StationService stationService(StationRepository stationRepository) {
-    return new StationService(stationRepository);
+  public StationService stationService(StationRepository stationRepository, BookingRepository bookingRepository, ChargingSessionRepository chargingSessionRepository) {
+    return new StationService(stationRepository, bookingRepository, chargingSessionRepository);
   }
 
   @Bean
