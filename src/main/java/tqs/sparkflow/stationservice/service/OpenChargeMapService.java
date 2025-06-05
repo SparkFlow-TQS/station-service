@@ -228,11 +228,11 @@ public class OpenChargeMapService {
       // Get quantity from connection
       Object quantity = connection.get("Quantity");
       if (quantity != null) {
-        if (quantity instanceof Number number) {
-          totalChargers += number.intValue();
-        } else if (quantity instanceof String string) {
+        if (quantity instanceof Number) {
+          totalChargers += ((Number) quantity).intValue();
+        } else if (quantity instanceof String) {
           try {
-            totalChargers += Integer.parseInt(string);
+            totalChargers += Integer.parseInt((String) quantity);
           } catch (NumberFormatException e) {
             // If parsing fails, count as 1
             totalChargers += 1;
