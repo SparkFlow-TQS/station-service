@@ -36,25 +36,11 @@ public class StationStepDefinitions {
     Station station1 = new Station();
     station1.setId(1L);
     station1.setName("Test Station 1");
-    station1.setAddress("Test Address 1");
-    station1.setCity("Test City");
-    station1.setCountry("Test Country");
-    station1.setLatitude(38.7223);
-    station1.setLongitude(-9.1393);
-    station1.setQuantityOfChargers(1);
-    station1.setStatus("Available");
     stationRepository.save(station1);
 
     Station station2 = new Station();
     station2.setId(2L);
     station2.setName("Test Station 2");
-    station2.setAddress("Test Address 2");
-    station2.setCity("Test City");
-    station2.setCountry("Test Country");
-    station2.setLatitude(38.7223);
-    station2.setLongitude(-9.1393);
-    station2.setQuantityOfChargers(1);
-    station2.setStatus("Available");
     stationRepository.save(station2);
   }
 
@@ -79,13 +65,6 @@ public class StationStepDefinitions {
     Station station = new Station();
     station.setId(Long.parseLong(id));
     station.setName("Test Station " + id);
-    station.setAddress("Test Address " + id);
-    station.setCity("Test City");
-    station.setCountry("Test Country");
-    station.setLatitude(38.7223);
-    station.setLongitude(-9.1393);
-    station.setQuantityOfChargers(1);
-    station.setStatus("Available");
     stationRepository.save(station);
   }
 
