@@ -240,4 +240,167 @@ class BookingServiceTest {
         Booking createdBooking = bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), new java.util.HashSet<>());
         assertThat(createdBooking).isNotNull();
     }
+
+    @Test
+    void whenCreateBooking_withMultipleChargersAvailable_thenAllowOverlappingBookings() {
+        // Given: Station with 3 chargers
+        testStation.setQuantityOfChargers(3);
+        
+        // And: 2 existing overlapping bookings (less than available chargers)
+        Booking existingBooking1 = new Booking();
+        existingBooking1.setId(2L);
+        existingBooking1.setStationId(1L);
+        existingBooking1.setUserId(2L);
+        existingBooking1.setStartTime(now);
+        existingBooking1.setEndTime(now.plusHours(2));
+        existingBooking1.setStatus(BookingStatus.ACTIVE);
+        
+        Booking existingBooking2 = new Booking();
+        existingBooking2.setId(3L);
+        existingBooking2.setStationId(1L);
+        existingBooking2.setUserId(3L);
+        existingBooking2.setStartTime(now);
+        existingBooking2.setEndTime(now.plusHours(2));
+        existingBooking2.setStatus(BookingStatus.ACTIVE);
+        
+        List<Booking> overlappingBookings = List.of(existingBooking1, existingBooking2);
+        
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(overlappingBookings);
+        when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
+        
+        // When: Creating a new booking that overlaps
+        Booking createdBooking = bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays);
+        
+        // Then: Booking should be created successfully (3rd charger available)
+        assertThat(createdBooking).isNotNull();
+        assertThat(createdBooking.getStationId()).isEqualTo(1L);
+        assertThat(createdBooking.getUserId()).isEqualTo(1L);
+        assertThat(createdBooking.getStatus()).isEqualTo(BookingStatus.ACTIVE);
+    }
+
+    @Test
+    void whenCreateBooking_withAllChargersOccupied_thenThrowException() {
+        // Given: Station with 2 chargers
+        testStation.setQuantityOfChargers(2);
+        
+        // And: 2 existing overlapping bookings (all chargers occupied)
+        Booking existingBooking1 = new Booking();
+        existingBooking1.setId(2L);
+        existingBooking1.setStationId(1L);
+        existingBooking1.setUserId(2L);
+        existingBooking1.setStartTime(now);
+        existingBooking1.setEndTime(now.plusHours(2));
+        existingBooking1.setStatus(BookingStatus.ACTIVE);
+        
+        Booking existingBooking2 = new Booking();
+        existingBooking2.setId(3L);
+        existingBooking2.setStationId(1L);
+        existingBooking2.setUserId(3L);
+        existingBooking2.setStartTime(now);
+        existingBooking2.setEndTime(now.plusHours(2));
+        existingBooking2.setStatus(BookingStatus.ACTIVE);
+        
+        List<Booking> overlappingBookings = List.of(existingBooking1, existingBooking2);
+        
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(overlappingBookings);
+        
+        // When & Then: Creating a new booking should fail (no chargers available)
+        assertThatThrownBy(() -> 
+            bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No chargers available for the requested time slot");
+    }
+
+    @Test
+    void whenCreateBooking_withSingleChargerStation_thenBlockOverlappingBookings() {
+        // Given: Station with 1 charger (current behavior should be maintained)
+        testStation.setQuantityOfChargers(1);
+        
+        // And: 1 existing overlapping booking
+        Booking existingBooking = new Booking();
+        existingBooking.setId(2L);
+        existingBooking.setStationId(1L);
+        existingBooking.setUserId(2L);
+        existingBooking.setStartTime(now);
+        existingBooking.setEndTime(now.plusHours(2));
+        existingBooking.setStatus(BookingStatus.ACTIVE);
+        
+        List<Booking> overlappingBookings = List.of(existingBooking);
+        
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(overlappingBookings);
+        
+        // When & Then: Creating a new booking should fail (single charger occupied)
+        assertThatThrownBy(() -> 
+            bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No chargers available for the requested time slot");
+    }
+
+    @Test
+    void whenCreateBooking_withCancelledBookings_thenIgnoreCancelledBookings() {
+        // Given: Station with 2 chargers
+        testStation.setQuantityOfChargers(2);
+        
+        // And: 1 active booking and 1 cancelled booking overlapping
+        Booking activeBooking = new Booking();
+        activeBooking.setId(2L);
+        activeBooking.setStationId(1L);
+        activeBooking.setUserId(2L);
+        activeBooking.setStartTime(now);
+        activeBooking.setEndTime(now.plusHours(2));
+        activeBooking.setStatus(BookingStatus.ACTIVE);
+        
+        Booking cancelledBooking = new Booking();
+        cancelledBooking.setId(3L);
+        cancelledBooking.setStationId(1L);
+        cancelledBooking.setUserId(3L);
+        cancelledBooking.setStartTime(now);
+        cancelledBooking.setEndTime(now.plusHours(2));
+        cancelledBooking.setStatus(BookingStatus.CANCELLED);
+        
+        // Note: Repository query should only return ACTIVE bookings, but testing the service logic
+        List<Booking> overlappingBookings = List.of(activeBooking); // Only active booking returned
+        
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(overlappingBookings);
+        when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
+        
+        // When: Creating a new booking
+        Booking createdBooking = bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays);
+        
+        // Then: Booking should be created successfully (only 1 active booking, 1 charger still available)
+        assertThat(createdBooking).isNotNull();
+        assertThat(createdBooking.getStationId()).isEqualTo(1L);
+        assertThat(createdBooking.getUserId()).isEqualTo(1L);
+        assertThat(createdBooking.getStatus()).isEqualTo(BookingStatus.ACTIVE);
+    }
+
+    @Test
+    void whenCreateBooking_withNullQuantityOfChargers_thenDefaultToSingleCharger() {
+        // Given: Station with null quantity of chargers (should default to 1)
+        testStation.setQuantityOfChargers(null);
+        
+        // And: 1 existing overlapping booking
+        Booking existingBooking = new Booking();
+        existingBooking.setId(2L);
+        existingBooking.setStationId(1L);
+        existingBooking.setUserId(2L);
+        existingBooking.setStartTime(now);
+        existingBooking.setEndTime(now.plusHours(2));
+        existingBooking.setStatus(BookingStatus.ACTIVE);
+        
+        List<Booking> overlappingBookings = List.of(existingBooking);
+        
+        when(stationService.getStationById(1L)).thenReturn(testStation);
+        when(bookingRepository.findOverlappingBookings(any(), any(), any())).thenReturn(overlappingBookings);
+        
+        // When & Then: Creating a new booking should fail (default to 1 charger, already occupied)
+        assertThatThrownBy(() -> 
+            bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No chargers available for the requested time slot");
+    }
 } 
