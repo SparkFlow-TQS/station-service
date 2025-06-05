@@ -1,10 +1,16 @@
 package tqs.sparkflow.stationservice.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import tqs.sparkflow.stationservice.exception.ChargingSessionNotFoundException;
+import tqs.sparkflow.stationservice.model.Booking;
+import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.ChargingSession;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 
 /**
@@ -15,9 +21,11 @@ import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 public class ChargingSessionService {
   private static final String SESSION_NOT_FOUND_MESSAGE = "Session not found: ";
   private final ChargingSessionRepository chargingSessionRepository;
+  private final BookingRepository bookingRepository;
 
-  public ChargingSessionService(ChargingSessionRepository chargingSessionRepository) {
+  public ChargingSessionService(ChargingSessionRepository chargingSessionRepository, BookingRepository bookingRepository) {
     this.chargingSessionRepository = chargingSessionRepository;
+    this.bookingRepository = bookingRepository;
   }
 
   /**
@@ -50,8 +58,31 @@ public class ChargingSessionService {
       .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));
     
     session.setStatus(ChargingSession.ChargingSessionStatus.CHARGING);
-    session.setStartTime(java.time.LocalDateTime.now());
+    session.setStartTime(LocalDateTime.now());
+    
+    closeUserBooking(session);
+    
     return chargingSessionRepository.save(session);
+  }
+
+  /**
+   * Closes any active booking for the user at the station when a session starts.
+   *
+   * @param session The charging session that is starting
+   */
+  private void closeUserBooking(ChargingSession session) {
+    Long stationId = Long.valueOf(session.getStationId());
+    Long userId = Long.valueOf(session.getUserId());
+    LocalDateTime now = LocalDateTime.now();
+    
+    List<Booking> activeBookings = bookingRepository.findActiveBookingsForStationAtTime(stationId, now);
+    
+    activeBookings.stream()
+        .filter(booking -> booking.getUserId().equals(userId))
+        .forEach(booking -> {
+          booking.setStatus(BookingStatus.COMPLETED);
+          bookingRepository.save(booking);
+        });
   }
 
   /**
@@ -68,7 +99,7 @@ public class ChargingSessionService {
       .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));
     
     session.setStatus(ChargingSession.ChargingSessionStatus.COMPLETED);
-    session.setEndTime(java.time.LocalDateTime.now());
+    session.setEndTime(LocalDateTime.now());
     return chargingSessionRepository.save(session);
   }
 

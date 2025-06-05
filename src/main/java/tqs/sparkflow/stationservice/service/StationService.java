@@ -1,10 +1,15 @@
 package tqs.sparkflow.stationservice.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import tqs.sparkflow.stationservice.dto.StationFilterDTO;
+import tqs.sparkflow.stationservice.model.Booking;
+import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.model.Station;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
+import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
 /** Service for managing charging stations. */
@@ -12,9 +17,13 @@ import tqs.sparkflow.stationservice.repository.StationRepository;
 public class StationService {
 
   private final StationRepository stationRepository;
+  private final BookingRepository bookingRepository;
+  private final ChargingSessionRepository chargingSessionRepository;
 
-  public StationService(StationRepository stationRepository) {
+  public StationService(StationRepository stationRepository, BookingRepository bookingRepository, ChargingSessionRepository chargingSessionRepository) {
     this.stationRepository = stationRepository;
+    this.bookingRepository = bookingRepository;
+    this.chargingSessionRepository = chargingSessionRepository;
   }
 
   /**
@@ -247,6 +256,67 @@ public class StationService {
           filter.getMinPrice(),
           filter.getMaxPrice()
       );
+    }
+  }
+
+  /**
+   * Calculates the number of available chargers at a station at the current time.
+   *
+   * @param stationId The station ID
+   * @param currentTime The current time
+   * @return Number of available chargers
+   */
+  public int getAvailableChargers(Long stationId, LocalDateTime currentTime) {
+    Station station = getStationById(stationId);
+    int totalChargers = station.getQuantityOfChargers();
+    
+    List<Booking> activeBookings = bookingRepository.findActiveBookingsForStationAtTime(stationId, currentTime);
+    List<ChargingSession> unfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStation(stationId);
+    
+    return totalChargers - activeBookings.size() - unfinishedSessions.size();
+  }
+
+  /**
+   * Checks if a user can use a station for a given time period.
+   *
+   * @param stationId The station ID
+   * @param userId The user ID
+   * @param startTime The start time
+   * @param endTime The end time
+   * @return true if the user can use the station, false otherwise
+   */
+  public boolean canUseStation(Long stationId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
+    List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(stationId, startTime, endTime);
+    
+    boolean hasUserBooking = overlappingBookings.stream()
+        .anyMatch(booking -> booking.getUserId().equals(userId));
+    
+    if (hasUserBooking) {
+      return true;
+    }
+    
+    Station station = getStationById(stationId);
+    int totalChargers = station.getQuantityOfChargers();
+    
+    List<ChargingSession> unfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime);
+    
+    int usedChargers = overlappingBookings.size() + unfinishedSessions.size();
+    
+    return usedChargers < totalChargers;
+  }
+
+  /**
+   * Validates if a booking can be made for the given parameters.
+   *
+   * @param stationId The station ID
+   * @param userId The user ID
+   * @param startTime The start time
+   * @param endTime The end time
+   * @throws IllegalStateException if no chargers are available
+   */
+  public void validateBooking(Long stationId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
+    if (!canUseStation(stationId, userId, startTime, endTime)) {
+      throw new IllegalStateException("No chargers available for the requested time slot");
     }
   }
 }
