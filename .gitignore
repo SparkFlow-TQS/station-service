@@ -62,4 +62,7 @@ target/
 
 ### Logs ###
 nohup.out
+*.logstation-mysql-data/
 *.log
+
+station-mysql-data/

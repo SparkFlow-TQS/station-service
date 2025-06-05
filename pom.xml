@@ -36,7 +36,7 @@
 		<sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 		<junit-platform.version>1.12.1</junit-platform.version>
 		<junit-jupiter.version>5.12.1</junit-jupiter.version>
-		<springdoc.version>2.4.0</springdoc.version>
+		<springdoc.version>2.7.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
 		<cucumber.version>7.22.2</cucumber.version>
 		<spotless.version>2.43.0</spotless.version>
@@ -410,7 +410,9 @@
 					<cloud>true</cloud>
 					<projectKey>${XRAY_PROJECT_KEY}</projectKey>
 					<reportFormat>junit</reportFormat>
-					<reportFile>${project.build.directory}/surefire-reports/TEST-tqs.sparkflow.stationservice.StationServiceApplicationTest.xml</reportFile>
+					<reportFile>${project.build.directory}/surefire-reports</reportFile>
+					<autoCreateTests>true</autoCreateTests>
+					<autoCreateTestsLabels>automated</autoCreateTestsLabels>
 				</configuration>
 			</plugin>
 		</plugins>
