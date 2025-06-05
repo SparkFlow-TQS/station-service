@@ -31,7 +31,7 @@ public class OpenApiConfig {
         .info(
             new Info()
                 .title("Station Service API")
-                .version("0.3.0")
+                .version("0.5.0")
                 .description("API for managing charging stations and bookings"))
         .addServersItem(new Server().url("/station").description("Behind nginx proxy"))
         .addServersItem(new Server().url("/").description("Direct access"));

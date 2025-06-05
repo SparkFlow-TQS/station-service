@@ -39,26 +39,32 @@ public class StationDTO extends BaseStationFields {
         this.id = id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getAddress() {
         return address;
     }
 
+    @Override
     public void setAddress(String address) {
         this.address = address;
     }
 
+    @Override
     public String getStatus() {
         return status;
     }
 
+    @Override
     public void setStatus(String status) {
         this.status = status;
     }
@@ -79,18 +85,22 @@ public class StationDTO extends BaseStationFields {
         this.power = power;
     }
 
+    @Override
     public Boolean getIsOperational() {
         return isOperational;
     }
 
+    @Override
     public void setIsOperational(Boolean isOperational) {
         this.isOperational = isOperational;
     }
 
+    @Override
     public Double getPrice() {
         return price;
     }
 
+    @Override
     public void setPrice(Double price) {
         this.price = price;
     }
