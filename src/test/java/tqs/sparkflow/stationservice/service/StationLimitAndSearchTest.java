@@ -63,9 +63,12 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.getAllStations();
 
     // Then
-    assertThat(result).hasSize(500);
-    assertThat(result.get(0).getName()).isEqualTo("Station 1");
-    assertThat(result.get(499).getName()).isEqualTo("Station 500");
+    assertThat(result)
+        .hasSize(500)
+        .satisfies(stations -> {
+          assertThat(stations.get(0).getName()).isEqualTo("Station 1");
+          assertThat(stations.get(499).getName()).isEqualTo("Station 500");
+        });
     verify(stationRepository).findAll();
   }
 
@@ -81,8 +84,9 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.getAllStations();
 
     // Then
-    assertThat(result).hasSize(50);
-    assertThat(result).isEqualTo(smallStationList);
+    assertThat(result)
+        .hasSize(50)
+        .isEqualTo(smallStationList);
     verify(stationRepository).findAll();
   }
 
@@ -99,9 +103,12 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.searchStations("TestStation", "TestCity", null, null);
 
     // Then
-    assertThat(result).hasSize(500);
-    assertThat(result.get(0).getName()).isEqualTo("TestStation 1");
-    assertThat(result.get(499).getName()).isEqualTo("TestStation 500");
+    assertThat(result)
+        .hasSize(500)
+        .satisfies(stations -> {
+          assertThat(stations.get(0).getName()).isEqualTo("TestStation 1");
+          assertThat(stations.get(499).getName()).isEqualTo("TestStation 500");
+        });
     verify(stationRepository).findAll();
   }
 
@@ -122,8 +129,9 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.searchStations("Mercadona", null, null, null);
 
     // Then
-    assertThat(result).hasSize(2);
-    assertThat(result.stream().map(Station::getName))
+    assertThat(result)
+        .hasSize(2)
+        .extracting(Station::getName)
         .containsExactlyInAnyOrder("Mercadona Charging Station", "Mercadona Express Charger");
     verify(stationRepository).findAll();
   }
@@ -144,8 +152,11 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.searchStations("aveiro", "AVEIRO", null, null);
 
     // Then
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).getName()).isEqualTo("AVEIRO Station");
+    assertThat(result)
+        .hasSize(1)
+        .first()
+        .extracting(Station::getName)
+        .isEqualTo("AVEIRO Station");
     verify(stationRepository).findAll();
   }
 
@@ -166,8 +177,11 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.searchStations(null, "Aveiro", "Portugal", null);
 
     // Then
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).getName()).isEqualTo("Station A");
+    assertThat(result)
+        .hasSize(1)
+        .first()
+        .extracting(Station::getName)
+        .isEqualTo("Station A");
     verify(stationRepository).findAll();
   }
 
