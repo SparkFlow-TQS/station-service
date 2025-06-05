@@ -108,7 +108,7 @@ class RoutePlanningServiceTest {
         request.setStartLongitude(-8.6291);
         request.setDestLatitude(38.7223); // Lisbon
         request.setDestLongitude(-9.1393);
-        request.setBatteryCapacity(40.0); // Reduced from 60.0 to 40.0 kWh
+        request.setBatteryCapacity(40.0); // 40 kWh battery
         request.setCarAutonomy(5.0); // 5 km/kWh
 
         // Plan route
@@ -117,9 +117,9 @@ class RoutePlanningServiceTest {
         // Verify response
         assertNotNull(response);
         assertNotNull(response.getStations());
-        assertTrue(response.getStations().size() > 0);
-        assertTrue(response.getDistance() > 0);
-        assertTrue(response.getBatteryUsage() > 0);
+        assertThat(response.getStations()).isNotEmpty();
+        assertThat(response.getDistance()).isGreaterThan(0);
+        assertThat(response.getBatteryUsage()).isGreaterThan(0);
 
         // Print route details
         System.out.println("Route from Porto to Lisbon:");
@@ -147,7 +147,7 @@ class RoutePlanningServiceTest {
 
         // Then
         assertThat(response.getStations()).isNotEmpty();
-        assertThat(response.getStations().size()).isEqualTo(1); // Only one station needed
+        assertThat(response.getStations()).hasSize(1); // Only one station needed
         assertThat(response.getStations().get(0).getName()).isEqualTo("Leiria Fast Charge");
         assertThat(response.getDistance()).isGreaterThan(0);
         assertThat(response.getBatteryUsage()).isGreaterThan(0);

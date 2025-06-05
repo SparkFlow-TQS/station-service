@@ -5,26 +5,21 @@ import tqs.sparkflow.stationservice.model.Station;
 
 public class StationDTO extends BaseStationFields {
     private Long id;
-    private String name;
-    private String address;
-    private String status;
     private Integer quantityOfChargers;
     private Integer power;
-    private Boolean isOperational;
-    private Double price;
 
     public StationDTO() {
     }
 
     public StationDTO(Station station) {
         this.id = station.getId();
-        this.name = station.getName();
-        this.address = station.getAddress();
+        setName(station.getName());
+        setAddress(station.getAddress());
         setCity(station.getCity());
         setCountry(station.getCountry());
         setLatitude(station.getLatitude());
         setLongitude(station.getLongitude());
-        this.status = station.getStatus();
+        setStatus(station.getStatus());
         this.quantityOfChargers = station.getQuantityOfChargers();
         this.power = station.getPower();
         setIsOperational(station.getIsOperational());
@@ -37,36 +32,6 @@ public class StationDTO extends BaseStationFields {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getAddress() {
-        return address;
-    }
-
-    @Override
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    @Override
-    public String getStatus() {
-        return status;
-    }
-
-    @Override
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Integer getQuantityOfChargers() {
@@ -83,25 +48,5 @@ public class StationDTO extends BaseStationFields {
 
     public void setPower(Integer power) {
         this.power = power;
-    }
-
-    @Override
-    public Boolean getIsOperational() {
-        return isOperational;
-    }
-
-    @Override
-    public void setIsOperational(Boolean isOperational) {
-        this.isOperational = isOperational;
-    }
-
-    @Override
-    public Double getPrice() {
-        return price;
-    }
-
-    @Override
-    public void setPrice(Double price) {
-        this.price = price;
     }
 } 
