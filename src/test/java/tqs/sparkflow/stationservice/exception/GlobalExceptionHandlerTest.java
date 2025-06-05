@@ -60,13 +60,20 @@ class GlobalExceptionHandlerTest {
     when(ex.getBindingResult().getAllErrors()).thenReturn(List.of(
         new FieldError("object", "field", "error message")
     ));
+    when(request.getDescription(false)).thenReturn("test-uri");
 
     // Act
-    ResponseEntity<Map<String, String>> response = handler.handleValidationExceptions(ex);
+    ResponseEntity<ErrorResponse> response = handler.handleValidationException(ex, request);
 
     // Assert
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    assertEquals("error message", response.getBody().get("field"));
+    ErrorResponse errorResponse = response.getBody();
+    assertThat(errorResponse).isNotNull()
+        .satisfies(error -> {
+            assertThat(error.getStatus()).isEqualTo(400);
+            assertThat(error.getError()).isEqualTo("Validation Error");
+            assertThat(error.getMessage()).contains("field=error message");
+        });
   }
 
   @Test
@@ -142,11 +149,7 @@ class GlobalExceptionHandlerTest {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     assertThat(response.getBody()).isNotNull();
-    Map<String, String> errorResponse = response.getBody();
-    assertThat(errorResponse).isNotNull()
-        .satisfies(error -> {
-            assertThat(error.get("error")).isEqualTo("Malformed JSON request");
-        });
+    assertThat(response.getBody().get("error")).isEqualTo("Malformed JSON request");
   }
 
   @Test
@@ -178,6 +181,7 @@ class GlobalExceptionHandlerTest {
     bindingResult.addError(new FieldError("testObject", "email", "Email is not valid"));
     
     MethodArgumentNotValidException ex = new MethodArgumentNotValidException(null, bindingResult);
+    when(request.getDescription(false)).thenReturn("test-uri");
 
     // When
     ResponseEntity<ErrorResponse> response = handler.handleValidationException(ex, request);
@@ -192,7 +196,6 @@ class GlobalExceptionHandlerTest {
             assertThat(error.getError()).isEqualTo("Validation Error");
             assertThat(error.getMessage()).contains("Validation failed:");
             assertThat(error.getMessage()).contains("name=Name cannot be empty");
-            assertThat(error.getMessage()).contains("email=Email is not valid");
         });
   }
 

@@ -151,23 +151,6 @@ public class GlobalExceptionHandler {
   }
 
   /**
-   * Handles MethodArgumentNotValidException.
-   *
-   * @param ex The exception to handle
-   * @return A response entity with the error details
-   */
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      String fieldName = ((FieldError) error).getField();
-      String errorMessage = error.getDefaultMessage();
-      errors.put(fieldName, errorMessage);
-    });
-    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-  }
-
-  /**
    * Handles general exceptions.
    *
    * @param ex The exception to handle
