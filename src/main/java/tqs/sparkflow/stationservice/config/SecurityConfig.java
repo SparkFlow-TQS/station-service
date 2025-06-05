@@ -66,6 +66,9 @@ public class SecurityConfig {
                         "/swagger-resources/**",
                         "/webjars/**")
                     .permitAll()
+                    // Actuator endpoints for monitoring
+                    .requestMatchers("/actuator/**")
+                    .permitAll()
                     // Then other endpoints
                     .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**", "/api/v1/openchargemap/**")
                     .permitAll()
