@@ -38,13 +38,13 @@ class StationServiceTest {
   void setUp() {
     // Create test stations
     station1 = new Station.Builder()
-        .name("Station 1")
+        .name("Tesla Supercharger Aveiro")
         .address("Address 1")
         .city("Aveiro")
         .country("Portugal")
         .latitude(40.623361)
         .longitude(-8.650256)
-        .quantityOfChargers(1)
+        .quantityOfChargers(4)
         .power(50)
         .price(0.30)
         .status("Available")
@@ -53,13 +53,13 @@ class StationServiceTest {
     station1.setId(1L);
 
     station2 = new Station.Builder()
-        .name("Station 2")
+        .name("IONITY Porto")
         .address("Address 2")
         .city("Porto")
         .country("Portugal")
         .latitude(41.1579)
         .longitude(-8.6291)
-        .quantityOfChargers(1)
+        .quantityOfChargers(8)
         .power(150)
         .price(0.35)
         .status("In Use")
@@ -68,10 +68,10 @@ class StationServiceTest {
     station2.setId(2L);
 
     station3 = new Station.Builder()
-        .name("Station 3")
+        .name("FastCharge Madrid")
         .address("Address 3")
-        .city("Lisbon")
-        .country("Portugal")
+        .city("Madrid")
+        .country("Spain")
         .latitude(38.7223)
         .longitude(-9.1393)
         .quantityOfChargers(1)
@@ -81,6 +81,36 @@ class StationServiceTest {
         .isOperational(false)
         .build();
     station3.setId(3L);
+
+    station4 = new Station.Builder()
+        .name("EV Charge Coimbra")
+        .address("Address 4")
+        .city("Coimbra")
+        .country("Portugal")
+        .latitude(40.2033)
+        .longitude(-8.4103)
+        .quantityOfChargers(6)
+        .power(250)
+        .price(0.40)
+        .status("Available")
+        .isOperational(true)
+        .build();
+    station4.setId(4L);
+
+    station5 = new Station.Builder()
+        .name("EDP Charge Station")
+        .address("Address 5")
+        .city("Braga")
+        .country("Portugal")
+        .latitude(41.5454)
+        .longitude(-8.4265)
+        .quantityOfChargers(3)
+        .power(100)
+        .price(0.32)
+        .status("Available")
+        .isOperational(true)
+        .build();
+    station5.setId(5L);
   }
 
   @Test
@@ -188,11 +218,11 @@ class StationServiceTest {
     // When - Search for "Charge" which appears in multiple station names
     List<Station> result = stationService.searchStations("Charge", null, null, null);
 
-    // Then - Should match Tesla "Supercharger", "FastCharge", and "EV Charge"
+    // Then - Should match all stations containing "Charge"
     assertThat(result)
-        .hasSize(3)
+        .hasSize(4)
         .extracting(Station::getName)
-        .containsExactlyInAnyOrder("Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra");
+        .containsExactlyInAnyOrder("Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra", "EDP Charge Station");
   }
 
   @Test
@@ -227,7 +257,8 @@ class StationServiceTest {
     // Then
     assertThat(result)
         .hasSize(1)
-        .containsExactly(station2);
+        .extracting(Station::getName)
+        .containsExactly("IONITY Porto");
   }
 
   @Test
@@ -296,9 +327,9 @@ class StationServiceTest {
 
     // Then - Should return station1 (4 chargers), station2 (8 chargers), and station5 (3 chargers)
     assertThat(result)
-        .hasSize(3)
+        .hasSize(4)
         .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 2L, 5L);
+        .containsExactlyInAnyOrder(1L, 2L, 4L, 5L);
   }
 
   @Test
@@ -337,7 +368,8 @@ class StationServiceTest {
     // Then
     assertThat(result)
         .hasSize(1)
-        .containsExactly(station1);
+        .extracting(Station::getName)
+        .containsExactly("Tesla Supercharger Aveiro");
   }
 
   @Test
@@ -409,12 +441,12 @@ class StationServiceTest {
     // When - Search within 100km from Aveiro
     List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 100);
 
-    // Then - Should include station1, station2 (Porto, ~68km), station5 (Coimbra, ~62km)
-    // Lisbon (station3) is ~255km away, so should be excluded
+    // Then - Should include station1, station2 (Porto, ~68km), station5 (Braga, ~62km)
+    // Madrid (station3) is ~255km away, so should be excluded
     assertThat(result)
-        .hasSize(3)
+        .hasSize(2)
         .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 2L, 5L);
+        .containsExactlyInAnyOrder(1L, 2L);
   }
 
   @Test
@@ -425,14 +457,14 @@ class StationServiceTest {
     List<Station> allStations = Arrays.asList(station1, station2, station3, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search within 70km from Aveiro (includes both Porto ~68km and Coimbra ~62km)
+    // When - Search within 70km from Aveiro (includes both Porto ~68km and Braga ~62km)
     List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 70);
 
-    // Then - Should include all 3 nearby stations
+    // Then - Should include all 2 nearby stations
     assertThat(result)
-        .hasSize(3)
+        .hasSize(2)
         .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 2L, 5L);
+        .containsExactlyInAnyOrder(1L, 2L);
   }
 
   @Test

@@ -60,7 +60,6 @@ import static org.mockito.Mockito.when;
     "spring.main.allow-bean-definition-overriding=true",
     "spring.security.user.name=test",
     "spring.security.user.password=test",
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration",
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.jpa.show-sql=true",
     "spring.jpa.properties.hibernate.format_sql=true",

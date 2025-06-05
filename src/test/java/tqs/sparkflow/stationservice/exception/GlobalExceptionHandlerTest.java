@@ -137,17 +137,15 @@ class GlobalExceptionHandlerTest {
 
     // When - Test the generic exception handler instead since the specific JSON parsing 
     // would go through HttpMessageNotReadableException which has deprecated constructors
-    ResponseEntity<ErrorResponse> response = handler.handleException(ex, request);
+    ResponseEntity<Map<String, String>> response = handler.handleGeneralExceptions(ex);
 
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     assertThat(response.getBody()).isNotNull();
-    ErrorResponse errorResponse = response.getBody();
+    Map<String, String> errorResponse = response.getBody();
     assertThat(errorResponse).isNotNull()
         .satisfies(error -> {
-            assertThat(error.getStatus()).isEqualTo(500);
-            assertThat(error.getError()).isEqualTo("Internal Server Error");
-            assertThat(error.getMessage()).isEqualTo("Malformed JSON request");
+            assertThat(error.get("error")).isEqualTo("Malformed JSON request");
         });
   }
 
