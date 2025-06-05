@@ -142,7 +142,7 @@ class BaseStationFieldsTest {
     // Then
     assertThat(station.getLatitude()).isNull();
     assertThat(station.getLongitude()).isNull();
-    assertThat(station.getPrice()).isNull();
+    assertThat(station.getPrice()).isEqualTo(0.30);
     assertThat(station.getNumberOfChargers()).isNull();
     assertThat(station.getMinPower()).isNull();
     assertThat(station.getMaxPower()).isNull();

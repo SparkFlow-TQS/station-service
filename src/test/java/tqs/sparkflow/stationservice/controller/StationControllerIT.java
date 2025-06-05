@@ -203,4 +203,71 @@ class StationControllerIT {
     station.setStatus("Available");
     return station;
   }
+
+  @Test
+  void testUpdateStationPrice() {
+    // Given
+    Station station = createTestStation("Test Station");
+    station.setPrice(0.30);
+    Station savedStation = stationRepository.save(station);
+    
+    Double newPrice = 0.50;
+    String url = baseUrl + "/" + savedStation.getId() + "/price?price=" + newPrice;
+    
+    // When
+    ResponseEntity<Station> response = restTemplate.exchange(
+        url,
+        HttpMethod.PUT,
+        null,
+        Station.class
+    );
+    
+    // Then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().getPrice()).isEqualTo(newPrice);
+    
+    // Verify in database
+    Station updatedStation = stationRepository.findById(savedStation.getId()).orElse(null);
+    assertThat(updatedStation).isNotNull();
+    assertThat(updatedStation.getPrice()).isEqualTo(newPrice);
+  }
+
+  @Test
+  void testUpdateStationPriceWithInvalidPrice() {
+    // Given
+    Station station = createTestStation("Test Station");
+    Station savedStation = stationRepository.save(station);
+    
+    String url = baseUrl + "/" + savedStation.getId() + "/price?price=-0.10";
+    
+    // When
+    ResponseEntity<Station> response = restTemplate.exchange(
+        url,
+        HttpMethod.PUT,
+        null,
+        Station.class
+    );
+    
+    // Then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  void testUpdateStationPriceForNonExistentStation() {
+    // Given
+    Long nonExistentId = 999L;
+    String url = baseUrl + "/" + nonExistentId + "/price?price=0.40";
+    
+    // When
+    ResponseEntity<Station> response = restTemplate.exchange(
+        url,
+        HttpMethod.PUT,
+        null,
+        Station.class
+    );
+    
+    // Then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
 }

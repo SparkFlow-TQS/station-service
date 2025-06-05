@@ -182,7 +182,7 @@ class StationTest {
     assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getPower()).isNull();
     assertThat(station.getIsOperational()).isNull();
-    assertThat(station.getPrice()).isNull();
+    assertThat(station.getPrice()).isEqualTo(0.30);
     assertThat(station.getStatus()).isNull();
   }
 
@@ -202,7 +202,71 @@ class StationTest {
     assertThat(station.getQuantityOfChargers()).isNull();
     assertThat(station.getPower()).isNull();
     assertThat(station.getIsOperational()).isNull();
-    assertThat(station.getPrice()).isNull();
+    assertThat(station.getPrice()).isEqualTo(0.30);
     assertThat(station.getStatus()).isNull();
+  }
+
+  @Test
+  void whenCreatingStationWithoutPrice_thenDefaultPriceIsApplied() {
+    // When
+    Station station = new Station();
+    
+    // Then
+    assertThat(station.getPrice()).isEqualTo(0.30);
+  }
+
+  @Test
+  void whenCreatingStationWithBuilderWithoutPrice_thenDefaultPriceIsApplied() {
+    // When
+    Station station = new Station.Builder()
+        .name("Test Station")
+        .build();
+    
+    // Then
+    assertThat(station.getPrice()).isEqualTo(0.30);
+  }
+
+  @Test
+  void whenCreatingStationWithConstructorWithoutPrice_thenDefaultPriceIsApplied() {
+    // When
+    Station station = new Station(
+        "ext123",
+        "Test Station", 
+        "123 Test St",
+        "Test City",
+        "Test Country",
+        40.7128,
+        -74.0060,
+        1,
+        "Available"
+    );
+    
+    // Then
+    assertThat(station.getPrice()).isEqualTo(0.30);
+  }
+
+  @Test
+  void whenSettingPriceToNull_thenDefaultPriceIsApplied() {
+    // Given
+    Station station = new Station();
+    
+    // When
+    station.setPrice(null);
+    
+    // Then
+    assertThat(station.getPrice()).isEqualTo(0.30);
+  }
+
+  @Test
+  void whenSettingValidPrice_thenPriceIsUpdated() {
+    // Given
+    Station station = new Station();
+    Double newPrice = 0.45;
+    
+    // When
+    station.setPrice(newPrice);
+    
+    // Then
+    assertThat(station.getPrice()).isEqualTo(newPrice);
   }
 }

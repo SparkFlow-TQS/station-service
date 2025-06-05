@@ -547,6 +547,80 @@ class StationServiceTest {
     verify(stationRepository).findStationsByFilters(null, null, null, "Available", null, null, null, null);
   }
 
+  @Test
+  void whenUpdatingStationPriceWithValidPrice_thenReturnsUpdatedStation() {
+    // Given
+    Long stationId = 1L;
+    Double newPrice = 0.45;
+    Station existingStation = createTestStation(stationId, "Test Station");
+    existingStation.setPrice(0.30);
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+    when(stationRepository.save(any(Station.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    
+    // When
+    Station result = stationService.updateStationPrice(stationId, newPrice);
+    
+    // Then
+    assertThat(result.getPrice()).isEqualTo(newPrice);
+    verify(stationRepository).save(existingStation);
+  }
+
+  @Test
+  void whenUpdatingStationPriceWithNullPrice_thenAppliesDefaultPrice() {
+    // Given
+    Long stationId = 1L;
+    Station existingStation = createTestStation(stationId, "Test Station");
+    existingStation.setPrice(0.50);
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+    when(stationRepository.save(any(Station.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    
+    // When
+    Station result = stationService.updateStationPrice(stationId, null);
+    
+    // Then
+    assertThat(result.getPrice()).isEqualTo(0.30);
+    verify(stationRepository).save(existingStation);
+  }
+
+  @Test
+  void whenUpdatingStationPriceWithNegativePrice_thenThrowsException() {
+    // Given
+    Long stationId = 1L;
+    Double negativePrice = -0.10;
+    
+    // When & Then
+    assertThatThrownBy(() -> stationService.updateStationPrice(stationId, negativePrice))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Price cannot be negative");
+  }
+
+  @Test
+  void whenUpdatingStationPriceWithNullId_thenThrowsException() {
+    // Given
+    Double newPrice = 0.40;
+    
+    // When & Then
+    assertThatThrownBy(() -> stationService.updateStationPrice(null, newPrice))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("Station ID cannot be null");
+  }
+
+  @Test
+  void whenUpdatingStationPriceForNonExistentStation_thenThrowsException() {
+    // Given
+    Long nonExistentId = 999L;
+    Double newPrice = 0.40;
+    
+    when(stationRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+    
+    // When & Then
+    assertThatThrownBy(() -> stationService.updateStationPrice(nonExistentId, newPrice))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Station not found with id: " + nonExistentId);
+  }
+
   private Station createTestStation(Long id, String name) {
     Station station =
         new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 2, "Available");
