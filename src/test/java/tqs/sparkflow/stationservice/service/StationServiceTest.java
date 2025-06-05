@@ -2,8 +2,10 @@ package tqs.sparkflow.stationservice.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sparkflow.stationservice.dto.StationFilterDTO;
+import tqs.sparkflow.stationservice.model.Booking;
+import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.model.Station;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
+import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
@@ -23,6 +29,8 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 class StationServiceTest {
 
   @Mock private StationRepository stationRepository;
+  @Mock private BookingRepository bookingRepository;
+  @Mock private ChargingSessionRepository chargingSessionRepository;
 
   @InjectMocks private StationService stationService;
 
@@ -545,6 +553,137 @@ class StationServiceTest {
     assertThat(result).hasSize(1);
     assertThat(result.get(0).getStatus()).isEqualTo("Available");
     verify(stationRepository).findStationsByFilters(null, null, null, "Available", null, null, null, null);
+  }
+
+  @Test
+  void whenCalculatingAvailableChargers_thenReturnsFreeChargers() {
+    // Given
+    Station station = createTestStation(1L, "Test Station");
+    station.setQuantityOfChargers(3);
+    Long stationId = 1L;
+    LocalDateTime currentTime = LocalDateTime.now();
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(bookingRepository.findActiveBookingsForStationAtTime(stationId, currentTime))
+        .thenReturn(Arrays.asList(new Booking(), new Booking())); // 2 active bookings
+    when(chargingSessionRepository.findUnfinishedSessionsByStation(stationId))
+        .thenReturn(Arrays.asList(new ChargingSession())); // 1 unfinished session
+    
+    // When
+    int availableChargers = stationService.getAvailableChargers(stationId, currentTime);
+    
+    // Then
+    assertThat(availableChargers).isEqualTo(0); // 3 total - 2 bookings - 1 session = 0
+  }
+
+  @Test
+  void whenCheckingCanUseStation_withExistingBooking_thenReturnsTrue() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    
+    Booking userBooking = new Booking();
+    userBooking.setUserId(userId);
+    userBooking.setStationId(stationId);
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(userBooking));
+    
+    // When
+    boolean canUse = stationService.canUseStation(stationId, userId, startTime, endTime);
+    
+    // Then
+    assertThat(canUse).isTrue();
+  }
+
+  @Test
+  void whenCheckingCanUseStation_withAvailableChargers_thenReturnsTrue() {
+    // Given
+    Station station = createTestStation(1L, "Test Station");
+    station.setQuantityOfChargers(3);
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(new Booking())); // 1 booking from other user
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(new ChargingSession())); // 1 session
+    
+    // When
+    boolean canUse = stationService.canUseStation(stationId, userId, startTime, endTime);
+    
+    // Then
+    assertThat(canUse).isTrue(); // 3 total - 1 booking - 1 session = 1 available
+  }
+
+  @Test
+  void whenCheckingCanUseStation_withNoAvailableChargers_thenReturnsFalse() {
+    // Given
+    Station station = createTestStation(1L, "Test Station");
+    station.setQuantityOfChargers(2);
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(new Booking(), new Booking())); // 2 bookings from other users
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList());
+    
+    // When
+    boolean canUse = stationService.canUseStation(stationId, userId, startTime, endTime);
+    
+    // Then
+    assertThat(canUse).isFalse(); // 2 total - 2 bookings = 0 available
+  }
+
+  @Test
+  void whenValidatingBooking_withAvailableChargers_thenBookingIsAllowed() {
+    // Given
+    Station station = createTestStation(1L, "Test Station");
+    station.setQuantityOfChargers(3);
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(new Booking())); // 1 overlapping booking
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(new ChargingSession())); // 1 unfinished session
+    
+    // When & Then
+    assertThatCode(() -> stationService.validateBooking(stationId, userId, startTime, endTime))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void whenValidatingBooking_withNoAvailableChargers_thenThrowsException() {
+    // Given
+    Station station = createTestStation(1L, "Test Station");
+    station.setQuantityOfChargers(2);
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList(new Booking(), new Booking())); // 2 overlapping bookings
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
+        .thenReturn(Arrays.asList());
+    
+    // When & Then
+    assertThatThrownBy(() -> stationService.validateBooking(stationId, userId, startTime, endTime))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No chargers available for the requested time slot");
   }
 
   private Station createTestStation(Long id, String name) {

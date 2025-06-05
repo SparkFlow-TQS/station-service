@@ -3,6 +3,10 @@ package tqs.sparkflow.stationservice.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import tqs.sparkflow.stationservice.exception.ChargingSessionNotFoundException;
+import tqs.sparkflow.stationservice.model.Booking;
+import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.ChargingSession;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -19,11 +26,14 @@ class ChargingSessionServiceTest {
     @Mock
     private ChargingSessionRepository chargingSessionRepository;
 
+    @Mock
+    private BookingRepository bookingRepository;
+
     private ChargingSessionService chargingSessionService;
 
     @BeforeEach
     void setUp() {
-        chargingSessionService = new ChargingSessionService(chargingSessionRepository);
+        chargingSessionService = new ChargingSessionService(chargingSessionRepository, bookingRepository);
     }
 
     @Test
@@ -184,6 +194,42 @@ class ChargingSessionServiceTest {
         assertNotNull(result);
         assertNotNull(result.getStartTime());
         assertEquals(ChargingSession.ChargingSessionStatus.CHARGING, result.getStatus());
+        verify(chargingSessionRepository).save(any(ChargingSession.class));
+    }
+
+    @Test
+    void whenStartCharging_thenClosesUserBooking() {
+        // Given
+        Long sessionId = 1L;
+        String stationId = "1";
+        String userId = "123";
+        LocalDateTime now = LocalDateTime.now();
+        
+        ChargingSession session = new ChargingSession();
+        session.setStationId(stationId);
+        session.setUserId(userId);
+        
+        Booking userBooking = new Booking();
+        userBooking.setId(1L);
+        userBooking.setStationId(Long.valueOf(stationId));
+        userBooking.setUserId(Long.valueOf(userId));
+        userBooking.setStatus(BookingStatus.ACTIVE);
+        userBooking.setStartTime(now.minusMinutes(30));
+        userBooking.setEndTime(now.plusMinutes(30));
+        
+        when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
+        when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
+        when(bookingRepository.findActiveBookingsForStationAtTime(Long.valueOf(stationId), any(LocalDateTime.class)))
+            .thenReturn(Arrays.asList(userBooking));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(userBooking);
+        
+        // When
+        ChargingSession result = chargingSessionService.startCharging(sessionId.toString());
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(ChargingSession.ChargingSessionStatus.CHARGING, result.getStatus());
+        verify(bookingRepository).save(any(Booking.class));
     }
 
     @Test
