@@ -36,7 +36,7 @@
 		<sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 		<junit-platform.version>1.12.1</junit-platform.version>
 		<junit-jupiter.version>5.12.1</junit-jupiter.version>
-		<springdoc.version>2.7.0</springdoc.version>
+		<springdoc.version>2.3.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
 		<cucumber.version>7.22.2</cucumber.version>
 		<spotless.version>2.43.0</spotless.version>
@@ -131,6 +131,10 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -288,11 +292,6 @@
 			<artifactId>xray-junit-extensions</artifactId>
 			<version>0.9.0</version>
 			<scope>test</scope>
-		</dependency>
-		<!-- WebJars Support -->
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>webjars-locator-core</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -3,8 +3,9 @@ package tqs.sparkflow.stationservice;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import tqs.sparkflow.stationservice.config.TestConfig;
 
-@SpringBootTest
+@SpringBootTest(classes = {StationServiceApplication.class, TestConfig.class})
 @ActiveProfiles("test")
 class StationServiceApplicationTest {
 

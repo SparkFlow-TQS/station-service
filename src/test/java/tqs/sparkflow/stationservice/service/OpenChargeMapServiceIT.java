@@ -117,6 +117,6 @@ class OpenChargeMapServiceIT {
     // When/Then
     assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, radius))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Access denied to Open Charge Map API");
+        .hasMessage("Invalid Open Charge Map API key");
   }
 }
