@@ -61,8 +61,8 @@ public class OpenApiConfig {
   public SwaggerUiConfigProperties swaggerUiConfigProperties() {
     SwaggerUiConfigProperties properties = new SwaggerUiConfigProperties();
     properties.setPath("/swagger-ui.html");
-    properties.setConfigUrl("/v3/api-docs/swagger-config");
-    properties.setUrl("/v3/api-docs");
+    properties.setConfigUrl("/station/v3/api-docs/swagger-config");
+    properties.setUrl("/station/v3/api-docs");
     properties.setOperationsSorter("method");
     properties.setTagsSorter("alpha");
     properties.setTryItOutEnabled(true);
