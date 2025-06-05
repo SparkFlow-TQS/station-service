@@ -93,14 +93,16 @@ class BookingServiceTest {
 
     @Test
     void whenCreateRecurringBooking_withOverlappingBooking_thenThrowException() {
+        // Given: Station with 1 charger (default)
         when(stationService.getStationById(1L)).thenReturn(testStation);
         when(bookingRepository.findOverlappingBookings(any(), any(), any()))
             .thenReturn(List.of(testBooking));
 
+        // When/Then: Creating a booking when charger is already occupied should throw exception
         assertThatThrownBy(() -> 
             bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2), recurringDays))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Time slot is already booked");
+            .hasMessageContaining("No chargers available for the requested time slot");
     }
 
     @Test
