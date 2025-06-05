@@ -83,14 +83,14 @@ class StationControllerTest {
         List<Station> expectedStations =
             Arrays.asList(
                 new Station(
-                    "Station 1", "Address 1", "Lisbon", latitude, longitude, "Type 2", "Available"),
+                    "Station 1", "Address 1", "Lisbon", latitude, longitude, 2, "Available"),
                 new Station(
                     "Station 2",
                     "Address 2",
                     "Lisbon",
                     latitude + 0.01,
                     longitude + 0.01,
-                    "Type 2",
+                    2,
                     "Available"));
 
         when(stationService.getNearbyStations(latitude, longitude, radius))
@@ -113,7 +113,7 @@ class StationControllerTest {
         // Given
         Station station =
             new Station(
-                "Test Station", "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
+                "Test Station", "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
         station.setId(1L);
 
         when(stationService.createStation(any(Station.class))).thenReturn(station);
@@ -219,16 +219,16 @@ class StationControllerTest {
     @Requirement("STATION-13")
     void whenSearchingStations_thenReturnsList() {
         List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Search 1"));
-        when(stationService.searchStations("name", "city", "country", "type")).thenReturn(expectedStations);
-        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", "type");
+        when(stationService.searchStations("name", "city", "country", 2)).thenReturn(expectedStations);
+        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", 2);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo(expectedStations);
-        verify(stationService).searchStations("name", "city", "country", "type");
+        verify(stationService).searchStations("name", "city", "country", 2);
     }
 
     private Station createTestStation(Long id, String name) {
         Station station =
-            new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type2", "Available");
+            new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
         station.setId(id);
         return station;
     }

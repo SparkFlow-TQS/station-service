@@ -65,7 +65,7 @@ class StationControllerIT {
     assertThat(responseStation).isNotNull()
         .satisfies(s -> {
             assertThat(s.getName()).isEqualTo(station.getName());
-            assertThat(s.getConnectorType()).isEqualTo(station.getConnectorType());
+            assertThat(s.getChargerCount()).isEqualTo(station.getChargerCount());
         });
   }
 
@@ -146,7 +146,7 @@ class StationControllerIT {
   void whenCreateStation_thenReturnCreatedStation() {
     // Given
     Station station = new Station("Test Station", "Test Address", "Lisbon", 38.7223, -9.1393,
-        "Type 2", "Available");
+        2, "Available");
 
     // When
     ResponseEntity<Station> response = restTemplate.postForEntity(baseUrl, station, Station.class);
@@ -171,7 +171,7 @@ class StationControllerIT {
     station.setCountry("Test Country");
     station.setLatitude(38.7223);
     station.setLongitude(-9.1393);
-    station.setConnectorType("Type 2");
+    station.setChargerCount(2);
     station.setPower(22);
     station.setStatus("Available");
     return station;

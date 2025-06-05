@@ -49,8 +49,10 @@ public class Station extends BaseStationFields {
   @NotBlank(message = "Station status cannot be empty")
   private String status;
 
-  @NotBlank(message = "Connector type cannot be empty")
-  private String connectorType;
+  @NotNull(message = "Charger count cannot be null")
+  @Min(value = 1, message = "Station must have at least 1 charger")
+  @Max(value = 50, message = "Station cannot have more than 50 chargers")
+  private Integer chargerCount;
 
   private Integer power;
   private Boolean isOperational;
@@ -67,7 +69,7 @@ public class Station extends BaseStationFields {
    * @param city The city where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param connectorType The type of connector available at the station
+   * @param chargerCount The number of chargers at the station
    * @param status The status of the station
    */
   public Station(
@@ -76,14 +78,14 @@ public class Station extends BaseStationFields {
       String city,
       double latitude,
       double longitude,
-      String connectorType,
+      Integer chargerCount,
       String status) {
     this.name = name;
     this.address = address;
     this.city = city;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.connectorType = connectorType;
+    this.chargerCount = chargerCount;
     this.status = status;
   }
 
@@ -97,7 +99,7 @@ public class Station extends BaseStationFields {
    * @param country The country where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param connectorType The type of connector available at the station
+   * @param chargerCount The number of chargers at the station
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    */
@@ -109,7 +111,7 @@ public class Station extends BaseStationFields {
       String country,
       Double latitude,
       Double longitude,
-      String connectorType,
+      Integer chargerCount,
       Integer power,
       Boolean isOperational) {
     this.externalId = externalId;
@@ -119,7 +121,7 @@ public class Station extends BaseStationFields {
     this.country = country;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.connectorType = connectorType;
+    this.chargerCount = chargerCount;
     this.power = power;
     this.isOperational = isOperational;
   }
@@ -134,7 +136,7 @@ public class Station extends BaseStationFields {
    * @param country The country where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param connectorType The type of connector available at the station
+   * @param chargerCount The number of chargers at the station
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    * @param price The price per kWh in euros
@@ -147,7 +149,7 @@ public class Station extends BaseStationFields {
       String country,
       Double latitude,
       Double longitude,
-      String connectorType,
+      Integer chargerCount,
       Integer power,
       Boolean isOperational,
       Double price) {
@@ -158,7 +160,7 @@ public class Station extends BaseStationFields {
     this.country = country;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.connectorType = connectorType;
+    this.chargerCount = chargerCount;
     this.power = power;
     this.isOperational = isOperational;
     setPrice(price);
@@ -240,14 +242,12 @@ public class Station extends BaseStationFields {
     this.status = status;
   }
 
-  @Override
-  public String getConnectorType() {
-    return connectorType;
+  public Integer getChargerCount() {
+    return chargerCount;
   }
 
-  @Override
-  public void setConnectorType(String connectorType) {
-    this.connectorType = connectorType;
+  public void setChargerCount(Integer chargerCount) {
+    this.chargerCount = chargerCount;
   }
 
   public Integer getPower() {
@@ -316,8 +316,8 @@ public class Station extends BaseStationFields {
       return this;
     }
 
-    public Builder connectorType(String connectorType) {
-      station.setConnectorType(connectorType);
+    public Builder chargerCount(Integer chargerCount) {
+      station.setChargerCount(chargerCount);
       return this;
     }
 

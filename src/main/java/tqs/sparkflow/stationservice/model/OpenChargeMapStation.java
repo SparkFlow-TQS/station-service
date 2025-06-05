@@ -9,7 +9,7 @@ public class OpenChargeMapStation {
   private String country;
   private double latitude;
   private double longitude;
-  private String connectorType;
+  private Integer chargerCount;
 
   public String getId() {
     return id;
@@ -67,11 +67,11 @@ public class OpenChargeMapStation {
     this.longitude = longitude;
   }
 
-  public String getConnectorType() {
-    return connectorType;
+  public Integer getChargerCount() {
+    return chargerCount;
   }
 
-  public void setConnectorType(String connectorType) {
-    this.connectorType = connectorType;
+  public void setChargerCount(Integer chargerCount) {
+    this.chargerCount = chargerCount;
   }
 }

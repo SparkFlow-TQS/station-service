@@ -102,7 +102,7 @@ class StationCountControllerTest {
                 "City", 
                 38.7223 + (i * 0.001), 
                 -9.1393 + (i * 0.001), 
-                "Type 2", 
+                2, 
                 "Available"
             );
             station.setId((long) i);

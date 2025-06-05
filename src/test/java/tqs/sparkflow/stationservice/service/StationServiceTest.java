@@ -43,7 +43,7 @@ class StationServiceTest {
     station1.setAddress("Rua da Tesla 123");
     station1.setCity("Aveiro");
     station1.setCountry("Portugal");
-    station1.setConnectorType("Tesla");
+    station1.setChargerCount(4);
     station1.setPower(150);
     station1.setPrice(0.35);
     station1.setIsOperational(true);
@@ -57,7 +57,7 @@ class StationServiceTest {
     station2.setAddress("Área de Serviço Porto Norte");
     station2.setCity("Porto");
     station2.setCountry("Portugal");
-    station2.setConnectorType("CCS");
+    station2.setChargerCount(8);
     station2.setPower(350);
     station2.setPrice(0.79);
     station2.setIsOperational(true);
@@ -71,7 +71,7 @@ class StationServiceTest {
     station3.setAddress("Avenida da Liberdade 200");
     station3.setCity("Lisbon");
     station3.setCountry("Portugal");
-    station3.setConnectorType("Type 2");
+    station3.setChargerCount(2);
     station3.setPower(22);
     station3.setPrice(0.25);
     station3.setIsOperational(false);
@@ -85,7 +85,7 @@ class StationServiceTest {
     station4.setAddress("Calle Mayor 456");
     station4.setCity("Madrid");
     station4.setCountry("Spain");
-    station4.setConnectorType("CCS");
+    station4.setChargerCount(6);
     station4.setPower(100);
     station4.setPrice(0.45);
     station4.setIsOperational(true);
@@ -99,7 +99,7 @@ class StationServiceTest {
     station5.setAddress("Praça da República 789");
     station5.setCity("Coimbra");
     station5.setCountry("Portugal");
-    station5.setConnectorType("Type 2");
+    station5.setChargerCount(3);
     station5.setPower(43);
     station5.setPrice(0.30);
     station5.setIsOperational(true);
@@ -295,19 +295,19 @@ class StationServiceTest {
   @Test
   @XrayTest(key = "STATION-SVC-28")
   @Requirement("STATION-SVC-28")
-  void whenSearchingStationsByConnectorType_thenReturnsMatchingStations() {
+  void whenSearchingStationsByMinChargers_thenReturnsMatchingStations() {
     // Given
     List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search by connector type
-    List<Station> result = stationService.searchStations(null, null, null, "CCS");
+    // When - Search for stations with at least 6 chargers
+    List<Station> result = stationService.searchStations(null, null, null, 6);
 
-    // Then
+    // Then - Should return station2 (8 chargers) and station4 (6 chargers)
     assertThat(result)
         .hasSize(2)
-        .extracting(Station::getConnectorType)
-        .containsOnly("CCS");
+        .extracting(Station::getId)
+        .containsExactlyInAnyOrder(2L, 4L);
   }
 
   @Test
@@ -318,14 +318,14 @@ class StationServiceTest {
     List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search with multiple criteria
-    List<Station> result = stationService.searchStations(null, null, "Portugal", "Type 2");
+    // When - Search with multiple criteria: Portugal + at least 3 chargers
+    List<Station> result = stationService.searchStations(null, null, "Portugal", 3);
 
-    // Then
+    // Then - Should return station1 (4 chargers), station2 (8 chargers), and station5 (3 chargers)
     assertThat(result)
-        .hasSize(2)
+        .hasSize(3)
         .extracting(Station::getId)
-        .containsExactlyInAnyOrder(3L, 5L);
+        .containsExactlyInAnyOrder(1L, 2L, 5L);
   }
 
   @Test
@@ -353,7 +353,7 @@ class StationServiceTest {
     stationWithNulls.setName(null);
     stationWithNulls.setCity(null);
     stationWithNulls.setCountry(null);
-    stationWithNulls.setConnectorType(null);
+    stationWithNulls.setChargerCount(null);
     
     List<Station> allStations = Arrays.asList(station1, stationWithNulls);
     when(stationRepository.findAll()).thenReturn(allStations);
@@ -376,7 +376,7 @@ class StationServiceTest {
     when(stationRepository.findAll()).thenReturn(allStations);
 
     // When - Search with empty strings (should return all)
-    List<Station> result = stationService.searchStations("", "", "", "");
+    List<Station> result = stationService.searchStations("", "", "", null);
 
     // Then
     assertThat(result)
@@ -731,15 +731,15 @@ class StationServiceTest {
   @Test
   @XrayTest(key = "STATION-SVC-16")
   @Requirement("STATION-SVC-16")
-  void whenCreatingStationWithEmptyConnectorType_thenThrowsException() {
+  void whenCreatingStationWithInvalidChargerCount_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, "Test Station");
-    station.setConnectorType("");
+    station.setChargerCount(0); // Invalid charger count
 
     // When/Then
     assertThatThrownBy(() -> stationService.createStation(station))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Connector type cannot be empty");
+        .hasMessageContaining("Charger count must be between 1 and 50");
   }
 
   @Test
@@ -858,7 +858,7 @@ class StationServiceTest {
 
   private Station createTestStation(Long id, String name) {
     Station station =
-        new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
+        new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
     station.setId(id);
     return station;
   }

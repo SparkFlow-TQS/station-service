@@ -135,7 +135,7 @@ public class OpenChargeMapService {
       ocmStation.getCountry(),
       ocmStation.getLatitude(),
       ocmStation.getLongitude(),
-      ocmStation.getConnectorType(),
+      2, // Default charger count for OpenChargeMap stations
       null,
       true);
   }
@@ -157,7 +157,7 @@ public class OpenChargeMapService {
       setStationAddress(addressInfo, station);
       setStationCoordinates(addressInfo, station);
       station.setStatus("Available");
-      setStationConnectorType(connections, station);
+      setStationChargerCount(connections, station);
 
       return station;
     } catch (Exception e) {
@@ -211,13 +211,13 @@ public class OpenChargeMapService {
     station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
   }
 
-  private void setStationConnectorType(List<Map<String, Object>> connections, Station station) {
+  private void setStationChargerCount(List<Map<String, Object>> connections, Station station) {
     if (connections != null && !connections.isEmpty()) {
-      Map<String, Object> firstConnection = connections.get(0);
-      Object connectorType = firstConnection.get("ConnectionTypeID");
-      station.setConnectorType(connectorType != null ? connectorType.toString() : UNKNOWN_VALUE);
+      // Set charger count based on number of connections, defaulting to 2 if not determinable
+      int chargerCount = Math.max(1, Math.min(connections.size(), 50)); // Ensure it's between 1-50
+      station.setChargerCount(chargerCount);
     } else {
-      station.setConnectorType(UNKNOWN_VALUE);
+      station.setChargerCount(1); // Default to 1 charger if no connections data
     }
   }
 }

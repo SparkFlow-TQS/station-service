@@ -1,7 +1,7 @@
 package tqs.sparkflow.stationservice.model;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class OpenChargeMapStationTest {
     @Test
@@ -14,7 +14,7 @@ class OpenChargeMapStationTest {
         station.setCountry("Test Country");
         station.setLatitude(38.7223);
         station.setLongitude(-9.1393);
-        station.setConnectorType("Type 2");
+        station.setChargerCount(2);
 
         assertThat(station.getId()).isEqualTo("1");
         assertThat(station.getName()).isEqualTo("Test Station");
@@ -23,6 +23,6 @@ class OpenChargeMapStationTest {
         assertThat(station.getCountry()).isEqualTo("Test Country");
         assertThat(station.getLatitude()).isEqualTo(38.7223);
         assertThat(station.getLongitude()).isEqualTo(-9.1393);
-        assertThat(station.getConnectorType()).isEqualTo("Type 2");
+        assertThat(station.getChargerCount()).isEqualTo(2);
     }
 } 

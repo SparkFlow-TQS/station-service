@@ -177,7 +177,7 @@ public class StationController {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param connectorType The connector type
+   * @param minChargers The minimum number of chargers
    * @return List of matching stations (limited to 500 results)
    */
   @Operation(summary = "Search stations", description = "Searches for stations based on various criteria (results limited to 500 stations for performance)")
@@ -192,8 +192,8 @@ public class StationController {
       @Parameter(description = "Station name to search for") @RequestParam(required = false) String name,
       @Parameter(description = "City to search in") @RequestParam(required = false) String city,
       @Parameter(description = "Country to search in") @RequestParam(required = false) String country,
-      @Parameter(description = "Type of connector to search for") @RequestParam(required = false) String connectorType) {
-    return ResponseEntity.ok(stationService.searchStations(name, city, country, connectorType));
+      @Parameter(description = "Minimum number of chargers") @RequestParam(required = false) Integer minChargers) {
+    return ResponseEntity.ok(stationService.searchStations(name, city, country, minChargers));
   }
 
   /**
@@ -217,5 +217,22 @@ public class StationController {
       @Parameter(description = "Longitude coordinate", required = true) @RequestParam double longitude,
       @Parameter(description = "Search radius in kilometers", required = true) @RequestParam int radius) {
     return ResponseEntity.ok(stationService.getNearbyStations(latitude, longitude, radius));
+  }
+
+  /**
+   * Gets the total count of stations in the system.
+   *
+   * @return The total number of stations
+   */
+  @Operation(summary = "Get total station count", description = "Retrieves the total number of charging stations in the system")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Successfully retrieved station count",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = Long.class))),
+      @ApiResponse(responseCode = "500", description = "Internal server error")
+  })
+  @GetMapping("/count")
+  public ResponseEntity<Long> getTotalStationCount() {
+    return ResponseEntity.ok(stationService.getTotalStationCount());
   }
 }

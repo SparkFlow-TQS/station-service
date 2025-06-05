@@ -1,24 +1,38 @@
 package tqs.sparkflow.stationservice.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.util.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import tqs.sparkflow.stationservice.model.OpenChargeMapResponse;
 import tqs.sparkflow.stationservice.model.OpenChargeMapStation;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 @ExtendWith(MockitoExtension.class)
 class OpenChargeMapServiceTest {
@@ -53,7 +67,7 @@ class OpenChargeMapServiceTest {
         ocmStation.setCountry("Country");
         ocmStation.setLatitude(1.0);
         ocmStation.setLongitude(2.0);
-        ocmStation.setConnectorType("Type2");
+        ocmStation.setChargerCount(2);
 
         OpenChargeMapResponse response = new OpenChargeMapResponse();
         response.setStations(List.of(ocmStation));

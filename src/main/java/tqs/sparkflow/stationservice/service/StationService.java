@@ -87,8 +87,11 @@ public class StationService {
     if (station.getName() == null || station.getName().trim().isEmpty()) {
       throw new IllegalArgumentException("Station name cannot be empty");
     }
-    if (station.getConnectorType() == null || station.getConnectorType().trim().isEmpty()) {
-      throw new IllegalArgumentException("Connector type cannot be empty");
+    if (station.getChargerCount() == null) {
+      throw new IllegalArgumentException("Charger count cannot be null");
+    }
+    if (station.getChargerCount() < 1 || station.getChargerCount() > 50) {
+      throw new IllegalArgumentException("Charger count must be between 1 and 50");
     }
     if (station.getLatitude() != null
         && (station.getLatitude() < -90 || station.getLatitude() > 90)) {
@@ -140,11 +143,11 @@ public class StationService {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param connectorType The connector type
+   * @param minChargers The minimum number of chargers (optional)
    * @return List of matching stations (limited to 500 results)
    */
   public List<Station> searchStations(
-      String name, String city, String country, String connectorType) {
+      String name, String city, String country, Integer minChargers) {
     
     // Use a more flexible search approach - search all stations and filter
     List<Station> allStations = stationRepository.findAll();
@@ -175,10 +178,10 @@ public class StationService {
                 }
             }
             
-            // Connector type filter
-            if (connectorType != null && !connectorType.trim().isEmpty()) {
-                if (station.getConnectorType() == null || 
-                    !station.getConnectorType().toLowerCase().contains(connectorType.toLowerCase())) {
+            // Minimum chargers filter
+            if (minChargers != null && minChargers > 0) {
+                if (station.getChargerCount() == null || 
+                    station.getChargerCount() < minChargers) {
                     return false;
                 }
             }

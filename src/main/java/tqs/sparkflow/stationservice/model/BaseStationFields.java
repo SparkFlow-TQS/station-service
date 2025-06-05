@@ -17,7 +17,7 @@ public class BaseStationFields {
   @Min(value = 0, message = "Price must be non-negative")
   protected Double price;
 
-  protected String connectorType;
+  protected Integer chargerCount;
   protected Integer minPower;
   protected Integer maxPower;
   protected Boolean isOperational;
@@ -49,12 +49,12 @@ public class BaseStationFields {
     this.price = price;
   }
 
-  public String getConnectorType() {
-    return connectorType;
+  public Integer getChargerCount() {
+    return chargerCount;
   }
 
-  public void setConnectorType(String connectorType) {
-    this.connectorType = connectorType;
+  public void setChargerCount(Integer chargerCount) {
+    this.chargerCount = chargerCount;
   }
 
   public Integer getMinPower() {
