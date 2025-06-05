@@ -13,7 +13,6 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 import java.util.Map;
@@ -148,7 +147,7 @@ class GlobalExceptionHandlerTest {
     // Then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().get("error")).isEqualTo("Malformed JSON request");
+    assertThat(response.getBody()).containsEntry("error", "Malformed JSON request");
   }
 
   @Test
