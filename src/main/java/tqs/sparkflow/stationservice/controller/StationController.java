@@ -1,13 +1,7 @@
 package tqs.sparkflow.stationservice.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,7 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import tqs.sparkflow.stationservice.dto.StationFilterDTO;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
 
@@ -41,9 +42,9 @@ public class StationController {
   /**
    * Gets all stations.
    *
-   * @return List of all stations
+   * @return List of all stations (limited to 500 for performance)
    */
-  @Operation(summary = "Get all stations", description = "Retrieves a list of all charging stations in the system")
+  @Operation(summary = "Get all stations", description = "Retrieves a list of all charging stations in the system (limited to 500 stations for performance)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved all stations",
           content = @Content(mediaType = "application/json",
@@ -177,9 +178,9 @@ public class StationController {
    * @param city The city name
    * @param country The country name
    * @param connectorType The connector type
-   * @return List of matching stations
+   * @return List of matching stations (limited to 500 results)
    */
-  @Operation(summary = "Search stations", description = "Searches for stations based on various criteria")
+  @Operation(summary = "Search stations", description = "Searches for stations based on various criteria (results limited to 500 stations for performance)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved matching stations",
           content = @Content(mediaType = "application/json",
@@ -201,9 +202,9 @@ public class StationController {
    * @param latitude The latitude coordinate
    * @param longitude The longitude coordinate
    * @param radius The search radius in kilometers
-   * @return List of stations within the radius
+   * @return List of stations within the radius (limited to 500 results)
    */
-  @Operation(summary = "Find nearby stations", description = "Finds charging stations within a specified radius of given coordinates")
+  @Operation(summary = "Find nearby stations", description = "Finds charging stations within a specified radius of given coordinates (results limited to 500 stations for performance)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved nearby stations",
           content = @Content(mediaType = "application/json",
@@ -216,43 +217,5 @@ public class StationController {
       @Parameter(description = "Longitude coordinate", required = true) @RequestParam double longitude,
       @Parameter(description = "Search radius in kilometers", required = true) @RequestParam int radius) {
     return ResponseEntity.ok(stationService.getNearbyStations(latitude, longitude, radius));
-  }
-
-  /**
-   * Gets stations by connector type.
-   *
-   * @param connectorType The type of connector to search for
-   * @return List of stations with the given connector type
-   */
-  @Operation(summary = "Get stations by connector type", description = "Retrieves all stations that support a specific connector type")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved stations with the specified connector type",
-          content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = Station.class))),
-      @ApiResponse(responseCode = "400", description = "Invalid connector type")
-  })
-  @GetMapping("/connector/{connectorType}")
-  public ResponseEntity<List<Station>> getStationsByConnectorType(
-      @Parameter(description = "Type of connector to search for", required = true) @PathVariable String connectorType) {
-    return ResponseEntity.ok(stationService.getStationsByConnectorType(connectorType));
-  }
-
-  /**
-   * Gets stations based on filter criteria.
-   *
-   * @param filter The filter criteria
-   * @return List of stations matching the filter criteria
-   */
-  @Operation(summary = "Get stations by filters", description = "Retrieves stations based on various filter criteria")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved filtered stations",
-          content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = Station.class))),
-      @ApiResponse(responseCode = "400", description = "Invalid filter parameters")
-  })
-  @PostMapping("/filter")
-  public ResponseEntity<List<Station>> getStationsByFilters(
-      @Parameter(description = "Filter criteria", required = true) @RequestBody StationFilterDTO filter) {
-    return ResponseEntity.ok(stationService.getStationsByFilters(filter));
   }
 }

@@ -65,3 +65,4 @@ nohup.out
 *.log
 
 station-mysql-data/
+*.backup

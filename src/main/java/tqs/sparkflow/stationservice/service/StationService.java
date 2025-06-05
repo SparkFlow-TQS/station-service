@@ -1,9 +1,9 @@
 package tqs.sparkflow.stationservice.service;
 
 import java.util.List;
-import java.util.Optional;
+
 import org.springframework.stereotype.Service;
-import tqs.sparkflow.stationservice.dto.StationFilterDTO;
+
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
@@ -13,6 +13,9 @@ public class StationService {
 
   private final StationRepository stationRepository;
 
+  // Maximum number of stations to return per search to prevent performance issues
+  private static final int MAX_SEARCH_RESULTS = 500;
+
   public StationService(StationRepository stationRepository) {
     this.stationRepository = stationRepository;
   }
@@ -20,10 +23,21 @@ public class StationService {
   /**
    * Gets all stations.
    *
-   * @return List of all stations
+   * @return List of all stations (limited to first 500 for performance)
    */
   public List<Station> getAllStations() {
-    return stationRepository.findAll();
+    List<Station> allStations = stationRepository.findAll();
+    return allStations.size() > MAX_SEARCH_RESULTS ? 
+           allStations.subList(0, MAX_SEARCH_RESULTS) : allStations;
+  }
+
+  /**
+   * Gets the total count of stations in the database.
+   *
+   * @return Total number of stations
+   */
+  public Long getTotalStationCount() {
+    return stationRepository.count();
   }
 
   /**
@@ -127,14 +141,54 @@ public class StationService {
    * @param city The city name
    * @param country The country name
    * @param connectorType The connector type
-   * @return List of matching stations
+   * @return List of matching stations (limited to 500 results)
    */
   public List<Station> searchStations(
       String name, String city, String country, String connectorType) {
-    return stationRepository
-      .findByNameContainingAndCityContainingAndCountryContainingAndConnectorTypeContaining(
-        Optional.ofNullable(name).orElse(""), Optional.ofNullable(city).orElse(""),
-        Optional.ofNullable(country).orElse(""), Optional.ofNullable(connectorType).orElse(""));
+    
+    // Use a more flexible search approach - search all stations and filter
+    List<Station> allStations = stationRepository.findAll();
+    
+    List<Station> filteredStations = allStations.stream()
+        .filter(station -> {
+            // Name filter
+            if (name != null && !name.trim().isEmpty()) {
+                if (station.getName() == null || 
+                    !station.getName().toLowerCase().contains(name.toLowerCase())) {
+                    return false;
+                }
+            }
+            
+            // City filter
+            if (city != null && !city.trim().isEmpty()) {
+                if (station.getCity() == null || 
+                    !station.getCity().toLowerCase().contains(city.toLowerCase())) {
+                    return false;
+                }
+            }
+            
+            // Country filter
+            if (country != null && !country.trim().isEmpty()) {
+                if (station.getCountry() == null || 
+                    !station.getCountry().toLowerCase().contains(country.toLowerCase())) {
+                    return false;
+                }
+            }
+            
+            // Connector type filter
+            if (connectorType != null && !connectorType.trim().isEmpty()) {
+                if (station.getConnectorType() == null || 
+                    !station.getConnectorType().toLowerCase().contains(connectorType.toLowerCase())) {
+                    return false;
+                }
+            }
+            
+            return true;
+        })
+        .limit(MAX_SEARCH_RESULTS)  // Limit to maximum results
+        .toList();
+    
+    return filteredStations;
   }
 
   /**
@@ -143,7 +197,7 @@ public class StationService {
    * @param latitude The latitude coordinate
    * @param longitude The longitude coordinate
    * @param radius The search radius in kilometers
-   * @return List of stations within the radius
+   * @return List of stations within the radius (limited to 500 results)
    * @throws IllegalArgumentException if coordinates or radius are invalid
    */
   public List<Station> getNearbyStations(double latitude, double longitude, int radius) {
@@ -156,8 +210,8 @@ public class StationService {
     if (radius <= 0) {
       throw new IllegalArgumentException("Radius must be greater than 0 km");
     }
-    if (radius > 100) {
-      throw new IllegalArgumentException("Radius cannot be greater than 100 km");
+    if (radius > 600) {
+      throw new IllegalArgumentException("Radius cannot be greater than 600 km");
     }
     
     return stationRepository.findAll().stream()
@@ -171,6 +225,7 @@ public class StationService {
         );
         return distance <= radius;
       })
+      .limit(MAX_SEARCH_RESULTS)  // Limit to maximum results
       .toList();
   }
 
@@ -195,60 +250,5 @@ public class StationService {
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     
     return R * c;
-  }
-
-  /**
-   * Gets stations by connector type.
-   *
-   * @param connectorType The type of connector to search for
-   * @return List of stations with the given connector type
-   * @throws NullPointerException if connectorType is null
-   * @throws IllegalArgumentException if connectorType is empty
-   */
-  public List<Station> getStationsByConnectorType(String connectorType) {
-    if (connectorType == null) {
-      throw new NullPointerException("Connector type cannot be null");
-    }
-    if (connectorType.trim().isEmpty()) {
-      throw new IllegalArgumentException("Connector type cannot be empty");
-    }
-    return stationRepository.findByConnectorType(connectorType);
-  }
-
-  /**
-   * Gets stations based on filter criteria.
-   *
-   * @param filter The filter criteria
-   * @return List of stations matching the filter criteria
-   */
-  public List<Station> getStationsByFilters(StationFilterDTO filter) {
-    if (filter.getLatitude() != null && filter.getLongitude() != null && filter.getRadius() != null) {
-      return stationRepository.findStationsByFiltersWithLocation(
-          filter.getConnectorType(),
-          filter.getMinPower(),
-          filter.getMaxPower(),
-          filter.getIsOperational(),
-          filter.getStatus(),
-          filter.getCity(),
-          filter.getCountry(),
-          filter.getMinPrice(),
-          filter.getMaxPrice(),
-          filter.getLatitude(),
-          filter.getLongitude(),
-          filter.getRadius()
-      );
-    } else {
-      return stationRepository.findStationsByFilters(
-          filter.getConnectorType(),
-          filter.getMinPower(),
-          filter.getMaxPower(),
-          filter.getIsOperational(),
-          filter.getStatus(),
-          filter.getCity(),
-          filter.getCountry(),
-          filter.getMinPrice(),
-          filter.getMaxPrice()
-      );
-    }
   }
 }

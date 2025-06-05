@@ -141,32 +141,6 @@ class StationControllerIT {
   }
 
   @Test
-  @XrayTest(key = "STATION-IT-6")
-  @Requirement("STATION-IT-6")
-  void whenGettingStationsByConnectorType_thenReturnsMatchingStations() {
-    // Given
-    Station station1 = createTestStation("Type2 Station");
-    Station station2 = createTestStation("CCS Station");
-    station2.setConnectorType("CCS");
-    stationRepository.save(station1);
-    stationRepository.save(station2);
-
-    // When
-    ResponseEntity<List<Station>> response = restTemplate.exchange(baseUrl + "/connector/Type 2",
-        HttpMethod.GET, null, new ParameterizedTypeReference<List<Station>>() {});
-
-    // Then
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).isNotNull();
-    List<Station> stations = response.getBody();
-    assertThat(stations).isNotNull()
-        .hasSize(1)
-        .satisfies(list -> {
-            assertThat(list.get(0).getConnectorType()).isEqualTo("Type 2");
-        });
-  }
-
-  @Test
   @XrayTest(key = "STATION-IT-7")
   @Requirement("STATION-IT-7")
   void whenCreateStation_thenReturnCreatedStation() {

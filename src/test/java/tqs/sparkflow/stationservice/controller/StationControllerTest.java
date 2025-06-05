@@ -1,21 +1,27 @@
 package tqs.sparkflow.stationservice.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
 import java.util.Arrays;
 import java.util.List;
-import org.mockito.Mock;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
-import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 @ExtendWith(MockitoExtension.class)
 class StationControllerTest {
@@ -98,27 +104,6 @@ class StationControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(expectedStations);
         verify(stationService).getNearbyStations(latitude, longitude, radius);
-    }
-
-    @Test
-    @XrayTest(key = "STATION-4")
-    @Requirement("STATION-4")
-    void whenGettingStationsByConnectorType_thenReturnsListOfStations() {
-        // Given
-        String connectorType = "Type2";
-        List<Station> expectedStations =
-            Arrays.asList(
-                createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
-        when(stationService.getStationsByConnectorType(connectorType)).thenReturn(expectedStations);
-
-        // When
-        ResponseEntity<List<Station>> response =
-            stationController.getStationsByConnectorType(connectorType);
-
-        // Then
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody()).isEqualTo(expectedStations);
-        verify(stationService).getStationsByConnectorType(connectorType);
     }
 
     @Test
