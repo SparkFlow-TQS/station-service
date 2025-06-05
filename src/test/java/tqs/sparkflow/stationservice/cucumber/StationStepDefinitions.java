@@ -33,14 +33,36 @@ public class StationStepDefinitions {
   @Given("there are stations in the system")
   public void thereAreStationsInTheSystem() {
     // Add test stations to the repository
-    Station station1 = new Station();
+    Station station1 = new Station.Builder()
+        .name("Test Station 1")
+        .address("Test Address 1")
+        .city("Test City")
+        .country("Test Country")
+        .latitude(38.7223)
+        .longitude(-9.1393)
+        .connectorType("Type 2")
+        .power(22)
+        .status("Available")
+        .isOperational(true)
+        .price(0.30)
+        .build();
     station1.setId(1L);
-    station1.setName("Test Station 1");
     stationRepository.save(station1);
 
-    Station station2 = new Station();
+    Station station2 = new Station.Builder()
+        .name("Test Station 2")
+        .address("Test Address 2")
+        .city("Test City")
+        .country("Test Country")
+        .latitude(38.7223)
+        .longitude(-9.1393)
+        .connectorType("Type 2")
+        .power(22)
+        .status("Available")
+        .isOperational(true)
+        .price(0.30)
+        .build();
     station2.setId(2L);
-    station2.setName("Test Station 2");
     stationRepository.save(station2);
   }
 
@@ -62,9 +84,20 @@ public class StationStepDefinitions {
 
   @Given("there is a station with ID {string}")
   public void thereIsAStationWithId(String id) {
-    Station station = new Station();
+    Station station = new Station.Builder()
+        .name("Test Station " + id)
+        .address("Test Address")
+        .city("Test City")
+        .country("Test Country")
+        .latitude(38.7223)
+        .longitude(-9.1393)
+        .connectorType("Type 2")
+        .power(22)
+        .status("Available")
+        .isOperational(true)
+        .price(0.30)
+        .build();
     station.setId(Long.parseLong(id));
-    station.setName("Test Station " + id);
     stationRepository.save(station);
   }
 

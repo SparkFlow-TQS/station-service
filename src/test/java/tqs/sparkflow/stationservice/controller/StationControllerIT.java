@@ -191,16 +191,18 @@ class StationControllerIT {
   }
 
   private Station createTestStation(String name) {
-    Station station = new Station();
-    station.setName(name);
-    station.setAddress("Test Address");
-    station.setCity("Test City");
-    station.setCountry("Test Country");
-    station.setLatitude(38.7223);
-    station.setLongitude(-9.1393);
-    station.setConnectorType("Type 2");
-    station.setPower(22);
-    station.setStatus("Available");
-    return station;
+    return new Station.Builder()
+        .name(name)
+        .address("Test Address")
+        .city("Test City")
+        .country("Test Country")
+        .latitude(38.7223)
+        .longitude(-9.1393)
+        .connectorType("Type 2")
+        .power(22)
+        .status("Available")
+        .isOperational(true)
+        .price(0.30)
+        .build();
   }
 }

@@ -39,6 +39,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import tqs.sparkflow.stationservice.StationServiceApplication;
+import tqs.sparkflow.stationservice.model.Station;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -158,5 +159,19 @@ class SecurityConfigTest {
         public String stations() {
             return "ok";
         }
+    }
+
+    private Station createTestStation(String name) {
+        Station station = new Station();
+        station.setName(name);
+        station.setLatitude(38.7223);
+        station.setLongitude(-9.1393);
+        station.setCity("Lisbon");
+        station.setCountry("Portugal");
+        station.setConnectorType("Type 2");
+        station.setStatus("AVAILABLE");
+        station.setAddress("Test Address");
+        station.setIsOperational(true);
+        return station;
     }
 } 

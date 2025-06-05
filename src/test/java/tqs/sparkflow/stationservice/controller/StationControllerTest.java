@@ -242,8 +242,17 @@ class StationControllerTest {
     }
 
     private Station createTestStation(Long id, String name) {
-        Station station =
-            new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type2", "Available");
+        Station station = new Station.Builder()
+            .name(name)
+            .address("Test Address")
+            .city("Lisbon")
+            .country("Portugal")
+            .latitude(38.7223)
+            .longitude(-9.1393)
+            .connectorType("Type2")
+            .status("Available")
+            .isOperational(true)
+            .build();
         station.setId(id);
         return station;
     }

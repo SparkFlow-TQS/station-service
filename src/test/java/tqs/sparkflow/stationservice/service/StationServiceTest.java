@@ -33,41 +33,50 @@ class StationServiceTest {
   @BeforeEach
   void setUp() {
     // Create test stations
-    station1 = new Station();
+    station1 = new Station.Builder()
+        .name("Station 1")
+        .address("Address 1")
+        .city("Aveiro")
+        .country("Portugal")
+        .latitude(40.623361)
+        .longitude(-8.650256)
+        .connectorType("Type 2")
+        .power(50)
+        .price(0.30)
+        .status("Available")
+        .isOperational(true)
+        .build();
     station1.setId(1L);
-    station1.setConnectorType("Type 2");
-    station1.setPower(50);
-    station1.setPrice(0.30);
-    station1.setIsOperational(true);
-    station1.setStatus("Available");
-    station1.setCity("Aveiro");
-    station1.setCountry("Portugal");
-    station1.setLatitude(40.623361);
-    station1.setLongitude(-8.650256);
 
-    station2 = new Station();
+    station2 = new Station.Builder()
+        .name("Station 2")
+        .address("Address 2")
+        .city("Porto")
+        .country("Portugal")
+        .latitude(41.1579)
+        .longitude(-8.6291)
+        .connectorType("CCS")
+        .power(150)
+        .price(0.35)
+        .status("In Use")
+        .isOperational(true)
+        .build();
     station2.setId(2L);
-    station2.setConnectorType("CCS");
-    station2.setPower(150);
-    station2.setPrice(0.35);
-    station2.setIsOperational(true);
-    station2.setStatus("In Use");
-    station2.setCity("Porto");
-    station2.setCountry("Portugal");
-    station2.setLatitude(41.1579);
-    station2.setLongitude(-8.6291);
 
-    station3 = new Station();
+    station3 = new Station.Builder()
+        .name("Station 3")
+        .address("Address 3")
+        .city("Lisbon")
+        .country("Portugal")
+        .latitude(38.7223)
+        .longitude(-9.1393)
+        .connectorType("Type 2")
+        .power(22)
+        .price(0.25)
+        .status("Offline")
+        .isOperational(false)
+        .build();
     station3.setId(3L);
-    station3.setConnectorType("Type 2");
-    station3.setPower(22);
-    station3.setPrice(0.25);
-    station3.setIsOperational(false);
-    station3.setStatus("Offline");
-    station3.setCity("Lisbon");
-    station3.setCountry("Portugal");
-    station3.setLatitude(38.7223);
-    station3.setLongitude(-9.1393);
   }
 
   @Test
@@ -566,8 +575,17 @@ class StationServiceTest {
   }
 
   private Station createTestStation(Long id, String name) {
-    Station station =
-        new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
+    Station station = new Station.Builder()
+        .name(name)
+        .address("Test Address")
+        .city("Lisbon")
+        .country("Portugal")
+        .latitude(38.7223)
+        .longitude(-9.1393)
+        .connectorType("Type2")
+        .status("Available")
+        .isOperational(true)
+        .build();
     station.setId(id);
     return station;
   }
