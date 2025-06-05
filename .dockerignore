@@ -1,1 +1,5 @@
 station-mysql-data
+target
+*.jar
+*.log
+.mvn
