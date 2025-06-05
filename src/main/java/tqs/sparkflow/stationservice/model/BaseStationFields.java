@@ -46,7 +46,7 @@ public class BaseStationFields {
   }
 
   public void setPrice(Double price) {
-    this.price = price;
+    this.price = price != null ? price : 0.30;
   }
 
   public Integer getNumberOfChargers() {

@@ -58,6 +58,7 @@ public class Station extends BaseStationFields {
   
   /** Creates a new Station. */
   public Station() {
+    setPrice(null);
   }
 
   /**
@@ -91,6 +92,7 @@ public class Station extends BaseStationFields {
     this.longitude = longitude;
     this.quantityOfChargers = quantityOfChargers;
     this.status = status;
+    setPrice(null);
   }
 
   /**
@@ -128,6 +130,7 @@ public class Station extends BaseStationFields {
     this.quantityOfChargers = quantityOfChargers;
     this.power = power;
     this.isOperational = isOperational;
+    setPrice(null);
   }
 
   /**

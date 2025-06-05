@@ -104,6 +104,28 @@ public class StationService {
   }
 
   /**
+   * Updates the price of an existing station.
+   *
+   * @param id The station ID
+   * @param price The new price per kWh
+   * @return The updated station
+   * @throws IllegalArgumentException if station not found or price is invalid
+   * @throws NullPointerException if id is null
+   */
+  public Station updateStationPrice(Long id, Double price) {
+    if (id == null) {
+      throw new NullPointerException("Station ID cannot be null");
+    }
+    if (price != null && price < 0) {
+      throw new IllegalArgumentException("Price cannot be negative");
+    }
+    
+    Station station = getStationById(id);
+    station.setPrice(price);
+    return stationRepository.save(station);
+  }
+
+  /**
    * Deletes a station.
    *
    * @param id The station ID

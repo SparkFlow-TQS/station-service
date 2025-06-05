@@ -152,6 +152,35 @@ public class StationController {
   }
 
   /**
+   * Updates the price of an existing station.
+   *
+   * @param id The station ID
+   * @param price The new price per kWh
+   * @return The updated station
+   */
+  @Operation(summary = "Update station price", description = "Updates the price per kWh for a charging station")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Successfully updated the station price",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = Station.class))),
+      @ApiResponse(responseCode = "404", description = "Station not found"),
+      @ApiResponse(responseCode = "400", description = "Invalid price value")
+  })
+  @PutMapping("/{id}/price")
+  public ResponseEntity<Station> updateStationPrice(
+      @Parameter(description = "ID of the station to update", required = true) @PathVariable Long id,
+      @Parameter(description = "New price per kWh", required = true) @RequestParam Double price) {
+    try {
+      Station updatedStation = stationService.updateStationPrice(id, price);
+      return ResponseEntity.ok(updatedStation);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    } catch (NullPointerException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+  }
+
+  /**
    * Deletes a station.
    *
    * @param id The station ID
