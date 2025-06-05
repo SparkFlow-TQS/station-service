@@ -27,7 +27,6 @@ public class Station extends BaseStationFields {
   @NotBlank(message = "Station name cannot be empty")
   private String name;
 
-  @NotBlank(message = "Station address cannot be empty")
   private String address;
 
   @NotBlank(message = "City cannot be empty")

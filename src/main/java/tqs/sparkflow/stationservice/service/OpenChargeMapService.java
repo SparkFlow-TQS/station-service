@@ -156,6 +156,8 @@ public class OpenChargeMapService {
       setStationName(addressInfo, station);
       setStationAddress(addressInfo, station);
       setStationCoordinates(addressInfo, station);
+      setStationCity(addressInfo, station);
+      setStationCountry(addressInfo, station);
       station.setStatus("Available");
       setStationConnectorType(connections, station);
 
@@ -209,6 +211,16 @@ public class OpenChargeMapService {
     Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
     station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
     station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
+  }
+
+  private void setStationCity(Map<String, Object> addressInfo, Station station) {
+    Object city = addressInfo != null ? addressInfo.get("Town") : null;
+    station.setCity(city != null ? city.toString() : UNKNOWN_VALUE);
+  }
+
+  private void setStationCountry(Map<String, Object> addressInfo, Station station) {
+    Object country = addressInfo != null ? addressInfo.get("Country") : null;
+    station.setCountry(country != null ? country.toString() : UNKNOWN_VALUE);
   }
 
   private void setStationConnectorType(List<Map<String, Object>> connections, Station station) {

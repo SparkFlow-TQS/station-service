@@ -173,6 +173,7 @@ class StationControllerIT {
     // Given
     Station station = new Station("Test Station", "Test Address", "Lisbon", 38.7223, -9.1393,
         "Type 2", "Available");
+    station.setCountry("Portugal");
 
     // When
     ResponseEntity<Station> response = restTemplate.postForEntity(baseUrl, station, Station.class);
