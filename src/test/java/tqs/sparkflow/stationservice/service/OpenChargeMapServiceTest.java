@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class OpenChargeMapServiceTest {
@@ -32,13 +33,13 @@ class OpenChargeMapServiceTest {
     @InjectMocks
     private OpenChargeMapService service;
 
-    private final String apiKey = "dummy-key";
-    private final String baseUrl = "http://dummy-url";
+    private final String apiKey = "test-api-key";
+    private final String baseUrl = "http://test-api.com";
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        service = new OpenChargeMapService(restTemplate, stationRepository, apiKey, baseUrl);
+        ReflectionTestUtils.setField(service, "apiKey", apiKey);
+        ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
     }
 
     @Test
@@ -58,7 +59,7 @@ class OpenChargeMapServiceTest {
         OpenChargeMapResponse response = new OpenChargeMapResponse();
         response.setStations(List.of(ocmStation));
 
-        when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(response);
+        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(response);
 
         List<Station> stations = service.getStationsByCity("City");
         assertThat(stations).hasSize(1);
@@ -69,7 +70,7 @@ class OpenChargeMapServiceTest {
     @XrayTest(key = "OCM-2")
     @Requirement("OCM-2")
     void getStationsByCity_returnsEmptyListOnNullResponse() {
-        when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(null);
+        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(null);
         List<Station> stations = service.getStationsByCity("City");
         assertThat(stations).isEmpty();
     }
@@ -93,9 +94,14 @@ class OpenChargeMapServiceTest {
         ResponseEntity<List<Map<String, Object>>> responseEntity =
             new ResponseEntity<>(responseBody, HttpStatus.OK);
 
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenReturn(responseEntity);
-        when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenReturn(responseEntity);
+
+        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         List<Station> stations = service.populateStations(lat, lon, radius);
         assertThat(stations).hasSize(1);
@@ -107,19 +113,22 @@ class OpenChargeMapServiceTest {
     @Requirement("OCM-4")
     void populateStations_invalidLatitude_throwsException() {
         assertThatThrownBy(() -> service.populateStations(-100, 0, 10))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Latitude must be between -90 and 90 degrees");
     }
 
     @Test
     void populateStations_invalidLongitude_throwsException() {
         assertThatThrownBy(() -> service.populateStations(0, -200, 10))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Longitude must be between -180 and 180 degrees");
     }
 
     @Test
     void populateStations_invalidRadius_throwsException() {
         assertThatThrownBy(() -> service.populateStations(0, 0, 0))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Radius must be positive");
     }
 
     @Test
@@ -127,8 +136,12 @@ class OpenChargeMapServiceTest {
         ResponseEntity<List<Map<String, Object>>> responseEntity =
             new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
 
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenReturn(responseEntity);
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenReturn(responseEntity);
 
         assertThatThrownBy(() -> service.populateStations(1, 2, 10))
             .isInstanceOf(IllegalStateException.class)
@@ -137,8 +150,12 @@ class OpenChargeMapServiceTest {
 
     @Test
     void populateStations_unauthorized_throwsException() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
         assertThatThrownBy(() -> service.populateStations(1, 2, 10))
             .isInstanceOf(IllegalStateException.class)
@@ -147,8 +164,12 @@ class OpenChargeMapServiceTest {
 
     @Test
     void populateStations_forbidden_throwsException() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 
         assertThatThrownBy(() -> service.populateStations(1, 2, 10))
             .isInstanceOf(IllegalStateException.class)
@@ -157,8 +178,12 @@ class OpenChargeMapServiceTest {
 
     @Test
     void populateStations_otherHttpError_throwsException() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad request"));
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad request"));
 
         assertThatThrownBy(() -> service.populateStations(1, 2, 10))
             .isInstanceOf(IllegalStateException.class)
@@ -167,8 +192,12 @@ class OpenChargeMapServiceTest {
 
     @Test
     void populateStations_otherException_throwsException() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), isNull(), ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenThrow(new RuntimeException("Some error"));
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenThrow(new RuntimeException("Some error"));
 
         assertThatThrownBy(() -> service.populateStations(1, 2, 10))
             .isInstanceOf(IllegalStateException.class)

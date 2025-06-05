@@ -17,7 +17,7 @@ public class BaseStationFields {
   @Min(value = 0, message = "Price must be non-negative")
   protected Double price;
 
-  protected Integer quantityOfChargers;
+  protected Integer numberOfChargers;
   protected Integer minPower;
   protected Integer maxPower;
   protected Boolean isOperational;
@@ -49,12 +49,12 @@ public class BaseStationFields {
     this.price = price;
   }
 
-  public Integer getQuantityOfChargers() {
-    return quantityOfChargers;
+  public Integer getNumberOfChargers() {
+    return numberOfChargers;
   }
 
-  public void setQuantityOfChargers(Integer quantityOfChargers) {
-    this.quantityOfChargers = quantityOfChargers;
+  public void setNumberOfChargers(Integer numberOfChargers) {
+    this.numberOfChargers = numberOfChargers;
   }
 
   public Integer getMinPower() {

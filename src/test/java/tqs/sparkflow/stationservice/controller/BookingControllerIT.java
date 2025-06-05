@@ -53,23 +53,18 @@ class BookingControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @SuppressWarnings("removal")
     @MockBean
     private RestTemplate restTemplate;
 
-    @SuppressWarnings("removal")
     @MockBean
     private StationService stationService;
 
-    @SuppressWarnings("removal")
     @MockBean
     private BookingService bookingService;
 
-    @SuppressWarnings("removal")
     @MockBean
     private BookingRepository bookingRepository;
 
-    @SuppressWarnings("removal")
     @MockBean
     private StationRepository stationRepository;
 
@@ -210,7 +205,7 @@ class BookingControllerIT {
     @Test
     @XrayTest(key = "BOOKING-7")
     @Requirement("BOOKING-7")
-    void whenCreateBooking_withoutAuth_thenForbidden() throws Exception {
+    void whenCreateBooking_withoutAuth_thenUnauthorized() throws Exception {
         Booking inputBooking = new Booking();
         inputBooking.setStationId(1L);
         inputBooking.setStartTime(now);
@@ -220,7 +215,7 @@ class BookingControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking))
                 .with(SecurityMockMvcRequestPostProcessors.anonymous()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
