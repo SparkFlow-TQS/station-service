@@ -3,7 +3,6 @@ package tqs.sparkflow.stationservice.model;
 import java.util.List;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import tqs.sparkflow.stationservice.model.BaseStationFields;
 import jakarta.validation.constraints.NotBlank;
 
 /** Station model for OpenChargeMap API. */
@@ -94,15 +93,6 @@ public class OpenChargeMapStation extends BaseStationFields {
         public void setQuantity(Integer quantity) {
             this.quantity = quantity;
         }
-    }
-
-    // Add public getter and setter for name
-    public String getName() {
-        return super.getName();
-    }
-
-    public void setName(String name) {
-        super.setName(name);
     }
 
     public String getId() {
