@@ -43,6 +43,9 @@ public abstract class BaseStationFields {
 
     protected String address;
 
+    @Column(name = "name", nullable = true)
+    protected String name;
+
     public String getCity() {
         return city;
     }
@@ -105,5 +108,13 @@ public abstract class BaseStationFields {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 } 

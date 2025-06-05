@@ -138,7 +138,7 @@ public class OpenChargeMapService {
     station.setLatitude(ocmStation.getLatitude());
     station.setLongitude(ocmStation.getLongitude());
     station.setPrice(ocmStation.getPrice());
-    station.setPower(ocmStation.getMaxPower());
+    station.setPower(ocmStation.getPower());
     station.setIsOperational(ocmStation.getIsOperational());
     station.setStatus(ocmStation.getStatus());
     station.setQuantityOfChargers(ocmStation.calculateQuantityOfChargers());

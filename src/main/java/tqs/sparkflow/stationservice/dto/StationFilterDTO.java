@@ -19,9 +19,6 @@ public class StationFilterDTO extends BaseStationFields {
   @Min(value = 0, message = "Maximum power must be non-negative")
   private Integer maxPower;
 
-  private Boolean isOperational;
-  private String status;
-
   public Double getMinPrice() {
     return minPrice;
   }
@@ -60,21 +57,5 @@ public class StationFilterDTO extends BaseStationFields {
 
   public void setMaxPower(Integer maxPower) {
     this.maxPower = maxPower;
-  }
-
-  public Boolean getIsOperational() {
-    return isOperational;
-  }
-
-  public void setIsOperational(Boolean isOperational) {
-    this.isOperational = isOperational;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
   }
 }

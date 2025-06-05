@@ -2,22 +2,34 @@ package tqs.sparkflow.stationservice.model;
 
 import java.util.List;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import tqs.sparkflow.stationservice.dto.BaseStationFields;
+import tqs.sparkflow.stationservice.model.BaseStationFields;
+import jakarta.validation.constraints.NotBlank;
 
 /** Station model for OpenChargeMap API. */
-public class OpenChargeMapStation extends BaseStationFields<String> {
+public class OpenChargeMapStation extends BaseStationFields {
     private List<Connection> connections;
     
     @NotNull(message = "Quantity of chargers cannot be null")
     @Min(value = 1, message = "Quantity of chargers must be at least 1")
     private Integer quantityOfChargers;
     
+    private Integer power;
+
     private String status;
 
     @NotBlank(message = "Connector type cannot be empty")
     private String connectorType;
+
+    private String id;
+
+    public Integer getPower() {
+        return power;
+    }
+
+    public void setPower(Integer power) {
+        this.power = power;
+    }
 
     public List<Connection> getConnections() {
         return connections;
@@ -82,5 +94,22 @@ public class OpenChargeMapStation extends BaseStationFields<String> {
         public void setQuantity(Integer quantity) {
             this.quantity = quantity;
         }
+    }
+
+    // Add public getter and setter for name
+    public String getName() {
+        return super.getName();
+    }
+
+    public void setName(String name) {
+        super.setName(name);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
