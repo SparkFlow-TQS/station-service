@@ -319,4 +319,71 @@ public class StationService {
       throw new IllegalStateException("No chargers available for the requested time slot");
     }
   }
+
+  /**
+   * Checks if a user can start a charging session immediately.
+   * A user can start a session if:
+   * 1. They have an active booking for this station at the current time, OR
+   * 2. There are free chargers available (total - active bookings without sessions - unfinished sessions)
+   *
+   * @param stationId The station ID
+   * @param userId The user ID
+   * @return true if the user can start a session, false otherwise
+   */
+  public boolean canStartSession(Long stationId, Long userId) {
+    LocalDateTime now = LocalDateTime.now();
+    
+    // Check if user has an active booking for this station at current time
+    List<Booking> activeBookings = bookingRepository.findActiveBookingsForStationAtTime(stationId, now);
+    boolean hasUserBooking = activeBookings.stream()
+        .anyMatch(booking -> booking.getUserId().equals(userId));
+    
+    if (hasUserBooking) {
+      return true;
+    }
+    
+    // Check if there are free chargers available
+    Station station = getStationById(stationId);
+    int totalChargers = station.getQuantityOfChargers();
+    
+    // Count bookings where owner hasn't started a session yet
+    long bookingsWithoutSessions = activeBookings.stream()
+        .filter(booking -> !hasActiveSessionForBooking(booking))
+        .count();
+    
+    // Count unfinished sessions
+    List<ChargingSession> unfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStation(stationId);
+    
+    int usedChargers = (int) bookingsWithoutSessions + unfinishedSessions.size();
+    
+    return usedChargers < totalChargers;
+  }
+
+  /**
+   * Checks if a booking owner has an active (unfinished) session at the station.
+   *
+   * @param booking The booking to check
+   * @return true if the booking owner has an active session, false otherwise
+   */
+  private boolean hasActiveSessionForBooking(Booking booking) {
+    List<ChargingSession> userUnfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStation(booking.getStationId())
+        .stream()
+        .filter(session -> session.getUserId().equals(booking.getUserId().toString()))
+        .toList();
+    
+    return !userUnfinishedSessions.isEmpty();
+  }
+
+  /**
+   * Validates if a user can start a charging session.
+   *
+   * @param stationId The station ID
+   * @param userId The user ID
+   * @throws IllegalStateException if the user cannot start a session
+   */
+  public void validateSessionStart(Long stationId, Long userId) {
+    if (!canStartSession(stationId, userId)) {
+      throw new IllegalStateException("Cannot start session: no booking or free chargers available");
+    }
+  }
 }

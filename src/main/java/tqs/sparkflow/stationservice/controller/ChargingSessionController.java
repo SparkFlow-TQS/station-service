@@ -29,20 +29,20 @@ public class ChargingSessionController {
   }
 
   /**
-   * Unlocks a charging station and creates a new charging session.
+   * Creates and starts a new charging session immediately.
    * 
-   * @param stationId The ID of the station to unlock
-   * @param userId The ID of the user requesting the unlock
+   * @param stationId The ID of the station to use
+   * @param userId The ID of the user starting the session
    * @return The created charging session with 200 OK status
    */
   @Operation(
-    summary = "Unlock a charging station",
-    description = "Creates a new charging session by unlocking a station"
+    summary = "Start a charging session",
+    description = "Creates a new charging session and starts it immediately"
   )
   @ApiResponses(value = {
     @ApiResponse(
       responseCode = "200",
-      description = "Station unlocked successfully",
+      description = "Charging session started successfully",
       content = @Content(
         mediaType = "application/json",
         schema = @Schema(implementation = ChargingSession.class)
@@ -50,49 +50,18 @@ public class ChargingSessionController {
     ),
     @ApiResponse(
       responseCode = "400",
-      description = "Invalid input parameters"
+      description = "Cannot start session: no booking or free chargers available"
     )
   })
-  @PostMapping("/unlock")
-  public ResponseEntity<ChargingSession> unlockStation(
-        @Parameter(description = "ID of the station to unlock", required = true)
+  @PostMapping("/start")
+  public ResponseEntity<ChargingSession> startSession(
+        @Parameter(description = "ID of the station to use", required = true)
         @RequestParam String stationId,
-        @Parameter(description = "ID of the user requesting the unlock", required = true)
+        @Parameter(description = "ID of the user starting the session", required = true)
         @RequestParam String userId) {
-    return ResponseEntity.ok(chargingSessionService.unlockStation(stationId, userId));
+    return ResponseEntity.ok(chargingSessionService.createSession(stationId, userId));
   }
 
-  /**
-   * Starts a charging session.
-   * 
-   * @param sessionId The ID of the session to start
-   * @return The updated charging session with 200 OK status
-   * @throws ChargingSessionNotFoundException if the session is not found (404)
-   */
-  @Operation(
-    summary = "Start a charging session",
-    description = "Updates the session status to CHARGING and sets the start time"
-  )
-  @ApiResponses(value = {
-    @ApiResponse(
-      responseCode = "200",
-      description = "Charging started successfully",
-      content = @Content(
-        mediaType = "application/json",
-        schema = @Schema(implementation = ChargingSession.class)
-      )
-    ),
-    @ApiResponse(
-      responseCode = "404",
-      description = "Charging session not found"
-    )
-  })
-  @PostMapping("/{sessionId}/start")
-  public ResponseEntity<ChargingSession> startCharging(
-        @Parameter(description = "ID of the session to start", required = true)
-        @PathVariable String sessionId) {
-    return ResponseEntity.ok(chargingSessionService.startCharging(sessionId));
-  }
 
   /**
    * Ends a charging session.
@@ -103,12 +72,12 @@ public class ChargingSessionController {
    */
   @Operation(
     summary = "End a charging session",
-    description = "Updates the session status to COMPLETED and sets the end time"
+    description = "Marks the session as finished and sets the end time"
   )
   @ApiResponses(value = {
     @ApiResponse(
       responseCode = "200",
-      description = "Charging ended successfully",
+      description = "Charging session ended successfully",
       content = @Content(
         mediaType = "application/json",
         schema = @Schema(implementation = ChargingSession.class)
@@ -120,27 +89,27 @@ public class ChargingSessionController {
     )
   })
   @PostMapping("/{sessionId}/end")
-  public ResponseEntity<ChargingSession> endCharging(
+  public ResponseEntity<ChargingSession> endSession(
         @Parameter(description = "ID of the session to end", required = true)
         @PathVariable String sessionId) {
-    return ResponseEntity.ok(chargingSessionService.endCharging(sessionId));
+    return ResponseEntity.ok(chargingSessionService.endSession(sessionId));
   }
 
   /**
-   * Retrieves the current status of a charging session.
+   * Retrieves a charging session.
    * 
-   * @param sessionId The ID of the session to get status for
+   * @param sessionId The ID of the session to retrieve
    * @return The charging session with 200 OK status
    * @throws ChargingSessionNotFoundException if the session is not found (404)
    */
   @Operation(
-    summary = "Get charging session status",
-    description = "Retrieves the current status and details of a charging session"
+    summary = "Get charging session",
+    description = "Retrieves the details of a charging session"
   )
   @ApiResponses(value = {
     @ApiResponse(
       responseCode = "200",
-      description = "Session status retrieved successfully",
+      description = "Session retrieved successfully",
       content = @Content(
         mediaType = "application/json",
         schema = @Schema(implementation = ChargingSession.class)
@@ -151,10 +120,10 @@ public class ChargingSessionController {
       description = "Charging session not found"
     )
   })
-  @GetMapping("/{sessionId}/status")
-  public ResponseEntity<ChargingSession> getSessionStatus(
-        @Parameter(description = "ID of the session to get status for", required = true)
+  @GetMapping("/{sessionId}")
+  public ResponseEntity<ChargingSession> getSession(
+        @Parameter(description = "ID of the session to retrieve", required = true)
         @PathVariable String sessionId) {
-    return ResponseEntity.ok(chargingSessionService.getSessionStatus(sessionId));
+    return ResponseEntity.ok(chargingSessionService.getSession(sessionId));
   }
 } 

@@ -22,48 +22,36 @@ public class ChargingSessionService {
   private static final String SESSION_NOT_FOUND_MESSAGE = "Session not found: ";
   private final ChargingSessionRepository chargingSessionRepository;
   private final BookingRepository bookingRepository;
+  private final StationService stationService;
 
-  public ChargingSessionService(ChargingSessionRepository chargingSessionRepository, BookingRepository bookingRepository) {
+  public ChargingSessionService(ChargingSessionRepository chargingSessionRepository, BookingRepository bookingRepository, StationService stationService) {
     this.chargingSessionRepository = chargingSessionRepository;
     this.bookingRepository = bookingRepository;
+    this.stationService = stationService;
   }
 
   /**
-   * Creates a new charging session by unlocking a station.
+   * Creates a new charging session and starts it immediately.
+   * Records the start time and closes any active booking for the user.
    * 
-   * @param stationId The ID of the station to unlock
-   * @param userId The ID of the user requesting the unlock
-   * @return The created charging session in UNLOCKED state
+   * @param stationId The ID of the station to use
+   * @param userId The ID of the user starting the session
+   * @return The created charging session
+   * @throws IllegalStateException if the user cannot start a session
    */
   @Transactional
-  public ChargingSession unlockStation(String stationId, String userId) {
-    ChargingSession session = new ChargingSession();
-    session.setStationId(stationId);
-    session.setUserId(userId);
-    session.setStatus(ChargingSession.ChargingSessionStatus.UNLOCKED);
-    return chargingSessionRepository.save(session);
-  }
-
-  /**
-   * Starts a charging session.
-   * Updates the session status to CHARGING and sets the start time.
-   * 
-   * @param sessionId The ID of the session to start
-   * @return The updated charging session
-   * @throws ChargingSessionNotFoundException if the session is not found
-   */
-  @Transactional
-  public ChargingSession startCharging(String sessionId) {
-    ChargingSession session = chargingSessionRepository.findById(Long.valueOf(sessionId))
-      .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));
+  public ChargingSession createSession(String stationId, String userId) {
+    // Validate that the user can start a session
+    stationService.validateSessionStart(Long.valueOf(stationId), Long.valueOf(userId));
     
-    session.setStatus(ChargingSession.ChargingSessionStatus.CHARGING);
-    session.setStartTime(LocalDateTime.now());
+    ChargingSession session = new ChargingSession(stationId, userId);
+    session = chargingSessionRepository.save(session);
     
     closeUserBooking(session);
     
-    return chargingSessionRepository.save(session);
+    return session;
   }
+
 
   /**
    * Closes any active booking for the user at the station when a session starts.
@@ -87,49 +75,31 @@ public class ChargingSessionService {
 
   /**
    * Ends a charging session.
-   * Updates the session status to COMPLETED and sets the end time.
+   * Marks the session as finished and sets the end time.
    * 
    * @param sessionId The ID of the session to end
    * @return The updated charging session
    * @throws ChargingSessionNotFoundException if the session is not found
    */
   @Transactional
-  public ChargingSession endCharging(String sessionId) {
+  public ChargingSession endSession(String sessionId) {
     ChargingSession session = chargingSessionRepository.findById(Long.valueOf(sessionId))
       .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));
     
-    session.setStatus(ChargingSession.ChargingSessionStatus.COMPLETED);
+    session.setFinished(true);
     session.setEndTime(LocalDateTime.now());
     return chargingSessionRepository.save(session);
   }
 
-  /**
-   * Reports an error for a charging session.
-   * Updates the session status to ERROR and records the error message.
-   * 
-   * @param sessionId The ID of the session to report error for
-   * @param errorMessage The error message to record
-   * @return The updated charging session
-   * @throws ChargingSessionNotFoundException if the session is not found
-   */
-  @Transactional
-  public ChargingSession reportError(String sessionId, String errorMessage) {
-    ChargingSession session = chargingSessionRepository.findById(Long.valueOf(sessionId))
-      .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));
-    
-    session.setStatus(ChargingSession.ChargingSessionStatus.ERROR);
-    session.setErrorMessage(errorMessage);
-    return chargingSessionRepository.save(session);
-  }
 
   /**
-   * Retrieves the current status of a charging session.
+   * Retrieves a charging session by its ID.
    * 
-   * @param sessionId The ID of the session to get status for
-   * @return The charging session with its current status
+   * @param sessionId The ID of the session to retrieve
+   * @return The charging session
    * @throws ChargingSessionNotFoundException if the session is not found
    */
-  public ChargingSession getSessionStatus(String sessionId) {
+  public ChargingSession getSession(String sessionId) {
     return chargingSessionRepository.findById(Long.valueOf(sessionId))
       .orElseThrow(() -> new ChargingSessionNotFoundException(SESSION_NOT_FOUND_MESSAGE + sessionId));
   }
