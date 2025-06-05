@@ -73,7 +73,13 @@ public class OpenChargeMapController {
       @RequestParam double longitude,
       @Parameter(description = "Search radius in kilometers (must be positive)", example = "50")
       @RequestParam int radius) {
-    openChargeMapService.populateStations(latitude, longitude, radius);
-    return ResponseEntity.ok("Stations populated successfully");
+    try {
+      openChargeMapService.populateStations(latitude, longitude, radius);
+      return ResponseEntity.ok("Stations populated successfully");
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (IllegalStateException e) {
+      return ResponseEntity.internalServerError().body(e.getMessage());
+    }
   }
 }

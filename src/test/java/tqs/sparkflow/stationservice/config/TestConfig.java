@@ -25,6 +25,8 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 /**
  * Test configuration for the station service.
@@ -80,10 +82,12 @@ public class TestConfig {
     @Bean
     @Primary
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+    
 
     @Bean
     @Primary
@@ -104,7 +108,7 @@ public class TestConfig {
     @Primary
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/v1/**"))
+            .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
@@ -118,26 +122,26 @@ public class TestConfig {
             .authenticationManager(authenticationManager())
             .httpBasic(basic -> basic
                 .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("Access Denied");
                 }))
             .exceptionHandling(handling -> handling
                 .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("Access Denied");
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.getWriter().write("Access Denied");
                 }))
-            .securityContext(context -> context.requireExplicitSave(false))
             .build();
     }
 
     @Bean
+    @Primary
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
@@ -147,5 +151,11 @@ public class TestConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    @Primary
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withJwkSetUri("http://dummy-jwks").build();
     }
 }

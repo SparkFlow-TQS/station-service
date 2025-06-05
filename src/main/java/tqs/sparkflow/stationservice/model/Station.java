@@ -49,10 +49,9 @@ public class Station extends BaseStationFields {
   @NotBlank(message = "Station status cannot be empty")
   private String status;
 
-  @NotNull(message = "Charger count cannot be null")
-  @Min(value = 1, message = "Station must have at least 1 charger")
-  @Max(value = 50, message = "Station cannot have more than 50 chargers")
-  private Integer chargerCount;
+  @NotNull(message = "Quantity of chargers cannot be null")
+  @Min(value = 1, message = "Quantity of chargers must be at least 1")
+  private Integer quantityOfChargers;
 
   private Integer power;
   private Boolean isOperational;
@@ -64,28 +63,33 @@ public class Station extends BaseStationFields {
   /**
    * Creates a new Station with the given details.
    *
+   * @param externalId The external ID from OpenChargeMap
    * @param name The name of the station
    * @param address The address of the station
    * @param city The city where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param chargerCount The number of chargers at the station
+   * @param quantityOfChargers The number of chargers available at the station
    * @param status The status of the station
    */
   public Station(
+      String externalId,
       String name,
       String address,
       String city,
+      String country,
       double latitude,
       double longitude,
-      Integer chargerCount,
+      Integer quantityOfChargers,
       String status) {
+    this.externalId = externalId;
     this.name = name;
     this.address = address;
     this.city = city;
+    this.country = country;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.chargerCount = chargerCount;
+    this.quantityOfChargers = quantityOfChargers;
     this.status = status;
   }
 
@@ -99,7 +103,7 @@ public class Station extends BaseStationFields {
    * @param country The country where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param chargerCount The number of chargers at the station
+   * @param quantityOfChargers The number of chargers available at the station
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    */
@@ -111,7 +115,7 @@ public class Station extends BaseStationFields {
       String country,
       Double latitude,
       Double longitude,
-      Integer chargerCount,
+      Integer quantityOfChargers,
       Integer power,
       Boolean isOperational) {
     this.externalId = externalId;
@@ -121,7 +125,7 @@ public class Station extends BaseStationFields {
     this.country = country;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.chargerCount = chargerCount;
+    this.quantityOfChargers = quantityOfChargers;
     this.power = power;
     this.isOperational = isOperational;
   }
@@ -136,7 +140,7 @@ public class Station extends BaseStationFields {
    * @param country The country where the station is located
    * @param latitude The latitude of the station
    * @param longitude The longitude of the station
-   * @param chargerCount The number of chargers at the station
+   * @param quantityOfChargers The number of chargers available at the station
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    * @param price The price per kWh in euros
@@ -149,7 +153,7 @@ public class Station extends BaseStationFields {
       String country,
       Double latitude,
       Double longitude,
-      Integer chargerCount,
+      Integer quantityOfChargers,
       Integer power,
       Boolean isOperational,
       Double price) {
@@ -160,7 +164,7 @@ public class Station extends BaseStationFields {
     this.country = country;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.chargerCount = chargerCount;
+    this.quantityOfChargers = quantityOfChargers;
     this.power = power;
     this.isOperational = isOperational;
     setPrice(price);
@@ -242,12 +246,12 @@ public class Station extends BaseStationFields {
     this.status = status;
   }
 
-  public Integer getChargerCount() {
-    return chargerCount;
+  public Integer getQuantityOfChargers() {
+    return quantityOfChargers;
   }
 
-  public void setChargerCount(Integer chargerCount) {
-    this.chargerCount = chargerCount;
+  public void setQuantityOfChargers(Integer quantityOfChargers) {
+    this.quantityOfChargers = quantityOfChargers;
   }
 
   public Integer getPower() {
@@ -316,8 +320,8 @@ public class Station extends BaseStationFields {
       return this;
     }
 
-    public Builder chargerCount(Integer chargerCount) {
-      station.setChargerCount(chargerCount);
+    public Builder quantityOfChargers(Integer quantityOfChargers) {
+      station.setQuantityOfChargers(quantityOfChargers);
       return this;
     }
 

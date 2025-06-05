@@ -1,28 +1,60 @@
 package tqs.sparkflow.stationservice.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class OpenChargeMapStationTest {
-    @Test
-    void testGettersAndSetters() {
-        OpenChargeMapStation station = new OpenChargeMapStation();
-        station.setId("1");
-        station.setName("Test Station");
-        station.setAddress("Test Address");
-        station.setCity("Test City");
-        station.setCountry("Test Country");
-        station.setLatitude(38.7223);
-        station.setLongitude(-9.1393);
-        station.setChargerCount(2);
 
-        assertThat(station.getId()).isEqualTo("1");
-        assertThat(station.getName()).isEqualTo("Test Station");
-        assertThat(station.getAddress()).isEqualTo("Test Address");
-        assertThat(station.getCity()).isEqualTo("Test City");
-        assertThat(station.getCountry()).isEqualTo("Test Country");
-        assertThat(station.getLatitude()).isEqualTo(38.7223);
-        assertThat(station.getLongitude()).isEqualTo(-9.1393);
-        assertThat(station.getChargerCount()).isEqualTo(2);
-    }
+  private OpenChargeMapStation station;
+
+  @BeforeEach
+  void setUp() {
+    station = new OpenChargeMapStation();
+  }
+
+  @Test
+  void whenCreatingEmptyStation_thenAllFieldsAreNull() {
+    assertThat(station.getId()).isNull();
+    assertThat(station.getName()).isNull();
+    assertThat(station.getAddress()).isNull();
+    assertThat(station.getCity()).isNull();
+    assertThat(station.getCountry()).isNull();
+    assertThat(station.getLatitude()).isEqualTo(0.0);
+    assertThat(station.getLongitude()).isEqualTo(0.0);
+    assertThat(station.getQuantityOfChargers()).isNull();
+  }
+
+  @Test
+  void whenSettingStationFields_thenFieldsAreUpdated() {
+    // Given
+    String id = "123";
+    String name = "Test Station";
+    String address = "Test Address";
+    String city = "Test City";
+    String country = "Test Country";
+    double latitude = 38.7223;
+    double longitude = -9.1393;
+    int quantityOfChargers = 5;
+
+    // When
+    station.setId(id);
+    station.setName(name);
+    station.setAddress(address);
+    station.setCity(city);
+    station.setCountry(country);
+    station.setLatitude(latitude);
+    station.setLongitude(longitude);
+    station.setQuantityOfChargers(quantityOfChargers);
+
+    // Then
+    assertThat(station.getId()).isEqualTo(id);
+    assertThat(station.getName()).isEqualTo(name);
+    assertThat(station.getAddress()).isEqualTo(address);
+    assertThat(station.getCity()).isEqualTo(city);
+    assertThat(station.getCountry()).isEqualTo(country);
+    assertThat(station.getLatitude()).isEqualTo(latitude);
+    assertThat(station.getLongitude()).isEqualTo(longitude);
+    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
+  }
 } 

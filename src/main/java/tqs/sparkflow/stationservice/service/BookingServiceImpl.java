@@ -72,10 +72,24 @@ public class BookingServiceImpl implements BookingService {
       throw new IllegalStateException("Station is not operational");
     }
 
+    // Get all overlapping bookings (excluding cancelled ones)
     List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
                                                             stationId, startTime, endTime);
-    if (!overlappingBookings.isEmpty()) {
-      throw new IllegalStateException("Time slot is already booked");
+    
+    // Filter out cancelled bookings
+    List<Booking> activeOverlappingBookings = overlappingBookings.stream()
+        .filter(booking -> booking.getStatus() != BookingStatus.CANCELLED)
+        .toList();
+
+    // Get the number of chargers at the station (default to 1 if null)
+    Integer quantityOfChargers = station.getQuantityOfChargers();
+    if (quantityOfChargers == null) {
+      quantityOfChargers = 1;
+    }
+
+    // Check if we have reached the maximum number of concurrent bookings
+    if (activeOverlappingBookings.size() >= quantityOfChargers) {
+      throw new IllegalStateException("No chargers available for the requested time slot");
     }
 
     Booking booking = new Booking();

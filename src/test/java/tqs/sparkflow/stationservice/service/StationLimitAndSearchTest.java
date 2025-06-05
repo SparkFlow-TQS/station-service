@@ -40,8 +40,14 @@ class StationLimitAndSearchTest {
   }
 
   private Station createTestStation(Long id, String name) {
-    Station station = new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
+    Station station = new Station();
     station.setId(id);
+    station.setName(name);
+    station.setAddress("Test Address");
+    station.setCity("Lisbon");
+    station.setCountry("Portugal");
+    station.setLatitude(38.7223);
+    station.setLongitude(-9.1393);
     return station;
   }
 

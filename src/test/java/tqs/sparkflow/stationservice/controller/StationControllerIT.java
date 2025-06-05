@@ -65,7 +65,7 @@ class StationControllerIT {
     assertThat(responseStation).isNotNull()
         .satisfies(s -> {
             assertThat(s.getName()).isEqualTo(station.getName());
-            assertThat(s.getChargerCount()).isEqualTo(station.getChargerCount());
+            assertThat(s.getQuantityOfChargers()).isEqualTo(station.getQuantityOfChargers());
         });
   }
 
@@ -141,12 +141,38 @@ class StationControllerIT {
   }
 
   @Test
+  @XrayTest(key = "STATION-IT-6")
+  @Requirement("STATION-IT-6")
+  void whenGettingStationsByQuantityOfChargers_thenReturnsMatchingStations() {
+    // Given
+    Station station1 = createTestStation("Type2 Station");
+    Station station2 = createTestStation("CCS Station");
+    station1.setQuantityOfChargers(5);
+    stationRepository.save(station1);
+    stationRepository.save(station2);
+
+    // When
+    ResponseEntity<List<Station>> response = restTemplate.exchange(baseUrl + "/quantity/5",
+        HttpMethod.GET, null, new ParameterizedTypeReference<List<Station>>() {});
+
+    // Then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
+    List<Station> stations = response.getBody();
+    assertThat(stations).isNotNull()
+        .hasSize(1)
+        .satisfies(list -> {
+            assertThat(list.get(0).getQuantityOfChargers()).isEqualTo(5);
+        });
+  }
+
+  @Test
   @XrayTest(key = "STATION-IT-7")
   @Requirement("STATION-IT-7")
   void whenCreateStation_thenReturnCreatedStation() {
     // Given
-    Station station = new Station("Test Station", "Test Address", "Lisbon", 38.7223, -9.1393,
-        2, "Available");
+    Station station = new Station("1234567890", "Test Station", "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393,
+        5, "Available");
 
     // When
     ResponseEntity<Station> response = restTemplate.postForEntity(baseUrl, station, Station.class);
@@ -166,12 +192,13 @@ class StationControllerIT {
   private Station createTestStation(String name) {
     Station station = new Station();
     station.setName(name);
+    station.setExternalId("1234567890");
     station.setAddress("Test Address");
     station.setCity("Test City");
     station.setCountry("Test Country");
     station.setLatitude(38.7223);
     station.setLongitude(-9.1393);
-    station.setChargerCount(2);
+    station.setQuantityOfChargers(1);
     station.setPower(22);
     station.setStatus("Available");
     return station;

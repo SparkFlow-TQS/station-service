@@ -36,23 +36,41 @@ public interface StationRepository extends JpaRepository<Station, Long> {
    * @param name the name to search for
    * @param city the city to search in
    * @param country the country to search in
-   * @param chargerCount the number of chargers to search for
-   * @return a list of matching stations (limited to 500 results)
+   * @param minChargers the minimum number of chargers
+   * @return a list of matching stations
    */
-  @Query("SELECT s FROM Station s WHERE " +
-         "s.name LIKE %:name% AND " +
-         "s.city LIKE %:city% AND " +
-         "s.country LIKE %:country% AND " +
-         "s.chargerCount = :chargerCount " +
-         "ORDER BY s.id LIMIT 500")
-  List<Station> findByNameContainingAndCityContainingAndCountryContainingAndChargerCount(
-      @Param("name") String name, 
-      @Param("city") String city, 
-      @Param("country") String country, 
-      @Param("chargerCount") Integer chargerCount);
+  List<Station> findByNameContainingAndCityContainingAndCountryContainingAndQuantityOfChargersGreaterThanEqual(
+      String name, String city, String country, Integer minChargers);
+
+  /**
+   * Finds stations by minimum number of chargers.
+   *
+   * @param minChargers The minimum number of chargers to search for
+   * @return A list of stations with at least the given number of chargers
+   */
+  List<Station> findByQuantityOfChargersGreaterThanEqual(Integer minChargers);
+
+  @Query("SELECT s FROM Station s WHERE "
+         + "(:minPower IS NULL OR s.power >= :minPower) AND "
+         + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
+         + "(:isOperational IS NULL OR s.isOperational = :isOperational) AND "
+         + "(:status IS NULL OR s.status = :status) AND "
+         + "(:city IS NULL OR s.city = :city) AND "
+         + "(:country IS NULL OR s.country = :country) AND "
+         + "(:minPrice IS NULL OR s.price >= :minPrice) AND "
+         + "(:maxPrice IS NULL OR s.price <= :maxPrice)")
+  List<Station> findStationsByFilters(
+      @Param("minPower") Integer minPower,
+      @Param("maxPower") Integer maxPower,
+      @Param("isOperational") Boolean isOperational,
+      @Param("status") String status,
+      @Param("city") String city,
+      @Param("country") String country,
+      @Param("minPrice") Double minPrice,
+      @Param("maxPrice") Double maxPrice
+  );
 
   @Query(value = "SELECT * FROM stations s WHERE "
-         + "(:chargerCount IS NULL OR s.charger_count = :chargerCount) AND "
          + "(:minPower IS NULL OR s.power >= :minPower) AND "
          + "(:maxPower IS NULL OR s.power <= :maxPower) AND "
          + "(:isOperational IS NULL OR s.is_operational = :isOperational) AND "
@@ -66,7 +84,6 @@ public interface StationRepository extends JpaRepository<Station, Long> {
          + "ORDER BY s.id LIMIT 500",
          nativeQuery = true)
   List<Station> findStationsByFiltersWithLocation(
-      @Param("chargerCount") Integer chargerCount,
       @Param("minPower") Integer minPower,
       @Param("maxPower") Integer maxPower,
       @Param("isOperational") Boolean isOperational,

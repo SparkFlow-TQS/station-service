@@ -205,7 +205,7 @@ class BookingControllerIT {
     @Test
     @XrayTest(key = "BOOKING-7")
     @Requirement("BOOKING-7")
-    void whenCreateBooking_withoutAuth_thenForbidden() throws Exception {
+    void whenCreateBooking_withoutAuth_thenUnauthorized() throws Exception {
         Booking inputBooking = new Booking();
         inputBooking.setStationId(1L);
         inputBooking.setStartTime(now);
@@ -215,7 +215,7 @@ class BookingControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking))
                 .with(SecurityMockMvcRequestPostProcessors.anonymous()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

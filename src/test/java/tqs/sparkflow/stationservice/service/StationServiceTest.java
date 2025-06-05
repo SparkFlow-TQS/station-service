@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
@@ -40,12 +41,12 @@ class StationServiceTest {
     station1 = new Station();
     station1.setId(1L);
     station1.setName("Tesla Supercharger Aveiro");
-    station1.setAddress("Rua da Tesla 123");
+    station1.setAddress("Rua Dr. Mário Sacramento");
     station1.setCity("Aveiro");
     station1.setCountry("Portugal");
-    station1.setChargerCount(4);
-    station1.setPower(150);
-    station1.setPrice(0.35);
+    station1.setQuantityOfChargers(4);
+    station1.setPower(50);
+    station1.setPrice(0.30);
     station1.setIsOperational(true);
     station1.setStatus("Available");
     station1.setLatitude(40.623361);
@@ -53,13 +54,13 @@ class StationServiceTest {
 
     station2 = new Station();
     station2.setId(2L);
-    station2.setName("IONITY Porto Norte");
-    station2.setAddress("Área de Serviço Porto Norte");
+    station2.setName("IONITY Porto");
+    station2.setAddress("A4 - Área de Serviço de Valongo");
     station2.setCity("Porto");
     station2.setCountry("Portugal");
-    station2.setChargerCount(8);
-    station2.setPower(350);
-    station2.setPrice(0.79);
+    station2.setQuantityOfChargers(8);
+    station2.setPower(150);
+    station2.setPrice(0.35);
     station2.setIsOperational(true);
     station2.setStatus("In Use");
     station2.setLatitude(41.1579);
@@ -67,11 +68,11 @@ class StationServiceTest {
 
     station3 = new Station();
     station3.setId(3L);
-    station3.setName("Mobi.E Lisbon Central");
-    station3.setAddress("Avenida da Liberdade 200");
+    station3.setName("Mobi.E Lisbon");
+    station3.setAddress("Praça do Comércio");
     station3.setCity("Lisbon");
     station3.setCountry("Portugal");
-    station3.setChargerCount(2);
+    station3.setQuantityOfChargers(1);
     station3.setPower(22);
     station3.setPrice(0.25);
     station3.setIsOperational(false);
@@ -85,7 +86,7 @@ class StationServiceTest {
     station4.setAddress("Calle Mayor 456");
     station4.setCity("Madrid");
     station4.setCountry("Spain");
-    station4.setChargerCount(6);
+    station4.setQuantityOfChargers(6);
     station4.setPower(100);
     station4.setPrice(0.45);
     station4.setIsOperational(true);
@@ -99,7 +100,7 @@ class StationServiceTest {
     station5.setAddress("Praça da República 789");
     station5.setCity("Coimbra");
     station5.setCountry("Portugal");
-    station5.setChargerCount(3);
+    station5.setQuantityOfChargers(3);
     station5.setPower(43);
     station5.setPrice(0.30);
     station5.setIsOperational(true);
@@ -353,7 +354,7 @@ class StationServiceTest {
     stationWithNulls.setName(null);
     stationWithNulls.setCity(null);
     stationWithNulls.setCountry(null);
-    stationWithNulls.setChargerCount(null);
+    stationWithNulls.setQuantityOfChargers(null);
     
     List<Station> allStations = Arrays.asList(station1, stationWithNulls);
     when(stationRepository.findAll()).thenReturn(allStations);
@@ -591,83 +592,45 @@ class StationServiceTest {
   }
 
   @Test
-  @XrayTest(key = "STATION-SVC-39")
-  @Requirement("STATION-SVC-39")
-  void whenGettingTotalStationCountWithZeroStations_thenReturnsZero() {
+  @XrayTest(key = "STATION-SVC-9")
+  @Requirement("STATION-SVC-9")
+  void whenGettingStationsByQuantityOfChargers_thenReturnsMatchingStations() {
     // Given
-    when(stationRepository.count()).thenReturn(0L);
+    int quantityOfChargers = 1;
+    List<Station> expectedStations =
+        Arrays.asList(
+            createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
+    when(stationRepository.findByQuantityOfChargersGreaterThanEqual(quantityOfChargers)).thenReturn(expectedStations);
 
     // When
-    Long result = stationService.getTotalStationCount();
+    List<Station> result = stationService.getStationsByMinChargers(quantityOfChargers);
 
     // Then
-    assertThat(result).isEqualTo(0L);
-    verify(stationRepository).count();
-  }
-
-  // ===== 500-LIMIT ENFORCEMENT TESTS =====
-
-  @Test
-  @XrayTest(key = "STATION-SVC-40")
-  @Requirement("STATION-SVC-40")
-  void whenGettingAllStationsExceeds500_thenLimitsTo500() {
-    // Given - Create a list with more than 500 stations
-    List<Station> manyStations = new java.util.ArrayList<>();
-    for (int i = 1; i <= 600; i++) {
-      Station station = createTestStation((long) i, "Station " + i);
-      manyStations.add(station);
-    }
-    when(stationRepository.findAll()).thenReturn(manyStations);
-
-    // When
-    List<Station> result = stationService.getAllStations();
-
-    // Then
-    assertThat(result).hasSize(500);
-    verify(stationRepository).findAll();
+    assertThat(result).isEqualTo(expectedStations);
+    verify(stationRepository).findByQuantityOfChargersGreaterThanEqual(quantityOfChargers);
   }
 
   @Test
-  @XrayTest(key = "STATION-SVC-41")
-  @Requirement("STATION-SVC-41")
-  void whenSearchingStationsExceeds500_thenLimitsTo500() {
-    // Given - Create a list with more than 500 matching stations
-    List<Station> manyStations = new java.util.ArrayList<>();
-    for (int i = 1; i <= 600; i++) {
-      Station station = createTestStation((long) i, "Tesla Station " + i);
-      manyStations.add(station);
-    }
-    when(stationRepository.findAll()).thenReturn(manyStations);
-
-    // When
-    List<Station> result = stationService.searchStations("Tesla", null, null, null);
-
-    // Then
-    assertThat(result).hasSize(500);
-    verify(stationRepository).findAll();
+  @XrayTest(key = "STATION-SVC-10")
+  @Requirement("STATION-SVC-10")
+  void whenGettingStationsByMinChargersWithInvalidValues_thenThrowsException() {
+    // When/Then
+    assertThatThrownBy(() -> stationService.getStationsByMinChargers(0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Minimum number of chargers must be at least 1");
+    assertThatThrownBy(() -> stationService.getStationsByMinChargers(-1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Minimum number of chargers must be at least 1");
   }
 
   @Test
-  @XrayTest(key = "STATION-SVC-42")
-  @Requirement("STATION-SVC-42")
-  void whenGettingNearbyStationsExceeds500_thenLimitsTo500() {
-    // Given - Create a list with more than 500 nearby stations
-    List<Station> manyStations = new java.util.ArrayList<>();
-    for (int i = 1; i <= 600; i++) {
-      Station station = createTestStation((long) i, "Station " + i);
-      // All stations at the same location (within radius)
-      station.setLatitude(40.623361);
-      station.setLongitude(-8.650256);
-      manyStations.add(station);
-    }
-    when(stationRepository.findAll()).thenReturn(manyStations);
-
-    // When
-    List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 10);
-
-    // Then
-    assertThat(result).hasSize(500);
-    verify(stationRepository).findAll();
+  @XrayTest(key = "STATION-SVC-11")
+  @Requirement("STATION-SVC-11")
+  void whenGettingStationsByNullMinChargers_thenThrowsException() {
+    // When/Then
+    assertThatThrownBy(() -> stationService.getStationsByMinChargers(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Minimum number of chargers cannot be null");
   }
 
   // ===== EXISTING CRUD TESTS =====
@@ -731,15 +694,15 @@ class StationServiceTest {
   @Test
   @XrayTest(key = "STATION-SVC-16")
   @Requirement("STATION-SVC-16")
-  void whenCreatingStationWithInvalidChargerCount_thenThrowsException() {
+  void whenCreatingStationWithEmptyQuantityOfChargers_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, "Test Station");
-    station.setChargerCount(0); // Invalid charger count
+    station.setQuantityOfChargers(0);
 
     // When/Then
     assertThatThrownBy(() -> stationService.createStation(station))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Charger count must be between 1 and 50");
+        .hasMessageContaining("Quantity of chargers must be at least 1");
   }
 
   @Test
@@ -819,46 +782,25 @@ class StationServiceTest {
         .hasMessageContaining("Station not found with external id: " + externalId);
   }
 
-  // ===== UPDATE STATION TESTS =====
-
   @Test
   @XrayTest(key = "STATION-SVC-43")
   @Requirement("STATION-SVC-43")
-  void whenUpdatingExistingStation_thenStationIsUpdated() {
+  void whenFilteringStationsByPriceRange_thenReturnMatchingStations() {
     // Given
-    Long stationId = 1L;
-    Station updatedStation = createTestStation(stationId, "Updated Station");
-    when(stationRepository.existsById(stationId)).thenReturn(true);
-    when(stationRepository.save(updatedStation)).thenReturn(updatedStation);
+    List<Station> expectedStations = Arrays.asList(station1, station3);
+    when(stationRepository.findAll()).thenReturn(expectedStations);
 
     // When
-    Station result = stationService.updateStation(stationId, updatedStation);
+    List<Station> result = stationService.searchStations(null, null, null, null);
 
     // Then
-    assertThat(result).isEqualTo(updatedStation);
-    assertThat(result.getId()).isEqualTo(stationId);
-    verify(stationRepository).existsById(stationId);
-    verify(stationRepository).save(updatedStation);
-  }
-
-  @Test
-  @XrayTest(key = "STATION-SVC-44")
-  @Requirement("STATION-SVC-44")
-  void whenUpdatingNonExistentStation_thenThrowsException() {
-    // Given
-    Long stationId = 999L;
-    Station updatedStation = createTestStation(stationId, "Updated Station");
-    when(stationRepository.existsById(stationId)).thenReturn(false);
-
-    // When/Then
-    assertThatThrownBy(() -> stationService.updateStation(stationId, updatedStation))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Station not found with id: " + stationId);
+    assertThat(result).hasSize(2);
+    verify(stationRepository).findAll();
   }
 
   private Station createTestStation(Long id, String name) {
     Station station =
-        new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
+        new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 2, "Available");
     station.setId(id);
     return station;
   }

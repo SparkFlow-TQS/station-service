@@ -83,14 +83,11 @@ class StationControllerTest {
         List<Station> expectedStations =
             Arrays.asList(
                 new Station(
-                    "Station 1", "Address 1", "Lisbon", latitude, longitude, 2, "Available"),
+                    "1234567890", "Station 1", "Address 1", "Lisbon", "Portugal", latitude, longitude, 1, "Available"),
                 new Station(
-                    "Station 2",
-                    "Address 2",
-                    "Lisbon",
-                    latitude + 0.01,
+                    "1234567891", "Station 2", "Address 2", "Lisbon", "Portugal", latitude + 0.01,
                     longitude + 0.01,
-                    2,
+                    1,
                     "Available"));
 
         when(stationService.getNearbyStations(latitude, longitude, radius))
@@ -107,13 +104,34 @@ class StationControllerTest {
     }
 
     @Test
+    @XrayTest(key = "STATION-4")
+    @Requirement("STATION-4")
+    void whenGettingStationsByQuantityOfChargers_thenReturnsListOfStations() {
+        // Given
+        int quantityOfChargers = 1;
+        List<Station> expectedStations =
+            Arrays.asList(
+                createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
+        when(stationService.getStationsByMinChargers(quantityOfChargers)).thenReturn(expectedStations);
+
+        // When
+        ResponseEntity<List<Station>> response =
+            stationController.getStationsByQuantityOfChargers(quantityOfChargers);
+
+        // Then
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isEqualTo(expectedStations);
+        verify(stationService).getStationsByMinChargers(quantityOfChargers);
+    }
+
+    @Test
     @XrayTest(key = "STATION-5")
     @Requirement("STATION-5")
     void whenCreateStation_thenReturnCreatedStation() {
         // Given
         Station station =
             new Station(
-                "Test Station", "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
+                "1234567890", "Test Station", "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
         station.setId(1L);
 
         when(stationService.createStation(any(Station.class))).thenReturn(station);
@@ -219,17 +237,14 @@ class StationControllerTest {
     @Requirement("STATION-13")
     void whenSearchingStations_thenReturnsList() {
         List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Search 1"));
-        when(stationService.searchStations("name", "city", "country", 2)).thenReturn(expectedStations);
-        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", 2);
+        when(stationService.searchStations("name", "city", "country", 1)).thenReturn(expectedStations);
+        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", 1);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo(expectedStations);
-        verify(stationService).searchStations("name", "city", "country", 2);
+        verify(stationService).searchStations("name", "city", "country", 1);
     }
 
     private Station createTestStation(Long id, String name) {
-        Station station =
-            new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, 2, "Available");
-        station.setId(id);
-        return station;
+        return new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
     }
 }

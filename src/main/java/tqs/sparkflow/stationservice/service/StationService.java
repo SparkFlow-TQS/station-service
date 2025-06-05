@@ -87,11 +87,8 @@ public class StationService {
     if (station.getName() == null || station.getName().trim().isEmpty()) {
       throw new IllegalArgumentException("Station name cannot be empty");
     }
-    if (station.getChargerCount() == null) {
-      throw new IllegalArgumentException("Charger count cannot be null");
-    }
-    if (station.getChargerCount() < 1 || station.getChargerCount() > 50) {
-      throw new IllegalArgumentException("Charger count must be between 1 and 50");
+    if (station.getQuantityOfChargers() == null || station.getQuantityOfChargers() < 1) {
+      throw new IllegalArgumentException("Quantity of chargers must be at least 1");
     }
     if (station.getLatitude() != null
         && (station.getLatitude() < -90 || station.getLatitude() > 90)) {
@@ -143,14 +140,12 @@ public class StationService {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param minChargers The minimum number of chargers (optional)
-   * @return List of matching stations (limited to 500 results)
+   * @param minChargers The minimum number of chargers
+   * @return List of matching stations
    */
   public List<Station> searchStations(
       String name, String city, String country, Integer minChargers) {
-    
-    // Use a more flexible search approach - search all stations and filter
-    List<Station> allStations = stationRepository.findAll();
+        List<Station> allStations = stationRepository.findAll();
     
     List<Station> filteredStations = allStations.stream()
         .filter(station -> {
@@ -180,8 +175,8 @@ public class StationService {
             
             // Minimum chargers filter
             if (minChargers != null && minChargers > 0) {
-                if (station.getChargerCount() == null || 
-                    station.getChargerCount() < minChargers) {
+                if (station.getQuantityOfChargers() == null || 
+                    station.getQuantityOfChargers() < minChargers) {
                     return false;
                 }
             }
@@ -192,6 +187,7 @@ public class StationService {
         .toList();
     
     return filteredStations;
+
   }
 
   /**
@@ -254,4 +250,23 @@ public class StationService {
     
     return R * c;
   }
+
+  /**
+   * Gets stations by minimum number of chargers.
+   *
+   * @param minChargers The minimum number of chargers to search for
+   * @return List of stations with at least the given number of chargers
+   * @throws NullPointerException if minChargers is null
+   * @throws IllegalArgumentException if minChargers is less than 1
+   */
+  public List<Station> getStationsByMinChargers(Integer minChargers) {
+    if (minChargers == null) {
+      throw new NullPointerException("Minimum number of chargers cannot be null");
+    }
+    if (minChargers < 1) {
+      throw new IllegalArgumentException("Minimum number of chargers must be at least 1");
+    }
+    return stationRepository.findByQuantityOfChargersGreaterThanEqual(minChargers);
+  }
+
 }

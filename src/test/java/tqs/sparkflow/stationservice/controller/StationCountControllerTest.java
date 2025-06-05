@@ -97,13 +97,15 @@ class StationCountControllerTest {
         List<Station> stations = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             Station station = new Station(
-                "Station " + i, 
-                "Address " + i, 
-                "City", 
-                38.7223 + (i * 0.001), 
-                -9.1393 + (i * 0.001), 
-                2, 
-                "Available"
+                "ext-" + i,  // externalId
+                "Station " + i,  // name
+                "Address " + i,  // address
+                "City",  // city
+                "Country",  // country
+                38.7223 + (i * 0.001),  // latitude
+                -9.1393 + (i * 0.001),  // longitude
+                2,  // quantityOfChargers
+                "Available"  // status
             );
             station.setId((long) i);
             stations.add(station);

@@ -177,8 +177,8 @@ public class StationController {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param minChargers The minimum number of chargers
-   * @return List of matching stations (limited to 500 results)
+   * @param connectorType The connector type
+   * @return List of matching stations
    */
   @Operation(summary = "Search stations", description = "Searches for stations based on various criteria (results limited to 500 stations for performance)")
   @ApiResponses(value = {
@@ -219,8 +219,24 @@ public class StationController {
     return ResponseEntity.ok(stationService.getNearbyStations(latitude, longitude, radius));
   }
 
+
   /**
    * Gets the total count of stations in the system.
+   * Gets stations by minimum number of chargers.
+   *
+   * @param minChargers The minimum number of chargers to search for
+   * @return List of stations with at least the given number of chargers
+   * @throws NullPointerException if minChargers is null
+   * @throws IllegalArgumentException if minChargers is less than 1
+   */
+  @GetMapping("/quantity/{minChargers}")
+  public ResponseEntity<List<Station>> getStationsByQuantityOfChargers(
+      @Parameter(description = "Minimum number of chargers", required = true) @PathVariable int minChargers) {
+    return ResponseEntity.ok(stationService.getStationsByMinChargers(minChargers));
+  }
+
+  /**
+   * Gets the total number of stations in the system.
    *
    * @return The total number of stations
    */
