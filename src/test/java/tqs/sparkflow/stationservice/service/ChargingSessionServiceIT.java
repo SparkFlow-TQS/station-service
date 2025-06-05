@@ -15,7 +15,9 @@ import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.exception.ChargingSessionNotFoundException;
 import tqs.sparkflow.stationservice.model.ChargingSession;
+import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
+import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @SpringBootTest(
     classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
@@ -30,16 +32,37 @@ class ChargingSessionServiceIT {
     @Autowired
     private ChargingSessionRepository chargingSessionRepository;
 
+    @Autowired
+    private StationRepository stationRepository;
+
+    private Station testStation;
+
     @BeforeEach
     void setUp() {
         chargingSessionRepository.deleteAll();
+        stationRepository.deleteAll();
+        
+        // Create a test station with valid data
+        testStation = new Station();
+        testStation.setName("Test Station");
+        testStation.setExternalId("TEST-001");
+        testStation.setAddress("Test Address");
+        testStation.setCity("Test City");
+        testStation.setCountry("Test Country");
+        testStation.setLatitude(38.7223);
+        testStation.setLongitude(-9.1393);
+        testStation.setQuantityOfChargers(5);
+        testStation.setPower(22);
+        testStation.setStatus("Available");
+        testStation.setIsOperational(true);
+        testStation = stationRepository.save(testStation);
     }
 
     @Test
     void whenCreateSession_thenSessionIsCreated() {
         // Given
-        String stationId = "STATION-001";
-        String userId = "USER-001";
+        String stationId = testStation.getId().toString();
+        String userId = "1";
 
         // When
         ChargingSession result = chargingSessionService.createSession(stationId, userId);
@@ -56,7 +79,9 @@ class ChargingSessionServiceIT {
     @Test
     void whenEndSession_thenSessionIsCompleted() {
         // Given
-        ChargingSession session = chargingSessionService.createSession("STATION-001", "USER-001");
+        String stationId = testStation.getId().toString();
+        String userId = "1";
+        ChargingSession session = chargingSessionService.createSession(stationId, userId);
 
         // When
         ChargingSession result = chargingSessionService.endSession(session.getId().toString());
@@ -70,15 +95,17 @@ class ChargingSessionServiceIT {
     @Test
     void whenGetSession_thenReturnSession() {
         // Given
-        ChargingSession session = chargingSessionService.createSession("STATION-001", "USER-001");
+        String stationId = testStation.getId().toString();
+        String userId = "1";
+        ChargingSession session = chargingSessionService.createSession(stationId, userId);
 
         // When
         ChargingSession result = chargingSessionService.getSession(session.getId().toString());
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getStationId()).isEqualTo("STATION-001");
-        assertThat(result.getUserId()).isEqualTo("USER-001");
+        assertThat(result.getStationId()).isEqualTo(stationId);
+        assertThat(result.getUserId()).isEqualTo(userId);
     }
 
     @Test
@@ -107,8 +134,8 @@ class ChargingSessionServiceIT {
     @Test
     void whenCompleteChargingFlow_thenAllStatesAreCorrect() {
         // Given
-        String stationId = "STATION-001";
-        String userId = "USER-001";
+        String stationId = testStation.getId().toString();
+        String userId = "1";
 
         // When
         ChargingSession created = chargingSessionService.createSession(stationId, userId);
