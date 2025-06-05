@@ -18,6 +18,7 @@ import jakarta.validation.Path;
 import java.util.Set;
 import static org.mockito.Mockito.*;
 
+
 class GlobalExceptionHandlerTest {
 
   private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
@@ -123,7 +124,6 @@ class GlobalExceptionHandlerTest {
         });
   }
 
-  /*
   @Test
   void whenHandlingChargingSessionNotFoundException_thenReturnsNotFound() {
     // Given
@@ -143,7 +143,6 @@ class GlobalExceptionHandlerTest {
             assertThat(error.getMessage()).isEqualTo("Session not found");
         });
   }
-  */
 
   @Test
   void whenHandlingMethodArgumentNotValidException_thenReturnsBadRequestWithValidationErrors() {

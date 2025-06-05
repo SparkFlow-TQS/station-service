@@ -155,49 +155,65 @@ public class StationService {
    */
   public List<Station> searchStations(
       String name, String city, String country, Integer minChargers) {
-        List<Station> allStations = stationRepository.findAll();
-    
-    List<Station> filteredStations = allStations.stream()
-        .filter(station -> {
-            // Name filter
-            if (name != null && !name.trim().isEmpty()) {
-                if (station.getName() == null || 
-                    !station.getName().toLowerCase().contains(name.toLowerCase())) {
-                    return false;
-                }
-            }
-            
-            // City filter
-            if (city != null && !city.trim().isEmpty()) {
-                if (station.getCity() == null || 
-                    !station.getCity().toLowerCase().contains(city.toLowerCase())) {
-                    return false;
-                }
-            }
-            
-            // Country filter
-            if (country != null && !country.trim().isEmpty()) {
-                if (station.getCountry() == null || 
-                    !station.getCountry().toLowerCase().contains(country.toLowerCase())) {
-                    return false;
-                }
-            }
-            
-            // Minimum chargers filter
-            if (minChargers != null && minChargers > 0) {
-                if (station.getQuantityOfChargers() == null || 
-                    station.getQuantityOfChargers() < minChargers) {
-                    return false;
-                }
-            }
-            
-            return true;
-        })
-        .limit(MAX_SEARCH_RESULTS)  // Limit to maximum results
+    return stationRepository.findAll()
+        .stream()
+        .filter(station -> matchesNameFilter(station, name))
+        .filter(station -> matchesCityFilter(station, city))
+        .filter(station -> matchesCountryFilter(station, country))
+        .filter(station -> matchesMinChargersFilter(station, minChargers))
+        .limit(MAX_SEARCH_RESULTS)
         .toList();
-    
-    return filteredStations;
+  }
 
+  /**
+   * Checks if station matches the name filter.
+   */
+  private boolean matchesNameFilter(Station station, String name) {
+    if (isEmptyFilter(name)) {
+      return true;
+    }
+    return station.getName() != null 
+        && station.getName().toLowerCase().contains(name.toLowerCase());
+  }
+
+  /**
+   * Checks if station matches the city filter.
+   */
+  private boolean matchesCityFilter(Station station, String city) {
+    if (isEmptyFilter(city)) {
+      return true;
+    }
+    return station.getCity() != null 
+        && station.getCity().toLowerCase().contains(city.toLowerCase());
+  }
+
+  /**
+   * Checks if station matches the country filter.
+   */
+  private boolean matchesCountryFilter(Station station, String country) {
+    if (isEmptyFilter(country)) {
+      return true;
+    }
+    return station.getCountry() != null 
+        && station.getCountry().toLowerCase().contains(country.toLowerCase());
+  }
+
+  /**
+   * Checks if station matches the minimum chargers filter.
+   */
+  private boolean matchesMinChargersFilter(Station station, Integer minChargers) {
+    if (minChargers == null || minChargers <= 0) {
+      return true;
+    }
+    return station.getQuantityOfChargers() != null 
+        && station.getQuantityOfChargers() >= minChargers;
+  }
+
+  /**
+   * Checks if a filter value is empty or null.
+   */
+  private boolean isEmptyFilter(String filter) {
+    return filter == null || filter.trim().isEmpty();
   }
 
   /**
