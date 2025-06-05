@@ -62,8 +62,11 @@ class ChargingSessionServiceTest {
         // Given
         Long sessionId = 1L;
         ChargingSession session = new ChargingSession();
+        session.setStationId("1");
+        session.setUserId("1");
         when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class))).thenReturn(Arrays.asList());
 
         // When
         ChargingSession result = chargingSessionService.startCharging(sessionId.toString());
@@ -184,8 +187,11 @@ class ChargingSessionServiceTest {
         // Given
         Long sessionId = 1L;
         ChargingSession session = new ChargingSession();
+        session.setStationId("1");
+        session.setUserId("1");
         when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class))).thenReturn(Arrays.asList());
 
         // When
         ChargingSession result = chargingSessionService.startCharging(sessionId.toString());
@@ -219,7 +225,7 @@ class ChargingSessionServiceTest {
         
         when(chargingSessionRepository.findById(sessionId)).thenReturn(java.util.Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
-        when(bookingRepository.findActiveBookingsForStationAtTime(Long.valueOf(stationId), any(LocalDateTime.class)))
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(Long.valueOf(stationId)), any(LocalDateTime.class)))
             .thenReturn(Arrays.asList(userBooking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(userBooking);
         

@@ -608,8 +608,10 @@ class StationServiceTest {
     LocalDateTime endTime = startTime.plusHours(1);
     
     when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    Booking otherUserBooking = new Booking();
+    otherUserBooking.setUserId(2L); // different user
     when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
-        .thenReturn(Arrays.asList(new Booking())); // 1 booking from other user
+        .thenReturn(Arrays.asList(otherUserBooking)); // 1 booking from other user
     when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
         .thenReturn(Arrays.asList(new ChargingSession())); // 1 session
     
@@ -631,8 +633,12 @@ class StationServiceTest {
     LocalDateTime endTime = startTime.plusHours(1);
     
     when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    Booking booking1 = new Booking();
+    booking1.setUserId(2L);
+    Booking booking2 = new Booking();
+    booking2.setUserId(3L);
     when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
-        .thenReturn(Arrays.asList(new Booking(), new Booking())); // 2 bookings from other users
+        .thenReturn(Arrays.asList(booking1, booking2)); // 2 bookings from other users
     when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
         .thenReturn(Arrays.asList());
     
@@ -654,8 +660,10 @@ class StationServiceTest {
     LocalDateTime endTime = startTime.plusHours(1);
     
     when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    Booking otherUserBooking = new Booking();
+    otherUserBooking.setUserId(2L); // different user
     when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
-        .thenReturn(Arrays.asList(new Booking())); // 1 overlapping booking
+        .thenReturn(Arrays.asList(otherUserBooking)); // 1 overlapping booking
     when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
         .thenReturn(Arrays.asList(new ChargingSession())); // 1 unfinished session
     
@@ -675,8 +683,12 @@ class StationServiceTest {
     LocalDateTime endTime = startTime.plusHours(1);
     
     when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    Booking booking1 = new Booking();
+    booking1.setUserId(2L);
+    Booking booking2 = new Booking();
+    booking2.setUserId(3L);
     when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
-        .thenReturn(Arrays.asList(new Booking(), new Booking())); // 2 overlapping bookings
+        .thenReturn(Arrays.asList(booking1, booking2)); // 2 overlapping bookings
     when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime))
         .thenReturn(Arrays.asList());
     
