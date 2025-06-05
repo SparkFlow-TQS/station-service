@@ -134,15 +134,15 @@ public class OpenChargeMapService {
       return null;
     }
     return new Station(
-      ocmStation.getId(),
-      ocmStation.getName(),
-      ocmStation.getAddress(),
-      ocmStation.getCity(),
-      ocmStation.getCountry(),
-      ocmStation.getLatitude(),
-      ocmStation.getLongitude(),
-      ocmStation.getQuantityOfChargers(),
-      ocmStation.getStatus()
+      ocmStation.getId(),                    // externalId
+      ocmStation.getName(),                  // name
+      ocmStation.getAddress(),               // address
+      ocmStation.getCity(),                  // city
+      ocmStation.getCountry(),               // country
+      ocmStation.getLatitude(),              // latitude
+      ocmStation.getLongitude(),             // longitude
+      ocmStation.getQuantityOfChargers(),    // quantityOfChargers
+      ocmStation.getStatus()                 // status
     );
   }
 

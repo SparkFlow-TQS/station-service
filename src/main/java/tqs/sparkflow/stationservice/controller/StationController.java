@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -119,7 +120,7 @@ public class StationController {
   })
   @PostMapping
   public ResponseEntity<Station> createStation(
-      @Parameter(description = "Station object to create", required = true) @RequestBody Station station) {
+      @Parameter(description = "Station object to create", required = true) @Valid @RequestBody Station station) {
     return ResponseEntity.status(HttpStatus.CREATED).body(stationService.createStation(station));
   }
 
@@ -141,7 +142,7 @@ public class StationController {
   @PutMapping("/{id}")
   public ResponseEntity<Station> updateStation(
       @Parameter(description = "ID of the station to update", required = true) @PathVariable Long id,
-      @Parameter(description = "Updated station data", required = true) @RequestBody Station station) {
+      @Parameter(description = "Updated station data", required = true) @Valid @RequestBody Station station) {
     try {
       Station updatedStation = stationService.updateStation(id, station);
       return ResponseEntity.ok(updatedStation);
