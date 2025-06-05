@@ -203,4 +203,165 @@ class OpenChargeMapServiceTest {
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Error fetching stations");
     }
+
+    @Test
+    void getStationsByCity_httpError_throwsException() {
+        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+            .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        assertThatThrownBy(() -> service.getStationsByCity("City"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Error accessing Open Charge Map API: 400 BAD_REQUEST");
+    }
+
+    @Test
+    void getStationsByCity_otherException_throwsException() {
+        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+            .thenThrow(new RuntimeException("Network error"));
+
+        assertThatThrownBy(() -> service.getStationsByCity("City"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Error fetching stations");
+    }
+
+    @Test
+    void getStationsByCity_withNullStation_skipsNullStation() {
+        OpenChargeMapStation ocmStation1 = new OpenChargeMapStation();
+        ocmStation1.setId("1");
+        ocmStation1.setName("Test1");
+        ocmStation1.setAddress("Addr1");
+        ocmStation1.setCity("City");
+        ocmStation1.setCountry("Country");
+        ocmStation1.setLatitude(1.0);
+        ocmStation1.setLongitude(2.0);
+        ocmStation1.setQuantityOfChargers(1);
+
+        OpenChargeMapResponse response = new OpenChargeMapResponse();
+        List<OpenChargeMapStation> stations = new ArrayList<>();
+        stations.add(ocmStation1);
+        stations.add(null);
+        response.setStations(stations);
+
+        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(response);
+
+        List<Station> result = service.getStationsByCity("City");
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Test1");
+    }
+
+    @Test
+    void populateStations_withMultipleConnections_calculatesTotalChargers() {
+        double lat = 1.0, lon = 2.0;
+        int radius = 10;
+        Map<String, Object> addressInfo = Map.of(
+            "Title", "Test", "AddressLine1", "Addr", "Latitude", lat, "Longitude", lon
+        );
+        Map<String, Object> connection1 = Map.of("ConnectionTypeID", "Type2", "Quantity", 2);
+        Map<String, Object> connection2 = Map.of("ConnectionTypeID", "Type2", "Quantity", 3);
+        Map<String, Object> stationData = new HashMap<>();
+        stationData.put("ID", 1);
+        stationData.put("AddressInfo", addressInfo);
+        stationData.put("Connections", List.of(connection1, connection2));
+        List<Map<String, Object>> responseBody = List.of(stationData);
+
+        ResponseEntity<List<Map<String, Object>>> responseEntity =
+            new ResponseEntity<>(responseBody, HttpStatus.OK);
+
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenReturn(responseEntity);
+
+        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<Station> stations = service.populateStations(lat, lon, radius);
+        assertThat(stations).hasSize(1);
+        assertThat(stations.get(0).getQuantityOfChargers()).isEqualTo(5);
+    }
+
+    @Test
+    void populateStations_withInvalidConnectionQuantity_defaultsToOne() {
+        double lat = 1.0, lon = 2.0;
+        int radius = 10;
+        Map<String, Object> addressInfo = Map.of(
+            "Title", "Test", "AddressLine1", "Addr", "Latitude", lat, "Longitude", lon
+        );
+        Map<String, Object> connection = Map.of("ConnectionTypeID", "Type2", "Quantity", "invalid");
+        Map<String, Object> stationData = new HashMap<>();
+        stationData.put("ID", 1);
+        stationData.put("AddressInfo", addressInfo);
+        stationData.put("Connections", List.of(connection));
+        List<Map<String, Object>> responseBody = List.of(stationData);
+
+        ResponseEntity<List<Map<String, Object>>> responseEntity =
+            new ResponseEntity<>(responseBody, HttpStatus.OK);
+
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenReturn(responseEntity);
+
+        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<Station> stations = service.populateStations(lat, lon, radius);
+        assertThat(stations).hasSize(1);
+        assertThat(stations.get(0).getQuantityOfChargers()).isEqualTo(1);
+    }
+
+    @Test
+    void populateStations_withMissingAddressInfo_usesDefaultValues() {
+        double lat = 1.0, lon = 2.0;
+        int radius = 10;
+        Map<String, Object> stationData = new HashMap<>();
+        stationData.put("ID", 1);
+        stationData.put("AddressInfo", new HashMap<>());
+        stationData.put("Connections", List.of(Map.of("ConnectionTypeID", "Type2")));
+        List<Map<String, Object>> responseBody = List.of(stationData);
+
+        ResponseEntity<List<Map<String, Object>>> responseEntity =
+            new ResponseEntity<>(responseBody, HttpStatus.OK);
+
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenReturn(responseEntity);
+
+        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<Station> stations = service.populateStations(lat, lon, radius);
+        assertThat(stations).hasSize(1);
+        assertThat(stations.get(0).getName()).isEqualTo("Unknown");
+        assertThat(stations.get(0).getAddress()).isEqualTo("Unknown");
+    }
+
+    @Test
+    void populateStations_withInvalidStationData_throwsException() {
+        double lat = 1.0, lon = 2.0;
+        int radius = 10;
+        Map<String, Object> stationData = new HashMap<>();
+        stationData.put("ID", "invalid");
+        stationData.put("AddressInfo", "not-a-map");
+        stationData.put("Connections", "not-a-list");
+        List<Map<String, Object>> responseBody = List.of(stationData);
+
+        ResponseEntity<List<Map<String, Object>>> responseEntity =
+            new ResponseEntity<>(responseBody, HttpStatus.OK);
+
+        lenient().when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            isNull(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
+        )).thenReturn(responseEntity);
+
+        assertThatThrownBy(() -> service.populateStations(lat, lon, radius))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Error converting station data");
+    }
 }

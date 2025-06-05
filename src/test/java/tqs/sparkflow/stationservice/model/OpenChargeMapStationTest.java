@@ -109,4 +109,60 @@ class OpenChargeMapStationTest {
     assertThat(station.getLatitude()).isEqualTo(latitude);
     assertThat(station.getLongitude()).isEqualTo(longitude);
   }
+
+  @Test
+  void testGettersAndSetters() {
+    OpenChargeMapStation station = new OpenChargeMapStation();
+    
+    // Test ID
+    station.setId("123");
+    assertThat(station.getId()).isEqualTo("123");
+    
+    // Test Name
+    station.setName("Test Station");
+    assertThat(station.getName()).isEqualTo("Test Station");
+    
+    // Test Address
+    station.setAddress("123 Test St");
+    assertThat(station.getAddress()).isEqualTo("123 Test St");
+    
+    // Test City
+    station.setCity("Test City");
+    assertThat(station.getCity()).isEqualTo("Test City");
+    
+    // Test Country
+    station.setCountry("Test Country");
+    assertThat(station.getCountry()).isEqualTo("Test Country");
+    
+    // Test Latitude
+    station.setLatitude(40.7128);
+    assertThat(station.getLatitude()).isEqualTo(40.7128);
+    
+    // Test Longitude
+    station.setLongitude(-74.0060);
+    assertThat(station.getLongitude()).isEqualTo(-74.0060);
+    
+    // Test Quantity of Chargers
+    station.setQuantityOfChargers(5);
+    assertThat(station.getQuantityOfChargers()).isEqualTo(5);
+    
+    // Test Status
+    station.setStatus("Available");
+    assertThat(station.getStatus()).isEqualTo("Available");
+  }
+
+  @Test
+  void testNullValues() {
+    OpenChargeMapStation station = new OpenChargeMapStation();
+    
+    assertThat(station.getId()).isNull();
+    assertThat(station.getName()).isNull();
+    assertThat(station.getAddress()).isNull();
+    assertThat(station.getCity()).isNull();
+    assertThat(station.getCountry()).isNull();
+    assertThat(station.getLatitude()).isZero();
+    assertThat(station.getLongitude()).isZero();
+    assertThat(station.getQuantityOfChargers()).isNull();
+    assertThat(station.getStatus()).isNull();
+  }
 } 

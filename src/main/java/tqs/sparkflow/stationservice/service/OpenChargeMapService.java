@@ -52,18 +52,26 @@ public class OpenChargeMapService {
    * @return List of stations in the city
    */
   public List<Station> getStationsByCity(String city) {
-    String url = String.format("%s?key=%s&city=%s", baseUrl, apiKey, city);
-    OpenChargeMapResponse response = restTemplate.getForObject(url, OpenChargeMapResponse.class);
-    List<Station> stations = new ArrayList<>();
-    if (response != null && response.getStations() != null) {
-      for (OpenChargeMapStation ocmStation : response.getStations()) {
-        Station station = convertToStation(ocmStation);
-        if (station != null) {
-          stations.add(station);
+    try {
+      String url = String.format("%s?key=%s&city=%s", baseUrl, apiKey, city);
+      OpenChargeMapResponse response = restTemplate.getForObject(url, OpenChargeMapResponse.class);
+      List<Station> stations = new ArrayList<>();
+      if (response != null && response.getStations() != null) {
+        for (OpenChargeMapStation ocmStation : response.getStations()) {
+          if (ocmStation != null) {
+            Station station = convertToStation(ocmStation);
+            if (station != null) {
+              stations.add(station);
+            }
+          }
         }
       }
+      return stations;
+    } catch (HttpClientErrorException e) {
+      throw new IllegalStateException("Error accessing Open Charge Map API: " + e.getMessage());
+    } catch (Exception e) {
+      throw new IllegalStateException("Error fetching stations: " + e.getMessage());
     }
-    return stations;
   }
 
   /**

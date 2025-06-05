@@ -33,14 +33,32 @@ public class StationStepDefinitions {
   @Given("there are stations in the system")
   public void thereAreStationsInTheSystem() {
     // Add test stations to the repository
-    Station station1 = new Station();
+    Station station1 = new Station(
+        "ext1",
+        "Test Station 1",
+        "123 Test Street",
+        "Test City",
+        "Test Country",
+        40.7128,
+        -74.0060,
+        2,
+        "OPERATIONAL"
+    );
     station1.setId(1L);
-    station1.setName("Test Station 1");
     stationRepository.save(station1);
 
-    Station station2 = new Station();
+    Station station2 = new Station(
+        "ext2",
+        "Test Station 2",
+        "456 Test Avenue",
+        "Test City",
+        "Test Country",
+        40.7128,
+        -74.0060,
+        3,
+        "OPERATIONAL"
+    );
     station2.setId(2L);
-    station2.setName("Test Station 2");
     stationRepository.save(station2);
   }
 
@@ -62,9 +80,18 @@ public class StationStepDefinitions {
 
   @Given("there is a station with ID {string}")
   public void thereIsAStationWithId(String id) {
-    Station station = new Station();
+    Station station = new Station(
+        "ext" + id,
+        "Test Station " + id,
+        "123 Test Street",
+        "Test City",
+        "Test Country",
+        40.7128,
+        -74.0060,
+        2,
+        "OPERATIONAL"
+    );
     station.setId(Long.parseLong(id));
-    station.setName("Test Station " + id);
     stationRepository.save(station);
   }
 
