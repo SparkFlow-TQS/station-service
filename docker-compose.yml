@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8082:8082"
+      - "${APP_PORT}:${APP_PORT}"
     environment:
       OPENCHARGEMAP_API_KEY: ${OPENCHARGEMAP_API_KEY}
       OPENCHARGEMAP_API_URL: ${OPENCHARGEMAP_API_URL}
@@ -20,14 +20,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-    volumes:
-      - ./station-mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-
 volumes:
-  station-mysql-data: 
+  station-mysql-data:

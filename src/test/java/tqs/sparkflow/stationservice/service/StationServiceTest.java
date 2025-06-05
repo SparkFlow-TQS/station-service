@@ -35,7 +35,7 @@ class StationServiceTest {
     // Create test stations
     station1 = new Station();
     station1.setId(1L);
-    station1.setConnectorType("Type 2");
+    station1.setQuantityOfChargers(1);
     station1.setPower(50);
     station1.setPrice(0.30);
     station1.setIsOperational(true);
@@ -47,7 +47,7 @@ class StationServiceTest {
 
     station2 = new Station();
     station2.setId(2L);
-    station2.setConnectorType("CCS");
+    station2.setQuantityOfChargers(1);
     station2.setPower(150);
     station2.setPrice(0.35);
     station2.setIsOperational(true);
@@ -59,7 +59,7 @@ class StationServiceTest {
 
     station3 = new Station();
     station3.setId(3L);
-    station3.setConnectorType("Type 2");
+    station3.setQuantityOfChargers(1);
     station3.setPower(22);
     station3.setPrice(0.25);
     station3.setIsOperational(false);
@@ -212,40 +212,43 @@ class StationServiceTest {
   @Test
   @XrayTest(key = "STATION-SVC-9")
   @Requirement("STATION-SVC-9")
-  void whenGettingStationsByConnectorType_thenReturnsMatchingStations() {
+  void whenGettingStationsByQuantityOfChargers_thenReturnsMatchingStations() {
     // Given
-    String connectorType = "Type2";
+    int quantityOfChargers = 1;
     List<Station> expectedStations =
         Arrays.asList(
             createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
-    when(stationRepository.findByConnectorType(connectorType)).thenReturn(expectedStations);
+    when(stationRepository.findByQuantityOfChargersGreaterThanEqual(quantityOfChargers)).thenReturn(expectedStations);
 
     // When
-    List<Station> result = stationService.getStationsByConnectorType(connectorType);
+    List<Station> result = stationService.getStationsByMinChargers(quantityOfChargers);
 
     // Then
     assertThat(result).isEqualTo(expectedStations);
-    verify(stationRepository).findByConnectorType(connectorType);
+    verify(stationRepository).findByQuantityOfChargersGreaterThanEqual(quantityOfChargers);
   }
 
   @Test
   @XrayTest(key = "STATION-SVC-10")
   @Requirement("STATION-SVC-10")
-  void whenGettingStationsByEmptyConnectorType_thenThrowsException() {
+  void whenGettingStationsByMinChargersWithInvalidValues_thenThrowsException() {
     // When/Then
-    assertThatThrownBy(() -> stationService.getStationsByConnectorType(""))
+    assertThatThrownBy(() -> stationService.getStationsByMinChargers(0))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Connector type cannot be empty");
+        .hasMessageContaining("Minimum number of chargers must be at least 1");
+    assertThatThrownBy(() -> stationService.getStationsByMinChargers(-1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Minimum number of chargers must be at least 1");
   }
 
   @Test
   @XrayTest(key = "STATION-SVC-11")
   @Requirement("STATION-SVC-11")
-  void whenGettingStationsByNullConnectorType_thenThrowsException() {
+  void whenGettingStationsByNullMinChargers_thenThrowsException() {
     // When/Then
-    assertThatThrownBy(() -> stationService.getStationsByConnectorType(null))
+    assertThatThrownBy(() -> stationService.getStationsByMinChargers(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Connector type cannot be null");
+        .hasMessageContaining("Minimum number of chargers cannot be null");
   }
 
   @Test
@@ -307,15 +310,15 @@ class StationServiceTest {
   @Test
   @XrayTest(key = "STATION-SVC-16")
   @Requirement("STATION-SVC-16")
-  void whenCreatingStationWithEmptyConnectorType_thenThrowsException() {
+  void whenCreatingStationWithEmptyQuantityOfChargers_thenThrowsException() {
     // Given
     Station station = createTestStation(1L, "Test Station");
-    station.setConnectorType("");
+    station.setQuantityOfChargers(0);
 
     // When/Then
     assertThatThrownBy(() -> stationService.createStation(station))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Connector type cannot be empty");
+        .hasMessageContaining("Quantity of chargers must be at least 1");
   }
 
   @Test
@@ -396,32 +399,13 @@ class StationServiceTest {
   }
 
   @Test
-  void whenFilterByConnectorType_thenReturnMatchingStations() {
-    // Given
-    StationFilterDTO filter = new StationFilterDTO();
-    filter.setConnectorType("Type 2");
-    List<Station> expectedStations = Arrays.asList(station1, station3);
-    when(stationRepository.findStationsByFilters("Type 2", null, null, null, null, null, null, null, null))
-        .thenReturn(expectedStations);
-
-    // When
-    List<Station> result = stationService.getStationsByFilters(filter);
-
-    // Then
-    assertThat(result)
-        .hasSize(2)
-        .allMatch(station -> station.getConnectorType().equals("Type 2"));
-    verify(stationRepository).findStationsByFilters("Type 2", null, null, null, null, null, null, null, null);
-  }
-
-  @Test
   void whenFilterByPriceRange_thenReturnMatchingStations() {
     // Given
     StationFilterDTO filter = new StationFilterDTO();
     filter.setMinPrice(0.25);
     filter.setMaxPrice(0.30);
     List<Station> expectedStations = Arrays.asList(station1, station3);
-    when(stationRepository.findStationsByFilters(null, null, null, null, null, null, null, 0.25, 0.30))
+    when(stationRepository.findStationsByFilters(null, null, null, null, null, null, 0.25, 0.30))
         .thenReturn(expectedStations);
 
     // When
@@ -431,7 +415,7 @@ class StationServiceTest {
     assertThat(result)
         .hasSize(2)
         .allMatch(station -> station.getPrice() >= 0.25 && station.getPrice() <= 0.30);
-    verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, null, 0.25, 0.30);
+    verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, 0.25, 0.30);
   }
 
   @Test
@@ -440,7 +424,7 @@ class StationServiceTest {
     StationFilterDTO filters = new StationFilterDTO();
     filters.setMinPower(40);
     filters.setMaxPower(60);
-    when(stationRepository.findStationsByFilters(null, 40, 60, null, null, null, null, null, null))
+    when(stationRepository.findStationsByFilters(40, 60, null, null, null, null, null, null))
         .thenReturn(List.of(station1));
 
     // Act
@@ -449,7 +433,7 @@ class StationServiceTest {
     // Assert
     assertThat(result).hasSize(1);
     assertThat(result.get(0).getPower()).isEqualTo(50);
-    verify(stationRepository).findStationsByFilters(null, 40, 60, null, null, null, null, null, null);
+    verify(stationRepository).findStationsByFilters(40, 60, null, null, null, null, null, null);
   }
 
   @Test
@@ -460,7 +444,7 @@ class StationServiceTest {
     filters.setLongitude(-8.650256);
     filters.setRadius(10);
     when(stationRepository.findStationsByFiltersWithLocation(
-        null, null, null, null, null, null, null, null, null, 
+        null, null, null, null, null, null, null, null, 
         40.623361, -8.650256, 10))
         .thenReturn(List.of(station1));
 
@@ -471,7 +455,7 @@ class StationServiceTest {
     assertThat(result).hasSize(1);
     assertThat(result.get(0).getId()).isEqualTo(1L);
     verify(stationRepository).findStationsByFiltersWithLocation(
-        null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null,
         40.623361, -8.650256, 10);
   }
 
@@ -481,7 +465,7 @@ class StationServiceTest {
     StationFilterDTO filter = new StationFilterDTO();
     filter.setIsOperational(true);
     List<Station> expectedStations = Arrays.asList(station1, station2);
-    when(stationRepository.findStationsByFilters(null, null, null, true, null, null, null, null, null))
+    when(stationRepository.findStationsByFilters(null, null, true, null, null, null, null, null))
         .thenReturn(expectedStations);
 
     // When
@@ -491,7 +475,7 @@ class StationServiceTest {
     assertThat(result)
         .hasSize(2)
         .allMatch(Station::getIsOperational);
-    verify(stationRepository).findStationsByFilters(null, null, null, true, null, null, null, null, null);
+    verify(stationRepository).findStationsByFilters(null, null, true, null, null, null, null, null);
   }
 
   @Test
@@ -499,7 +483,7 @@ class StationServiceTest {
     // Arrange
     StationFilterDTO filters = new StationFilterDTO();
     filters.setCity("Aveiro");
-    when(stationRepository.findStationsByFilters(null, null, null, null, null, "Aveiro", null, null, null))
+    when(stationRepository.findStationsByFilters(null, null, null, null, "Aveiro", null, null, null))
         .thenReturn(List.of(station1));
 
     // Act
@@ -508,18 +492,17 @@ class StationServiceTest {
     // Assert
     assertThat(result).hasSize(1);
     assertThat(result.get(0).getCity()).isEqualTo("Aveiro");
-    verify(stationRepository).findStationsByFilters(null, null, null, null, null, "Aveiro", null, null, null);
+    verify(stationRepository).findStationsByFilters(null, null, null, null, "Aveiro", null, null, null);
   }
 
   @Test
   void whenFilterByMultipleCriteria_thenReturnMatchingStations() {
     // Arrange
     StationFilterDTO filters = new StationFilterDTO();
-    filters.setConnectorType("Type 2");
     filters.setMinPrice(0.25);
     filters.setMaxPrice(0.35);
     filters.setIsOperational(true);
-    when(stationRepository.findStationsByFilters("Type 2", null, null, true, null, null, null, 0.25, 0.35))
+    when(stationRepository.findStationsByFilters(null, null, true, null, null, null, 0.25, 0.35))
         .thenReturn(List.of(station1));
 
     // Act
@@ -527,17 +510,16 @@ class StationServiceTest {
 
     // Assert
     assertThat(result).hasSize(1);
-    assertThat(result.get(0).getConnectorType()).isEqualTo("Type 2");
     assertThat(result.get(0).getPrice()).isBetween(0.25, 0.35);
     assertThat(result.get(0).getIsOperational()).isTrue();
-    verify(stationRepository).findStationsByFilters("Type 2", null, null, true, null, null, null, 0.25, 0.35);
+    verify(stationRepository).findStationsByFilters(null, null, true, null, null, null, 0.25, 0.35);
   }
 
   @Test
   void whenNoFiltersProvided_thenReturnAllStations() {
     // Arrange
     StationFilterDTO filters = new StationFilterDTO();
-    when(stationRepository.findStationsByFilters(null, null, null, null, null, null, null, null, null))
+    when(stationRepository.findStationsByFilters(null, null, null, null, null, null, null, null))
         .thenReturn(Arrays.asList(station1, station2, station3));
 
     // Act
@@ -545,7 +527,7 @@ class StationServiceTest {
 
     // Assert
     assertThat(result).hasSize(3);
-    verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, null, null, null);
+    verify(stationRepository).findStationsByFilters(null, null, null, null, null, null, null, null);
   }
 
   @Test
@@ -553,7 +535,7 @@ class StationServiceTest {
     // Arrange
     StationFilterDTO filters = new StationFilterDTO();
     filters.setStatus("Available");
-    when(stationRepository.findStationsByFilters(null, null, null, null, "Available", null, null, null, null))
+    when(stationRepository.findStationsByFilters(null, null, null, "Available", null, null, null, null))
         .thenReturn(List.of(station1));
 
     // Act
@@ -562,12 +544,12 @@ class StationServiceTest {
     // Assert
     assertThat(result).hasSize(1);
     assertThat(result.get(0).getStatus()).isEqualTo("Available");
-    verify(stationRepository).findStationsByFilters(null, null, null, null, "Available", null, null, null, null);
+    verify(stationRepository).findStationsByFilters(null, null, null, "Available", null, null, null, null);
   }
 
   private Station createTestStation(Long id, String name) {
     Station station =
-        new Station(name, "Test Address", "Lisbon", 38.7223, -9.1393, "Type 2", "Available");
+        new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 2, "Available");
     station.setId(id);
     return station;
   }

@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://dummy-issuer
+          jwk-set-uri: http://dummy-jwks
+          public-key-location: classpath:public.pem
+      client:
+        registration:
+          keycloak:
+            client-id: test-client
+            client-secret: test-secret
+            scope: openid,profile,email
+        provider:
+          keycloak:
+            authorization-uri: http://dummy-auth
+            token-uri: http://dummy-token
+            user-info-uri: http://dummy-userinfo
+            jwk-set-uri: http://dummy-jwks
+            user-name-attribute: preferred_username
+  flyway:
+    enabled: false
+  main:
+    allow-bean-definition-overriding: true
+
+openchargemap:
+  api:
+    key: test-key
+    url: http://dummy-url-for-tests
+
+user:
+  service:
+    url: http://dummy-user-service-url
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG 

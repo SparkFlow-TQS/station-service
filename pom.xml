@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.0</version>
+		<version>3.2.3</version>
 		<relativePath/>
 	</parent>
 	<groupId>tqs.sparkflow</groupId>
@@ -36,7 +36,7 @@
 		<sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 		<junit-platform.version>1.12.1</junit-platform.version>
 		<junit-jupiter.version>5.12.1</junit-jupiter.version>
-		<springdoc.version>2.7.0</springdoc.version>
+		<springdoc.version>2.3.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
 		<cucumber.version>7.22.2</cucumber.version>
 		<spotless.version>2.43.0</spotless.version>
@@ -44,7 +44,6 @@
 		<mockito.version>5.16.0</mockito.version>
 		<rest-assured.version>5.5.0</rest-assured.version>
 		<testcontainers.version>1.20.0</testcontainers.version>
-		<hibernate.version>6.4.4.Final</hibernate.version>
 	</properties>
 
 	<repositories>
@@ -84,7 +83,34 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.el</artifactId>
+			<version>4.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>3.6.1.Final</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -105,6 +131,10 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -240,6 +270,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
