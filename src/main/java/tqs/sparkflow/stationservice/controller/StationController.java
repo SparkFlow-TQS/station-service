@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,7 +22,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.service.StationService;
 
@@ -43,9 +43,9 @@ public class StationController {
   /**
    * Gets all stations.
    *
-   * @return List of all stations
+   * @return List of all stations (limited to 500 for performance)
    */
-  @Operation(summary = "Get all stations", description = "Retrieves a list of all charging stations in the system")
+  @Operation(summary = "Get all stations", description = "Retrieves a list of all charging stations in the system (limited to 500 stations for performance)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved all stations",
           content = @Content(mediaType = "application/json",
@@ -120,7 +120,7 @@ public class StationController {
   })
   @PostMapping
   public ResponseEntity<Station> createStation(
-      @Parameter(description = "Station object to create", required = true) @RequestBody Station station) {
+      @Parameter(description = "Station object to create", required = true) @Valid @RequestBody Station station) {
     return ResponseEntity.status(HttpStatus.CREATED).body(stationService.createStation(station));
   }
 
@@ -142,7 +142,7 @@ public class StationController {
   @PutMapping("/{id}")
   public ResponseEntity<Station> updateStation(
       @Parameter(description = "ID of the station to update", required = true) @PathVariable Long id,
-      @Parameter(description = "Updated station data", required = true) @RequestBody Station station) {
+      @Parameter(description = "Updated station data", required = true) @Valid @RequestBody Station station) {
     try {
       Station updatedStation = stationService.updateStation(id, station);
       return ResponseEntity.ok(updatedStation);
@@ -178,10 +178,10 @@ public class StationController {
    * @param name The station name
    * @param city The city name
    * @param country The country name
-   * @param minChargers The minimum number of chargers
+   * @param connectorType The connector type
    * @return List of matching stations
    */
-  @Operation(summary = "Search stations", description = "Searches for stations based on various criteria")
+  @Operation(summary = "Search stations", description = "Searches for stations based on various criteria (results limited to 500 stations for performance)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved matching stations",
           content = @Content(mediaType = "application/json",
@@ -203,9 +203,9 @@ public class StationController {
    * @param latitude The latitude coordinate
    * @param longitude The longitude coordinate
    * @param radius The search radius in kilometers
-   * @return List of stations within the radius
+   * @return List of stations within the radius (limited to 500 results)
    */
-  @Operation(summary = "Find nearby stations", description = "Finds charging stations within a specified radius of given coordinates")
+  @Operation(summary = "Find nearby stations", description = "Finds charging stations within a specified radius of given coordinates (results limited to 500 stations for performance)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved nearby stations",
           content = @Content(mediaType = "application/json",
@@ -222,6 +222,7 @@ public class StationController {
 
 
   /**
+   * Gets the total count of stations in the system.
    * Gets stations by minimum number of chargers.
    *
    * @param minChargers The minimum number of chargers to search for
@@ -234,23 +235,21 @@ public class StationController {
       @Parameter(description = "Minimum number of chargers", required = true) @PathVariable int minChargers) {
     return ResponseEntity.ok(stationService.getStationsByMinChargers(minChargers));
   }
-  
+
   /**
-   * Gets stations based on filter criteria.
+   * Gets the total number of stations in the system.
    *
-   * @param filter The filter criteria
-   * @return List of stations matching the filter criteria
+   * @return The total number of stations
    */
-  @Operation(summary = "Get stations by filters", description = "Retrieves stations based on various filter criteria")
+  @Operation(summary = "Get total station count", description = "Retrieves the total number of charging stations in the system")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved filtered stations",
+      @ApiResponse(responseCode = "200", description = "Successfully retrieved station count",
           content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = Station.class))),
-      @ApiResponse(responseCode = "400", description = "Invalid filter parameters")
+              schema = @Schema(implementation = Long.class))),
+      @ApiResponse(responseCode = "500", description = "Internal server error")
   })
-  @PostMapping("/filter")
-  public ResponseEntity<List<Station>> getStationsByFilters(
-      @Parameter(description = "Filter criteria", required = true) @RequestBody StationFilterDTO filter) {
-    return ResponseEntity.ok(stationService.getStationsByFilters(filter));
+  @GetMapping("/count")
+  public ResponseEntity<Long> getTotalStationCount() {
+    return ResponseEntity.ok(stationService.getTotalStationCount());
   }
 }

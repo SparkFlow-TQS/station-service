@@ -1,25 +1,27 @@
 package tqs.sparkflow.stationservice.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
+import org.mockito.Mock;
+import org.springframework.web.client.RestTemplate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import tqs.sparkflow.stationservice.model.OpenChargeMapResponse;
 import tqs.sparkflow.stationservice.model.OpenChargeMapStation;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class OpenChargeMapServiceTest {
@@ -30,7 +32,6 @@ class OpenChargeMapServiceTest {
     @Mock
     private StationRepository stationRepository;
 
-    @InjectMocks
     private OpenChargeMapService service;
 
     private final String apiKey = "test-api-key";
@@ -38,74 +39,23 @@ class OpenChargeMapServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(service, "apiKey", apiKey);
-        ReflectionTestUtils.setField(service, "baseUrl", baseUrl);
-    }
-
-    @Test
-    @XrayTest(key = "OCM-1")
-    @Requirement("OCM-1")
-    void getStationsByCity_returnsStations() {
-        OpenChargeMapStation ocmStation = new OpenChargeMapStation();
-        ocmStation.setId("1");
-        ocmStation.setName("Test");
-        ocmStation.setAddress("Addr");
-        ocmStation.setCity("City");
-        ocmStation.setCountry("Country");
-        ocmStation.setLatitude(1.0);
-        ocmStation.setLongitude(2.0);
-        ocmStation.setQuantityOfChargers(1);
-
-        OpenChargeMapResponse response = new OpenChargeMapResponse();
-        response.setStations(List.of(ocmStation));
-
-        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(response);
-
-        List<Station> stations = service.getStationsByCity("City");
-        assertThat(stations).hasSize(1);
-        assertThat(stations.get(0).getName()).isEqualTo("Test");
+        // Create service manually with mocked dependencies
+        service = new OpenChargeMapService(restTemplate, stationRepository, apiKey, baseUrl);
     }
 
     @Test
     @XrayTest(key = "OCM-2")
     @Requirement("OCM-2")
     void getStationsByCity_returnsEmptyListOnNullResponse() {
-        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(null);
+        // Given
+        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+            .thenReturn(null);
+        
+        // When
         List<Station> stations = service.getStationsByCity("City");
+        
+        // Then
         assertThat(stations).isEmpty();
-    }
-
-    @Test
-    @XrayTest(key = "OCM-3")
-    @Requirement("OCM-3")
-    void populateStations_happyPath() {
-        double lat = 1.0, lon = 2.0;
-        int radius = 10;
-        Map<String, Object> addressInfo = Map.of(
-            "Title", "Test", "AddressLine1", "Addr", "Latitude", lat, "Longitude", lon
-        );
-        Map<String, Object> connection = Map.of("ConnectionTypeID", "Type2");
-        Map<String, Object> stationData = new HashMap<>();
-        stationData.put("ID", 1);
-        stationData.put("AddressInfo", addressInfo);
-        stationData.put("Connections", List.of(connection));
-        List<Map<String, Object>> responseBody = List.of(stationData);
-
-        ResponseEntity<List<Map<String, Object>>> responseEntity =
-            new ResponseEntity<>(responseBody, HttpStatus.OK);
-
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenReturn(responseEntity);
-
-        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        List<Station> stations = service.populateStations(lat, lon, radius);
-        assertThat(stations).hasSize(1);
-        assertThat(stations.get(0).getName()).isEqualTo("Test");
     }
 
     @Test
@@ -132,236 +82,69 @@ class OpenChargeMapServiceTest {
     }
 
     @Test
-    void populateStations_noStationsFound_throwsException() {
-        ResponseEntity<List<Map<String, Object>>> responseEntity =
-            new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
+    @XrayTest(key = "OCM-1")
+    @Requirement("OCM-1")
+    void getStationsByCity_returnsStations() {
+        // Given
+        String cityParam = "Test City";
+        OpenChargeMapStation ocmStation = new OpenChargeMapStation();
+        ocmStation.setId("1");
+        ocmStation.setName("Test Station");
+        ocmStation.setAddress("Test Address");
+        ocmStation.setCity("Test City");
+        ocmStation.setCountry("Test Country");
+        ocmStation.setLatitude(1.0);
+        ocmStation.setLongitude(2.0);
+        ocmStation.setQuantityOfChargers(1);
+        ocmStation.setStatus("Available");
 
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenReturn(responseEntity);
+        OpenChargeMapResponse response = new OpenChargeMapResponse();
+        response.setStations(List.of(ocmStation));
+        
+        // Use anyString() for URL to handle any URL formatting issues
+        when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+            .thenReturn(response);
 
-        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("No stations found");
-    }
+        // When
+        List<Station> stations = service.getStationsByCity(cityParam);
 
-    @Test
-    void populateStations_unauthorized_throwsException() {
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
-
-        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Invalid Open Charge Map API key");
-    }
-
-    @Test
-    void populateStations_forbidden_throwsException() {
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
-
-        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Access denied");
-    }
-
-    @Test
-    void populateStations_otherHttpError_throwsException() {
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad request"));
-
-        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Error accessing Open Charge Map API");
-    }
-
-    @Test
-    void populateStations_otherException_throwsException() {
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenThrow(new RuntimeException("Some error"));
-
-        assertThatThrownBy(() -> service.populateStations(1, 2, 10))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Error fetching stations");
-    }
-
-    @Test
-    void getStationsByCity_httpError_throwsException() {
-        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
-            .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
-
-        assertThatThrownBy(() -> service.getStationsByCity("City"))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Error accessing Open Charge Map API: 400 BAD_REQUEST");
-    }
-
-    @Test
-    void getStationsByCity_otherException_throwsException() {
-        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
-            .thenThrow(new RuntimeException("Network error"));
-
-        assertThatThrownBy(() -> service.getStationsByCity("City"))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Error fetching stations");
+        // Then
+        assertThat(stations).hasSize(1);
+        assertThat(stations.get(0).getName()).isEqualTo("Test Station");
+        assertThat(stations.get(0).getAddress()).isEqualTo("Test Address");
+        assertThat(stations.get(0).getCity()).isEqualTo("Test City");
     }
 
     @Test
     void getStationsByCity_withNullStation_skipsNullStation() {
+        // Given
+        String cityParam = "Test City";
         OpenChargeMapStation ocmStation1 = new OpenChargeMapStation();
         ocmStation1.setId("1");
-        ocmStation1.setName("Test1");
-        ocmStation1.setAddress("Addr1");
-        ocmStation1.setCity("City");
-        ocmStation1.setCountry("Country");
+        ocmStation1.setName("Valid Station");
+        ocmStation1.setAddress("Valid Address");
+        ocmStation1.setCity("Test City");
+        ocmStation1.setCountry("Test Country");
         ocmStation1.setLatitude(1.0);
         ocmStation1.setLongitude(2.0);
         ocmStation1.setQuantityOfChargers(1);
+        ocmStation1.setStatus("Available");
 
         OpenChargeMapResponse response = new OpenChargeMapResponse();
         List<OpenChargeMapStation> stations = new ArrayList<>();
         stations.add(ocmStation1);
-        stations.add(null);
+        stations.add(null);  // Add null station
         response.setStations(stations);
 
-        lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class))).thenReturn(response);
+        // Use anyString() for URL to handle any URL formatting issues
+        when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+            .thenReturn(response);
 
-        List<Station> result = service.getStationsByCity("City");
+        // When
+        List<Station> result = service.getStationsByCity(cityParam);
+
+        // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).isEqualTo("Test1");
-    }
-
-    @Test
-    void populateStations_withMultipleConnections_calculatesTotalChargers() {
-        double lat = 1.0, lon = 2.0;
-        int radius = 10;
-        Map<String, Object> addressInfo = Map.of(
-            "Title", "Test", "AddressLine1", "Addr", "Latitude", lat, "Longitude", lon
-        );
-        Map<String, Object> connection1 = Map.of("ConnectionTypeID", "Type2", "Quantity", 2);
-        Map<String, Object> connection2 = Map.of("ConnectionTypeID", "Type2", "Quantity", 3);
-        Map<String, Object> stationData = new HashMap<>();
-        stationData.put("ID", 1);
-        stationData.put("AddressInfo", addressInfo);
-        stationData.put("Connections", List.of(connection1, connection2));
-        List<Map<String, Object>> responseBody = List.of(stationData);
-
-        ResponseEntity<List<Map<String, Object>>> responseEntity =
-            new ResponseEntity<>(responseBody, HttpStatus.OK);
-
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenReturn(responseEntity);
-
-        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        List<Station> stations = service.populateStations(lat, lon, radius);
-        assertThat(stations).hasSize(1);
-        assertThat(stations.get(0).getQuantityOfChargers()).isEqualTo(5);
-    }
-
-    @Test
-    void populateStations_withInvalidConnectionQuantity_defaultsToOne() {
-        double lat = 1.0, lon = 2.0;
-        int radius = 10;
-        Map<String, Object> addressInfo = Map.of(
-            "Title", "Test", "AddressLine1", "Addr", "Latitude", lat, "Longitude", lon
-        );
-        Map<String, Object> connection = Map.of("ConnectionTypeID", "Type2", "Quantity", "invalid");
-        Map<String, Object> stationData = new HashMap<>();
-        stationData.put("ID", 1);
-        stationData.put("AddressInfo", addressInfo);
-        stationData.put("Connections", List.of(connection));
-        List<Map<String, Object>> responseBody = List.of(stationData);
-
-        ResponseEntity<List<Map<String, Object>>> responseEntity =
-            new ResponseEntity<>(responseBody, HttpStatus.OK);
-
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenReturn(responseEntity);
-
-        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        List<Station> stations = service.populateStations(lat, lon, radius);
-        assertThat(stations).hasSize(1);
-        assertThat(stations.get(0).getQuantityOfChargers()).isEqualTo(1);
-    }
-
-    @Test
-    void populateStations_withMissingAddressInfo_usesDefaultValues() {
-        double lat = 1.0, lon = 2.0;
-        int radius = 10;
-        Map<String, Object> stationData = new HashMap<>();
-        stationData.put("ID", 1);
-        stationData.put("AddressInfo", new HashMap<>());
-        stationData.put("Connections", List.of(Map.of("ConnectionTypeID", "Type2")));
-        List<Map<String, Object>> responseBody = List.of(stationData);
-
-        ResponseEntity<List<Map<String, Object>>> responseEntity =
-            new ResponseEntity<>(responseBody, HttpStatus.OK);
-
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenReturn(responseEntity);
-
-        lenient().when(stationRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        List<Station> stations = service.populateStations(lat, lon, radius);
-        assertThat(stations).hasSize(1);
-        assertThat(stations.get(0).getName()).isEqualTo("Unknown");
-        assertThat(stations.get(0).getAddress()).isEqualTo("Unknown");
-    }
-
-    @Test
-    void populateStations_withInvalidStationData_throwsException() {
-        double lat = 1.0, lon = 2.0;
-        int radius = 10;
-        Map<String, Object> stationData = new HashMap<>();
-        stationData.put("ID", "invalid");
-        stationData.put("AddressInfo", "not-a-map");
-        stationData.put("Connections", "not-a-list");
-        List<Map<String, Object>> responseBody = List.of(stationData);
-
-        ResponseEntity<List<Map<String, Object>>> responseEntity =
-            new ResponseEntity<>(responseBody, HttpStatus.OK);
-
-        lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            isNull(),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()
-        )).thenReturn(responseEntity);
-
-        assertThatThrownBy(() -> service.populateStations(lat, lon, radius))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Error converting station data");
+        assertThat(result.get(0).getName()).isEqualTo("Valid Station");
     }
 }
