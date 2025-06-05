@@ -16,7 +16,7 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "stations")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Station extends BaseStationFields {
+public class Station extends BaseStationFields<Long> {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +53,7 @@ public class Station extends BaseStationFields {
 
   private Integer power;
   private Boolean isOperational;
+  private Double price;
   
   /** Creates a new Station. */
   public Station() {
@@ -263,6 +264,14 @@ public class Station extends BaseStationFields {
 
   public void setIsOperational(Boolean isOperational) {
     this.isOperational = isOperational;
+  }
+
+  public Double getPrice() {
+    return price;
+  }
+
+  public void setPrice(Double price) {
+    this.price = price;
   }
 
   @Override

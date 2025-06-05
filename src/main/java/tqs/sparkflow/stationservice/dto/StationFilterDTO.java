@@ -3,7 +3,7 @@ package tqs.sparkflow.stationservice.dto;
 import jakarta.validation.constraints.Min;
 import tqs.sparkflow.stationservice.model.BaseStationFields;
 
-public class StationFilterDTO extends BaseStationFields {
+public class StationFilterDTO extends BaseStationFields<Long> {
   @Min(value = 0, message = "Minimum price must be non-negative")
   private Double minPrice;
     
@@ -12,6 +12,15 @@ public class StationFilterDTO extends BaseStationFields {
     
   @Min(value = 0, message = "Radius must be positive")
   private Integer radius;
+
+  @Min(value = 0, message = "Minimum power must be non-negative")
+  private Integer minPower;
+
+  @Min(value = 0, message = "Maximum power must be non-negative")
+  private Integer maxPower;
+
+  private Boolean isOperational;
+  private String status;
 
   public Double getMinPrice() {
     return minPrice;
@@ -35,5 +44,37 @@ public class StationFilterDTO extends BaseStationFields {
 
   public void setRadius(Integer radius) {
     this.radius = radius;
+  }
+
+  public Integer getMinPower() {
+    return minPower;
+  }
+
+  public void setMinPower(Integer minPower) {
+    this.minPower = minPower;
+  }
+
+  public Integer getMaxPower() {
+    return maxPower;
+  }
+
+  public void setMaxPower(Integer maxPower) {
+    this.maxPower = maxPower;
+  }
+
+  public Boolean getIsOperational() {
+    return isOperational;
+  }
+
+  public void setIsOperational(Boolean isOperational) {
+    this.isOperational = isOperational;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
   }
 }

@@ -1,8 +1,12 @@
-package tqs.sparkflow.stationservice.model;
+package tqs.sparkflow.stationservice.dto;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
- * Base class containing common fields for station-related models.
- * @param <T> The type of the ID field (Long for internal stations, String for external stations)
+ * Base class containing common fields for station-related DTOs.
  */
 public abstract class BaseStationFields<T> {
     protected T id;
@@ -13,6 +17,11 @@ public abstract class BaseStationFields<T> {
     protected Double latitude;
     protected Double longitude;
     protected String connectorType;
+    protected Integer minPower;
+    protected Integer maxPower;
+    protected Boolean isOperational;
+    protected String status;
+    protected Double price;
 
     public T getId() {
         return id;
@@ -76,5 +85,45 @@ public abstract class BaseStationFields<T> {
 
     public void setConnectorType(String connectorType) {
         this.connectorType = connectorType;
+    }
+
+    public Integer getMinPower() {
+        return minPower;
+    }
+
+    public void setMinPower(Integer minPower) {
+        this.minPower = minPower;
+    }
+
+    public Integer getMaxPower() {
+        return maxPower;
+    }
+
+    public void setMaxPower(Integer maxPower) {
+        this.maxPower = maxPower;
+    }
+
+    public Boolean getIsOperational() {
+        return isOperational;
+    }
+
+    public void setIsOperational(Boolean isOperational) {
+        this.isOperational = isOperational;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 } 

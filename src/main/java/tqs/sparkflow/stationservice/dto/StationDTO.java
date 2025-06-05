@@ -1,16 +1,9 @@
 package tqs.sparkflow.stationservice.dto;
 
+import tqs.sparkflow.stationservice.model.BaseStationFields;
 import tqs.sparkflow.stationservice.model.Station;
 
-public class StationDTO {
-    private Long id;
-    private String name;
-    private String address;
-    private String city;
-    private String country;
-    private Double latitude;
-    private Double longitude;
-    private String connectorType;
+public class StationDTO extends BaseStationFields<Long> {
     private String status;
     private Integer power;
     private Boolean isOperational;
@@ -32,71 +25,6 @@ public class StationDTO {
         this.power = station.getPower();
         this.isOperational = station.getIsOperational();
         this.price = station.getPrice();
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public String getConnectorType() {
-        return connectorType;
-    }
-
-    public void setConnectorType(String connectorType) {
-        this.connectorType = connectorType;
     }
 
     public String getStatus() {
