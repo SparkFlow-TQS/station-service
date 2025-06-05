@@ -72,11 +72,7 @@ public class BookingServiceImpl implements BookingService {
       throw new IllegalStateException("Station is not operational");
     }
 
-    List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
-                                                            stationId, startTime, endTime);
-    if (!overlappingBookings.isEmpty()) {
-      throw new IllegalStateException("Time slot is already booked");
-    }
+    stationService.validateBooking(stationId, userId, startTime, endTime);
 
     Booking booking = new Booking();
     booking.setUserId(userId);

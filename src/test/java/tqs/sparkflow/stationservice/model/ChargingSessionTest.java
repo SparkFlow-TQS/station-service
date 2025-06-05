@@ -22,60 +22,66 @@ class ChargingSessionTest {
         // Then
         assertEquals(stationId, session.getStationId());
         assertEquals(userId, session.getUserId());
-        assertEquals(ChargingSession.ChargingSessionStatus.CREATED, session.getStatus());
+        assertFalse(session.isFinished());
         assertNull(session.getStartTime());
         assertNull(session.getEndTime());
-        assertNull(session.getErrorMessage());
     }
 
     @Test
-    void whenStartingCharging_thenStatusIsUpdated() {
+    void whenCreatingSessionWithConstructor_thenStartTimeIsSet() {
         // Given
-        ChargingSession session = new ChargingSession();
-        session.setStationId("STATION-001");
-        session.setUserId("USER-001");
+        String stationId = "STATION-001";
+        String userId = "USER-001";
 
         // When
-        session.setStatus(ChargingSession.ChargingSessionStatus.CHARGING);
-        session.setStartTime(LocalDateTime.now());
+        ChargingSession session = new ChargingSession(stationId, userId);
 
         // Then
-        assertEquals(ChargingSession.ChargingSessionStatus.CHARGING, session.getStatus());
+        assertEquals(stationId, session.getStationId());
+        assertEquals(userId, session.getUserId());
+        assertFalse(session.isFinished());
         assertNotNull(session.getStartTime());
+        assertNull(session.getEndTime());
     }
 
     @Test
-    void whenEndingCharging_thenSessionIsCompleted() {
+    void whenFinishingSession_thenFinishedFlagIsSet() {
         // Given
-        ChargingSession session = new ChargingSession();
-        session.setStationId("STATION-001");
-        session.setUserId("USER-001");
-        session.setStatus(ChargingSession.ChargingSessionStatus.CHARGING);
-        session.setStartTime(LocalDateTime.now());
+        ChargingSession session = new ChargingSession("STATION-001", "USER-001");
 
         // When
-        session.setStatus(ChargingSession.ChargingSessionStatus.COMPLETED);
+        session.setFinished(true);
         session.setEndTime(LocalDateTime.now());
 
         // Then
-        assertEquals(ChargingSession.ChargingSessionStatus.COMPLETED, session.getStatus());
+        assertTrue(session.isFinished());
         assertNotNull(session.getEndTime());
     }
 
     @Test
-    void whenReportingError_thenErrorStateIsSet() {
+    void whenSettingSessionProperties_thenPropertiesAreCorrect() {
         // Given
         ChargingSession session = new ChargingSession();
-        session.setStationId("STATION-001");
-        session.setUserId("USER-001");
-        String errorMessage = "Connection error";
+        Long id = 1L;
+        String stationId = "STATION-001";
+        String userId = "USER-001";
+        LocalDateTime startTime = LocalDateTime.now();
+        LocalDateTime endTime = startTime.plusHours(2);
 
         // When
-        session.setStatus(ChargingSession.ChargingSessionStatus.ERROR);
-        session.setErrorMessage(errorMessage);
+        session.setId(id);
+        session.setStationId(stationId);
+        session.setUserId(userId);
+        session.setStartTime(startTime);
+        session.setEndTime(endTime);
+        session.setFinished(true);
 
         // Then
-        assertEquals(ChargingSession.ChargingSessionStatus.ERROR, session.getStatus());
-        assertEquals(errorMessage, session.getErrorMessage());
+        assertEquals(id, session.getId());
+        assertEquals(stationId, session.getStationId());
+        assertEquals(userId, session.getUserId());
+        assertEquals(startTime, session.getStartTime());
+        assertEquals(endTime, session.getEndTime());
+        assertTrue(session.isFinished());
     }
-} 
+}
