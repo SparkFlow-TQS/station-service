@@ -3,6 +3,7 @@ package tqs.sparkflow.stationservice.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.util.Objects;
 
 public class RoutePlanningRequestDTO {
     @NotNull(message = "Start latitude cannot be null")
@@ -80,5 +81,35 @@ public class RoutePlanningRequestDTO {
 
     public void setCarAutonomy(Double carAutonomy) {
         this.carAutonomy = carAutonomy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RoutePlanningRequestDTO that = (RoutePlanningRequestDTO) o;
+        return Objects.equals(startLatitude, that.startLatitude) &&
+               Objects.equals(startLongitude, that.startLongitude) &&
+               Objects.equals(destLatitude, that.destLatitude) &&
+               Objects.equals(destLongitude, that.destLongitude) &&
+               Objects.equals(batteryCapacity, that.batteryCapacity) &&
+               Objects.equals(carAutonomy, that.carAutonomy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startLatitude, startLongitude, destLatitude, destLongitude, batteryCapacity, carAutonomy);
+    }
+
+    @Override
+    public String toString() {
+        return "RoutePlanningRequestDTO{" +
+               "startLatitude=" + startLatitude +
+               ", startLongitude=" + startLongitude +
+               ", destLatitude=" + destLatitude +
+               ", destLongitude=" + destLongitude +
+               ", batteryCapacity=" + batteryCapacity +
+               ", carAutonomy=" + carAutonomy +
+               '}';
     }
 } 

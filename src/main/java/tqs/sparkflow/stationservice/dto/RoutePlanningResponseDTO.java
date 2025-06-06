@@ -1,17 +1,18 @@
 package tqs.sparkflow.stationservice.dto;
 
 import java.util.List;
+import java.util.Objects;
 import tqs.sparkflow.stationservice.model.Station;
 
 public class RoutePlanningResponseDTO {
     private List<Station> stations;
-    private double distance; // in km
-    private double batteryUsage; // in kWh
+    private Double distance;
+    private Double batteryUsage;
 
     public RoutePlanningResponseDTO() {
     }
 
-    public RoutePlanningResponseDTO(List<Station> stations, double distance, double batteryUsage) {
+    public RoutePlanningResponseDTO(List<Station> stations, Double distance, Double batteryUsage) {
         this.stations = stations;
         this.distance = distance;
         this.batteryUsage = batteryUsage;
@@ -25,19 +26,43 @@ public class RoutePlanningResponseDTO {
         this.stations = stations;
     }
 
-    public double getDistance() {
+    public Double getDistance() {
         return distance;
     }
 
-    public void setDistance(double distance) {
+    public void setDistance(Double distance) {
         this.distance = distance;
     }
 
-    public double getBatteryUsage() {
+    public Double getBatteryUsage() {
         return batteryUsage;
     }
 
-    public void setBatteryUsage(double batteryUsage) {
+    public void setBatteryUsage(Double batteryUsage) {
         this.batteryUsage = batteryUsage;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RoutePlanningResponseDTO that = (RoutePlanningResponseDTO) o;
+        return Objects.equals(stations, that.stations) &&
+               Objects.equals(distance, that.distance) &&
+               Objects.equals(batteryUsage, that.batteryUsage);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stations, distance, batteryUsage);
+    }
+
+    @Override
+    public String toString() {
+        return "RoutePlanningResponseDTO{" +
+               "stations=" + stations +
+               ", distance=" + distance +
+               ", batteryUsage=" + batteryUsage +
+               "}";
     }
 } 

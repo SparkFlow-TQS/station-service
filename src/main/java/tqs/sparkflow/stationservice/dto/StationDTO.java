@@ -1,5 +1,6 @@
 package tqs.sparkflow.stationservice.dto;
 
+import java.util.Objects;
 import tqs.sparkflow.stationservice.model.BaseStationFields;
 import tqs.sparkflow.stationservice.model.Station;
 
@@ -48,5 +49,39 @@ public class StationDTO extends BaseStationFields {
 
     public void setPower(Integer power) {
         this.power = power;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        StationDTO stationDTO = (StationDTO) o;
+        return Objects.equals(id, stationDTO.id) &&
+               Objects.equals(quantityOfChargers, stationDTO.quantityOfChargers) &&
+               Objects.equals(power, stationDTO.power);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), id, quantityOfChargers, power);
+    }
+
+    @Override
+    public String toString() {
+        return "StationDTO{" +
+               "id=" + id +
+               ", name='" + getName() + '\'' +
+               ", address='" + getAddress() + '\'' +
+               ", city='" + getCity() + '\'' +
+               ", country='" + getCountry() + '\'' +
+               ", latitude=" + getLatitude() +
+               ", longitude=" + getLongitude() +
+               ", status='" + getStatus() + '\'' +
+               ", isOperational=" + getIsOperational() +
+               ", price=" + getPrice() +
+               ", quantityOfChargers=" + quantityOfChargers +
+               ", power=" + power +
+               '}';
     }
 } 

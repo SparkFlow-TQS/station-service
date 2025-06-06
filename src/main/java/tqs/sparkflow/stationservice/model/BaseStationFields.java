@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * Base class containing common fields for station-related models.
@@ -116,5 +117,26 @@ public abstract class BaseStationFields {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseStationFields that = (BaseStationFields) o;
+        return Objects.equals(city, that.city) &&
+               Objects.equals(country, that.country) &&
+               Objects.equals(latitude, that.latitude) &&
+               Objects.equals(longitude, that.longitude) &&
+               Objects.equals(price, that.price) &&
+               Objects.equals(isOperational, that.isOperational) &&
+               Objects.equals(status, that.status) &&
+               Objects.equals(address, that.address) &&
+               Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(city, country, latitude, longitude, price, isOperational, status, address, name);
     }
 } 
