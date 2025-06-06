@@ -116,8 +116,10 @@ class BookingServiceTest {
                 .thenThrow(new RestClientException("User not found"));
 
         // When & Then
-        assertThatThrownBy(() -> bookingService.createRecurringBooking(999L, 1L, now,
-                now.plusHours(2), recurringDays)).isInstanceOf(IllegalStateException.class)
+        LocalDateTime endTime = now.plusHours(2);
+        assertThatThrownBy(
+                () -> bookingService.createRecurringBooking(999L, 1L, now, endTime, recurringDays))
+                        .isInstanceOf(IllegalStateException.class)
                         .hasMessage("User not found or not authorized");
 
         verify(stationService, never()).getStationById(any());

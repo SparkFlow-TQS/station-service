@@ -245,24 +245,24 @@ class StationTest {
     String status = "Available";
 
     // When
-    Station station = new Station.Builder().externalId(externalId).name(name).address(address)
+    Station builtStation = new Station.Builder().externalId(externalId).name(name).address(address)
         .city(city).country(country).latitude(latitude).longitude(longitude)
         .quantityOfChargers(quantityOfChargers).power(power).isOperational(isOperational)
         .price(price).status(status).build();
 
     // Then
-    assertThat(station.getExternalId()).isEqualTo(externalId);
-    assertThat(station.getName()).isEqualTo(name);
-    assertThat(station.getAddress()).isEqualTo(address);
-    assertThat(station.getCity()).isEqualTo(city);
-    assertThat(station.getCountry()).isEqualTo(country);
-    assertThat(station.getLatitude()).isEqualTo(latitude);
-    assertThat(station.getLongitude()).isEqualTo(longitude);
-    assertThat(station.getPower()).isEqualTo(power);
-    assertThat(station.getIsOperational()).isEqualTo(isOperational);
-    assertThat(station.getPrice()).isEqualTo(price);
-    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
-    assertThat(station.getStatus()).isEqualTo(status);
+    assertThat(builtStation.getExternalId()).isEqualTo(externalId);
+    assertThat(builtStation.getName()).isEqualTo(name);
+    assertThat(builtStation.getAddress()).isEqualTo(address);
+    assertThat(builtStation.getCity()).isEqualTo(city);
+    assertThat(builtStation.getCountry()).isEqualTo(country);
+    assertThat(builtStation.getLatitude()).isEqualTo(latitude);
+    assertThat(builtStation.getLongitude()).isEqualTo(longitude);
+    assertThat(builtStation.getPower()).isEqualTo(power);
+    assertThat(builtStation.getIsOperational()).isEqualTo(isOperational);
+    assertThat(builtStation.getPrice()).isEqualTo(price);
+    assertThat(builtStation.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
+    assertThat(builtStation.getStatus()).isEqualTo(status);
   }
 
   @Test

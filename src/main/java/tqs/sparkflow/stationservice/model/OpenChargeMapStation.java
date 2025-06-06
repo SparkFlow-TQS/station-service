@@ -4,6 +4,7 @@ import java.util.List;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
+import java.util.Objects;
 
 /** Station model for OpenChargeMap API. */
 public class OpenChargeMapStation extends BaseStationFields {
@@ -171,5 +172,26 @@ public class OpenChargeMapStation extends BaseStationFields {
      */
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        if (!super.equals(o))
+            return false;
+        OpenChargeMapStation that = (OpenChargeMapStation) o;
+        return Objects.equals(connections, that.connections)
+                && Objects.equals(quantityOfChargers, that.quantityOfChargers)
+                && Objects.equals(power, that.power) && Objects.equals(status, that.status)
+                && Objects.equals(connectorType, that.connectorType) && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), connections, quantityOfChargers, power, status,
+                connectorType, id);
     }
 }

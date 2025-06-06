@@ -138,10 +138,8 @@ class StationDTOTest {
         stationDTO3.setPrice(0.7);
 
         // Then
-        assertThat(stationDTO1).isEqualTo(stationDTO2);
-        assertThat(stationDTO1).isNotEqualTo(stationDTO3);
-        assertThat(stationDTO1.hashCode()).isEqualTo(stationDTO2.hashCode());
-        assertThat(stationDTO1.hashCode()).isNotEqualTo(stationDTO3.hashCode());
+        assertThat(stationDTO1).isEqualTo(stationDTO2).isNotEqualTo(stationDTO3)
+                .hasSameHashCodeAs(stationDTO2).doesNotHaveSameHashCodeAs(stationDTO3);
     }
 
     @Test

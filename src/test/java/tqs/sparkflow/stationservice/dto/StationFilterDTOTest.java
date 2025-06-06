@@ -154,10 +154,8 @@ class StationFilterDTOTest {
         filterDTO3.setMaxPower(60);
 
         // Then
-        assertThat(filterDTO1).isEqualTo(filterDTO2);
-        assertThat(filterDTO1).isNotEqualTo(filterDTO3);
-        assertThat(filterDTO1.hashCode()).isEqualTo(filterDTO2.hashCode());
-        assertThat(filterDTO1.hashCode()).isNotEqualTo(filterDTO3.hashCode());
+        assertThat(filterDTO1).isEqualTo(filterDTO2).isNotEqualTo(filterDTO3)
+                .hasSameHashCodeAs(filterDTO2).doesNotHaveSameHashCodeAs(filterDTO3);
     }
 
     @Test
