@@ -33,8 +33,6 @@ class RoutePlanningServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         // Create test stations
         Station portoStation = new Station();
         portoStation.setId(1L);

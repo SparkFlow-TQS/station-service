@@ -17,8 +17,12 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
                                                             // charging
   private static final double MAX_DETOUR_DISTANCE = 20.0; // Maximum 20km detour from route
 
+  private final StationRepository stationRepository;
+
   @Autowired
-  private StationRepository stationRepository;
+  public RoutePlanningServiceImpl(StationRepository stationRepository) {
+    this.stationRepository = stationRepository;
+  }
 
   @Override
   public RoutePlanningResponseDTO planRoute(RoutePlanningRequestDTO request) {
@@ -36,7 +40,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
 
     // Find all stations
     List<Station> allStations = stationRepository.findAll();
-    if (allStations == null || allStations.isEmpty()) {
+    if (allStations.isEmpty()) {
       return new RoutePlanningResponseDTO(new ArrayList<>(), distance, batteryUsage);
     }
 
@@ -55,7 +59,6 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
       RoutePlanningRequestDTO request, double totalDistance) {
     List<Station> optimalStations = new ArrayList<>();
     double currentBattery = request.getBatteryCapacity(); // Start with full battery
-    double distanceTraveled = 0;
     double remainingDistance = totalDistance;
     double currentLat = request.getStartLatitude();
     double currentLon = request.getStartLongitude();
@@ -70,9 +73,8 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
       }
 
       // Find the best station to stop at
-      Station bestStation =
-          findBestChargingStation(stations, currentLat, currentLon, maxDistanceWithBattery,
-              remainingDistance, request.getDestLatitude(), request.getDestLongitude());
+      Station bestStation = findBestChargingStation(stations, currentLat, currentLon,
+          maxDistanceWithBattery, request.getDestLatitude(), request.getDestLongitude());
 
       if (bestStation == null) {
         break; // No suitable station found
@@ -88,7 +90,6 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
       // Update current position and battery
       currentLat = bestStation.getLatitude();
       currentLon = bestStation.getLongitude();
-      distanceTraveled += distanceToStation;
       remainingDistance = calculateDistance(currentLat, currentLon, request.getDestLatitude(),
           request.getDestLongitude());
       currentBattery = request.getBatteryCapacity() * MAX_BATTERY_PERCENTAGE; // Assume we charge to
@@ -99,8 +100,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
   }
 
   private Station findBestChargingStation(List<Station> stations, double currentLat,
-      double currentLon, double maxDistanceWithBattery, double remainingDistance, double destLat,
-      double destLon) {
+      double currentLon, double maxDistanceWithBattery, double destLat, double destLon) {
     Station bestStation = null;
     double minScore = Double.MAX_VALUE;
 
