@@ -65,10 +65,8 @@ class RoutePlanningRequestDTOTest {
         requestDTO3.setCarAutonomy(0.3);
 
         // Then
-        assertThat(requestDTO1).isEqualTo(requestDTO2);
-        assertThat(requestDTO1).isNotEqualTo(requestDTO3);
-        assertThat(requestDTO1.hashCode()).isEqualTo(requestDTO2.hashCode());
-        assertThat(requestDTO1.hashCode()).isNotEqualTo(requestDTO3.hashCode());
+        assertThat(requestDTO1).isEqualTo(requestDTO2).isNotEqualTo(requestDTO3)
+                .hasSameHashCodeAs(requestDTO2).doesNotHaveSameHashCodeAs(requestDTO3);
     }
 
     @Test
@@ -87,11 +85,8 @@ class RoutePlanningRequestDTOTest {
         String toString = requestDTO.toString();
 
         // Then
-        assertThat(toString).contains("startLatitude=41.1579");
-        assertThat(toString).contains("startLongitude=-8.6291");
-        assertThat(toString).contains("destLatitude=38.7223");
-        assertThat(toString).contains("destLongitude=-9.1393");
-        assertThat(toString).contains("batteryCapacity=50.0");
-        assertThat(toString).contains("carAutonomy=0.2");
+        assertThat(toString).contains("startLatitude=41.1579").contains("startLongitude=-8.6291")
+                .contains("destLatitude=38.7223").contains("destLongitude=-9.1393")
+                .contains("batteryCapacity=50.0").contains("carAutonomy=0.2");
     }
 }

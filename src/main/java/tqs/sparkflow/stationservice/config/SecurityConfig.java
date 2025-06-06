@@ -33,6 +33,9 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        // CSRF protection is disabled because this is a REST API using token-based authentication
+        // and not session-based authentication. The API is meant to be consumed by other services
+        // and clients, making CSRF protection unnecessary.
         .csrf(csrf -> csrf.disable()).headers(headers -> headers.contentTypeOptions(content -> {
         }).frameOptions(frame -> frame.deny()).xssProtection(xss -> {
         }).contentSecurityPolicy(

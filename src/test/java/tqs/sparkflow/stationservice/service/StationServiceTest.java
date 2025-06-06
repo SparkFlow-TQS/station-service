@@ -3,10 +3,14 @@ package tqs.sparkflow.stationservice.service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
@@ -711,6 +715,34 @@ class StationServiceTest {
     // Then
     assertThat(result).hasSize(2);
     verify(stationRepository).findAll();
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideSearchTestCases")
+  @XrayTest(key = "STATION-SVC-25,STATION-SVC-45,STATION-SVC-46")
+  @Requirement("STATION-SVC-25,STATION-SVC-45,STATION-SVC-46")
+  void whenSearchingStationsByName_thenReturnsMatchingStations(String searchTerm,
+      List<String> expectedStationNames) {
+    // Given
+    List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
+    when(stationRepository.findAll()).thenReturn(allStations);
+
+    // When
+    List<Station> result = stationService.searchStations(searchTerm, null, null, null);
+
+    // Then
+    assertThat(result).hasSize(expectedStationNames.size()).extracting(Station::getName)
+        .containsExactlyInAnyOrderElementsOf(expectedStationNames);
+  }
+
+  private static Stream<Arguments> provideSearchTestCases() {
+    return Stream.of(Arguments.of("EV", List.of("EV Charge Coimbra")), // Partial name test
+        Arguments.of("Charge", List.of( // Multiple matches test
+            "Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra",
+            "EDP Charge Station")),
+        Arguments.of("Fast", List.of("FastCharge Madrid")), // Specific prefix test
+        Arguments.of("IONITY", List.of("IONITY Porto")) // Case insensitive test
+    );
   }
 
   private Station createTestStation(Long id, String name) {

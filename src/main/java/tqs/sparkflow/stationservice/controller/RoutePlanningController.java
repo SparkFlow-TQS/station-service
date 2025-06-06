@@ -25,7 +25,7 @@ public class RoutePlanningController {
     }
 
     @PostMapping("/plan-route")
-    public ResponseEntity<?> planRoute(@Valid @RequestBody RoutePlanningRequestDTO request,
+    public ResponseEntity<Object> planRoute(@Valid @RequestBody RoutePlanningRequestDTO request,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();

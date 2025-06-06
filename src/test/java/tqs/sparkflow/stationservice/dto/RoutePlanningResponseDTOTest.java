@@ -157,10 +157,8 @@ class RoutePlanningResponseDTOTest {
                 new RoutePlanningResponseDTO(stations3, 200.0, 50.0);
 
         // Then
-        assertThat(responseDTO1).isEqualTo(responseDTO2);
-        assertThat(responseDTO1).isNotEqualTo(responseDTO3);
-        assertThat(responseDTO1.hashCode()).isEqualTo(responseDTO2.hashCode());
-        assertThat(responseDTO1.hashCode()).isNotEqualTo(responseDTO3.hashCode());
+        assertThat(responseDTO1).isEqualTo(responseDTO2).isNotEqualTo(responseDTO3)
+                .hasSameHashCodeAs(responseDTO2).doesNotHaveSameHashCodeAs(responseDTO3);
 
         // Check toString() format
         String expectedContent =
