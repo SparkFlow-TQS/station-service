@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 class OpenChargeMapStationTest {
 
@@ -190,12 +189,8 @@ class OpenChargeMapStationTest {
         conn3.setQuantity(2);
         station3.setConnections(List.of(conn3));
 
-        // Test equals
-        assertThat(station1).isEqualTo(station2);
-        assertThat(station1).isNotEqualTo(station3);
-
-        // Test hashCode
-        assertThat(station1.hashCode()).isEqualTo(station2.hashCode());
-        assertThat(station1.hashCode()).isNotEqualTo(station3.hashCode());
+        // Test equals and hashCode
+        assertThat(station1).isEqualTo(station2).isNotEqualTo(station3).hasSameHashCodeAs(station2)
+                .doesNotHaveSameHashCodeAs(station3);
     }
 }

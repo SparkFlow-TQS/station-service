@@ -273,40 +273,41 @@ class StationTest {
     Double latitude = 40.7128;
 
     // When
-    Station station = new Station.Builder().name(name).address(address).latitude(latitude).build();
+    Station builtStation =
+        new Station.Builder().name(name).address(address).latitude(latitude).build();
 
     // Then
-    assertThat(station.getName()).isEqualTo(name);
-    assertThat(station.getAddress()).isEqualTo(address);
-    assertThat(station.getLatitude()).isEqualTo(latitude);
-    assertThat(station.getExternalId()).isNull();
-    assertThat(station.getCity()).isNull();
-    assertThat(station.getCountry()).isNull();
-    assertThat(station.getLongitude()).isNull();
-    assertThat(station.getPower()).isNull();
-    assertThat(station.getIsOperational()).isNull();
-    assertThat(station.getPrice()).isNull();
-    assertThat(station.getQuantityOfChargers()).isNull();
-    assertThat(station.getStatus()).isNull();
+    assertThat(builtStation.getName()).isEqualTo(name);
+    assertThat(builtStation.getAddress()).isEqualTo(address);
+    assertThat(builtStation.getLatitude()).isEqualTo(latitude);
+    assertThat(builtStation.getExternalId()).isNull();
+    assertThat(builtStation.getCity()).isNull();
+    assertThat(builtStation.getCountry()).isNull();
+    assertThat(builtStation.getLongitude()).isNull();
+    assertThat(builtStation.getPower()).isNull();
+    assertThat(builtStation.getIsOperational()).isNull();
+    assertThat(builtStation.getPrice()).isNull();
+    assertThat(builtStation.getQuantityOfChargers()).isNull();
+    assertThat(builtStation.getStatus()).isNull();
   }
 
   @Test
   void whenUsingBuilderWithEmptyStation_thenCreatesEmptyStation() {
     // When
-    Station station = new Station.Builder().build();
+    Station builtStation = new Station.Builder().build();
 
     // Then
-    assertThat(station.getExternalId()).isNull();
-    assertThat(station.getName()).isNull();
-    assertThat(station.getAddress()).isNull();
-    assertThat(station.getCity()).isNull();
-    assertThat(station.getCountry()).isNull();
-    assertThat(station.getLatitude()).isNull();
-    assertThat(station.getLongitude()).isNull();
-    assertThat(station.getPower()).isNull();
-    assertThat(station.getIsOperational()).isNull();
-    assertThat(station.getPrice()).isNull();
-    assertThat(station.getQuantityOfChargers()).isNull();
-    assertThat(station.getStatus()).isNull();
+    assertThat(builtStation.getExternalId()).isNull();
+    assertThat(builtStation.getName()).isNull();
+    assertThat(builtStation.getAddress()).isNull();
+    assertThat(builtStation.getCity()).isNull();
+    assertThat(builtStation.getCountry()).isNull();
+    assertThat(builtStation.getLatitude()).isNull();
+    assertThat(builtStation.getLongitude()).isNull();
+    assertThat(builtStation.getPower()).isNull();
+    assertThat(builtStation.getIsOperational()).isNull();
+    assertThat(builtStation.getPrice()).isNull();
+    assertThat(builtStation.getQuantityOfChargers()).isNull();
+    assertThat(builtStation.getStatus()).isNull();
   }
 }
