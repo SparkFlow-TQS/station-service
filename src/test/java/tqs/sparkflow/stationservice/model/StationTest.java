@@ -211,21 +211,21 @@ class StationTest {
     Double price = 0.35;
 
     // When
-    Station station = new Station(externalId, name, address, city, country, latitude, longitude,
-        quantityOfChargers, power, isOperational, price);
+    Station builtStation = new Station(externalId, name, address, city, country, latitude,
+        longitude, quantityOfChargers, power, isOperational, price);
 
     // Then
-    assertThat(station.getExternalId()).isEqualTo(externalId);
-    assertThat(station.getName()).isEqualTo(name);
-    assertThat(station.getAddress()).isEqualTo(address);
-    assertThat(station.getCity()).isEqualTo(city);
-    assertThat(station.getCountry()).isEqualTo(country);
-    assertThat(station.getLatitude()).isEqualTo(latitude);
-    assertThat(station.getLongitude()).isEqualTo(longitude);
-    assertThat(station.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
-    assertThat(station.getPower()).isEqualTo(power);
-    assertThat(station.getIsOperational()).isEqualTo(isOperational);
-    assertThat(station.getPrice()).isEqualTo(price);
+    assertThat(builtStation.getExternalId()).isEqualTo(externalId);
+    assertThat(builtStation.getName()).isEqualTo(name);
+    assertThat(builtStation.getAddress()).isEqualTo(address);
+    assertThat(builtStation.getCity()).isEqualTo(city);
+    assertThat(builtStation.getCountry()).isEqualTo(country);
+    assertThat(builtStation.getLatitude()).isEqualTo(latitude);
+    assertThat(builtStation.getLongitude()).isEqualTo(longitude);
+    assertThat(builtStation.getQuantityOfChargers()).isEqualTo(quantityOfChargers);
+    assertThat(builtStation.getPower()).isEqualTo(power);
+    assertThat(builtStation.getIsOperational()).isEqualTo(isOperational);
+    assertThat(builtStation.getPrice()).isEqualTo(price);
   }
 
   @Test
