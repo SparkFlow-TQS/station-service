@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 class OpenChargeMapStationTest {
 
@@ -155,5 +156,46 @@ class OpenChargeMapStationTest {
         OpenChargeMapStation station = new OpenChargeMapStation();
         station.setConnectorType("Type2");
         assertThat(station.getConnectorType()).isEqualTo("Type2");
+    }
+
+    @Test
+    void testEqualsAndHashCode() {
+        OpenChargeMapStation station1 = new OpenChargeMapStation();
+        station1.setId("123");
+        station1.setPower(50);
+        station1.setStatus("Available");
+        station1.setConnectorType("Type2");
+        station1.setQuantityOfChargers(2);
+        OpenChargeMapStation.Connection conn1 = new OpenChargeMapStation.Connection();
+        conn1.setQuantity(1);
+        station1.setConnections(List.of(conn1));
+
+        OpenChargeMapStation station2 = new OpenChargeMapStation();
+        station2.setId("123");
+        station2.setPower(50);
+        station2.setStatus("Available");
+        station2.setConnectorType("Type2");
+        station2.setQuantityOfChargers(2);
+        OpenChargeMapStation.Connection conn2 = new OpenChargeMapStation.Connection();
+        conn2.setQuantity(1);
+        station2.setConnections(List.of(conn2));
+
+        OpenChargeMapStation station3 = new OpenChargeMapStation();
+        station3.setId("456");
+        station3.setPower(100);
+        station3.setStatus("In Use");
+        station3.setConnectorType("CCS");
+        station3.setQuantityOfChargers(3);
+        OpenChargeMapStation.Connection conn3 = new OpenChargeMapStation.Connection();
+        conn3.setQuantity(2);
+        station3.setConnections(List.of(conn3));
+
+        // Test equals
+        assertThat(station1).isEqualTo(station2);
+        assertThat(station1).isNotEqualTo(station3);
+
+        // Test hashCode
+        assertThat(station1.hashCode()).isEqualTo(station2.hashCode());
+        assertThat(station1.hashCode()).isNotEqualTo(station3.hashCode());
     }
 }

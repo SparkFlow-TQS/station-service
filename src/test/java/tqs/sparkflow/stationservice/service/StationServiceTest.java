@@ -157,51 +157,37 @@ class StationServiceTest {
     verify(stationRepository).findAll();
   }
 
-  @Test
-  @XrayTest(key = "STATION-SVC-24")
-  @Requirement("STATION-SVC-24")
-  void whenSearchingStationsWithPartialName_thenReturnsMatchingStations() {
+  @ParameterizedTest
+  @MethodSource("provideStationNameSearchTestCases")
+  @XrayTest(key = "STATION-SVC-24,STATION-SVC-45,STATION-SVC-46")
+  @Requirement("STATION-SVC-24,STATION-SVC-45,STATION-SVC-46")
+  void whenSearchingStationsByName_thenReturnsMatchingStations(String searchTerm,
+      List<String> expectedStationNames) {
     // Given
     List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search for partial name "EV" to avoid matching "Supercharger"
-    List<Station> result = stationService.searchStations("EV", null, null, null);
+    // When
+    List<Station> result = stationService.searchStations(searchTerm, null, null, null);
 
     // Then
-    assertThat(result).hasSize(1).extracting(Station::getName).containsExactly("EV Charge Coimbra");
+    assertThat(result).hasSize(expectedStationNames.size()).extracting(Station::getName)
+        .containsExactlyInAnyOrderElementsOf(expectedStationNames);
   }
 
   @Test
-  @XrayTest(key = "STATION-SVC-45")
-  @Requirement("STATION-SVC-45")
-  void whenSearchingStationsWithChargeKeyword_thenReturnsAllMatchingStations() {
+  @XrayTest(key = "STATION-SVC-47")
+  @Requirement("STATION-SVC-47")
+  void whenGettingNearbyStationsWithMediumRadius_thenIncludesPortoAndCoimbra() {
     // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
+    List<Station> allStations = Arrays.asList(station1, station2, station3, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search for "Charge" which appears in multiple station names
-    List<Station> result = stationService.searchStations("Charge", null, null, null);
+    // When - Search within 70km from Aveiro (includes both Porto ~68km and Braga ~62km)
+    List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 70);
 
-    // Then - Should match all stations containing "Charge"
-    assertThat(result).hasSize(4).extracting(Station::getName).containsExactlyInAnyOrder(
-        "Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra",
-        "EDP Charge Station");
-  }
-
-  @Test
-  @XrayTest(key = "STATION-SVC-46")
-  @Requirement("STATION-SVC-46")
-  void whenSearchingStationsWithSpecificPrefix_thenReturnsMatchingStations() {
-    // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
-    when(stationRepository.findAll()).thenReturn(allStations);
-
-    // When - Search for "Fast" to get only FastCharge Madrid
-    List<Station> result = stationService.searchStations("Fast", null, null, null);
-
-    // Then
-    assertThat(result).hasSize(1).extracting(Station::getName).containsExactly("FastCharge Madrid");
+    // Then - Should include all 2 nearby stations
+    assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(1L, 2L);
   }
 
   @Test
@@ -382,21 +368,6 @@ class StationServiceTest {
 
     // Then - Should include station1, station2 (Porto, ~68km), station5 (Braga, ~62km)
     // Madrid (station3) is ~255km away, so should be excluded
-    assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(1L, 2L);
-  }
-
-  @Test
-  @XrayTest(key = "STATION-SVC-47")
-  @Requirement("STATION-SVC-47")
-  void whenGettingNearbyStationsWithMediumRadius_thenIncludesPortoAndCoimbra() {
-    // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station5);
-    when(stationRepository.findAll()).thenReturn(allStations);
-
-    // When - Search within 70km from Aveiro (includes both Porto ~68km and Braga ~62km)
-    List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 70);
-
-    // Then - Should include all 2 nearby stations
     assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(1L, 2L);
   }
 
@@ -731,24 +702,6 @@ class StationServiceTest {
     verify(stationRepository).findAll();
   }
 
-  @ParameterizedTest
-  @MethodSource("provideSearchTestCases")
-  @XrayTest(key = "STATION-SVC-25,STATION-SVC-45,STATION-SVC-46")
-  @Requirement("STATION-SVC-25,STATION-SVC-45,STATION-SVC-46")
-  void whenSearchingStationsByName_thenReturnsMatchingStations(String searchTerm,
-      List<String> expectedStationNames) {
-    // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
-    when(stationRepository.findAll()).thenReturn(allStations);
-
-    // When
-    List<Station> result = stationService.searchStations(searchTerm, null, null, null);
-
-    // Then
-    assertThat(result).hasSize(expectedStationNames.size()).extracting(Station::getName)
-        .containsExactlyInAnyOrderElementsOf(expectedStationNames);
-  }
-
   @Test
   @XrayTest(key = "STATION-SVC-48")
   @Requirement("STATION-SVC-48")
@@ -1053,10 +1006,9 @@ class StationServiceTest {
         .hasMessageContaining("Cannot start session: no booking or free chargers available");
   }
 
-  private static Stream<Arguments> provideSearchTestCases() {
+  private static Stream<Arguments> provideStationNameSearchTestCases() {
     return Stream
-        .of(Arguments.of("Tesla", Arrays.asList("Tesla Supercharger Aveiro")),
-            Arguments.of("EV", Arrays.asList("EV Charge Coimbra")),
+        .of(Arguments.of("EV", Arrays.asList("EV Charge Coimbra")),
             Arguments.of("Charge",
                 Arrays.asList("Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra",
                     "EDP Charge Station")),

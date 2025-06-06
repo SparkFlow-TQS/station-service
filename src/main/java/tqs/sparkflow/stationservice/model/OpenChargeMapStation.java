@@ -154,6 +154,21 @@ public class OpenChargeMapStation extends BaseStationFields {
         public void setQuantity(Integer quantity) {
             this.quantity = quantity;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            Connection that = (Connection) o;
+            return Objects.equals(quantity, that.quantity);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(quantity);
+        }
     }
 
     /**

@@ -67,22 +67,17 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
       // Calculate how far we can go with current battery
       double maxDistanceWithBattery = currentBattery * request.getCarAutonomy();
 
-      // If we can reach destination with current battery, break
-      if (maxDistanceWithBattery >= remainingDistance) {
+      // Find the best station to stop at
+      Station bestStation = null;
+      if (maxDistanceWithBattery < remainingDistance) {
+        bestStation = findBestChargingStation(stations, currentLat, currentLon,
+            maxDistanceWithBattery, request.getDestLatitude(), request.getDestLongitude());
+      }
+
+      // Break if we can reach destination or no suitable station found
+      if (maxDistanceWithBattery >= remainingDistance || bestStation == null) {
         break;
       }
-
-      // Find the best station to stop at
-      Station bestStation = findBestChargingStation(stations, currentLat, currentLon,
-          maxDistanceWithBattery, request.getDestLatitude(), request.getDestLongitude());
-
-      if (bestStation == null) {
-        break; // No suitable station found
-      }
-
-      // Calculate distance to station
-      double distanceToStation = calculateDistance(currentLat, currentLon,
-          bestStation.getLatitude(), bestStation.getLongitude());
 
       // Add station to route
       optimalStations.add(bestStation);
