@@ -19,16 +19,18 @@ import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
 /**
- * Test class for Station Service 500-limit functionality and enhanced search features.
- * These tests verify the implementation of the MAX_SEARCH_RESULTS = 500 limit
- * across all search methods and the total station count feature.
+ * Test class for Station Service 500-limit functionality and enhanced search features. These tests
+ * verify the implementation of the MAX_SEARCH_RESULTS = 500 limit across all search methods and the
+ * total station count feature.
  */
 @ExtendWith(MockitoExtension.class)
 class StationLimitAndSearchTest {
 
-  @Mock private StationRepository stationRepository;
+  @Mock
+  private StationRepository stationRepository;
 
-  @InjectMocks private StationService stationService;
+  @InjectMocks
+  private StationService stationService;
 
   private List<Station> createLargeStationList(int count, String namePrefix) {
     List<Station> stationList = new ArrayList<>();
@@ -63,12 +65,10 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.getAllStations();
 
     // Then
-    assertThat(result)
-        .hasSize(500)
-        .satisfies(stations -> {
-          assertThat(stations.get(0).getName()).isEqualTo("Station 1");
-          assertThat(stations.get(499).getName()).isEqualTo("Station 500");
-        });
+    assertThat(result).hasSize(500).satisfies(stations -> {
+      assertThat(stations.get(0).getName()).isEqualTo("Station 1");
+      assertThat(stations.get(499).getName()).isEqualTo("Station 500");
+    });
     verify(stationRepository).findAll();
   }
 
@@ -84,9 +84,7 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.getAllStations();
 
     // Then
-    assertThat(result)
-        .hasSize(50)
-        .isEqualTo(smallStationList);
+    assertThat(result).hasSize(50).isEqualTo(smallStationList);
     verify(stationRepository).findAll();
   }
 
@@ -103,12 +101,10 @@ class StationLimitAndSearchTest {
     List<Station> result = stationService.searchStations("TestStation", "TestCity", null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(500)
-        .satisfies(stations -> {
-          assertThat(stations.get(0).getName()).isEqualTo("TestStation 1");
-          assertThat(stations.get(499).getName()).isEqualTo("TestStation 500");
-        });
+    assertThat(result).hasSize(500).satisfies(stations -> {
+      assertThat(stations.get(0).getName()).isEqualTo("TestStation 1");
+      assertThat(stations.get(499).getName()).isEqualTo("TestStation 500");
+    });
     verify(stationRepository).findAll();
   }
 
@@ -117,21 +113,18 @@ class StationLimitAndSearchTest {
   @Requirement("STATION-SEARCH-2")
   void whenSearchingStationsWithPartialNameMatch_thenReturnsMatchingStations() {
     // Given
-    List<Station> allStations = Arrays.asList(
-        createTestStationWithName(1L, "Mercadona Charging Station"),
-        createTestStationWithName(2L, "Continente Power Hub"),
-        createTestStationWithName(3L, "Mercadona Express Charger"),
-        createTestStationWithName(4L, "Lidl Charging Point")
-    );
+    List<Station> allStations =
+        Arrays.asList(createTestStationWithName(1L, "Mercadona Charging Station"),
+            createTestStationWithName(2L, "Continente Power Hub"),
+            createTestStationWithName(3L, "Mercadona Express Charger"),
+            createTestStationWithName(4L, "Lidl Charging Point"));
     when(stationRepository.findAll()).thenReturn(allStations);
 
     // When
     List<Station> result = stationService.searchStations("Mercadona", null, null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(2)
-        .extracting(Station::getName)
+    assertThat(result).hasSize(2).extracting(Station::getName)
         .containsExactlyInAnyOrder("Mercadona Charging Station", "Mercadona Express Charger");
     verify(stationRepository).findAll();
   }
@@ -141,22 +134,17 @@ class StationLimitAndSearchTest {
   @Requirement("STATION-SEARCH-3")
   void whenSearchingStationsWithCaseInsensitiveMatch_thenReturnsMatchingStations() {
     // Given
-    List<Station> allStations = Arrays.asList(
-        createTestStationWithNameAndCity(1L, "AVEIRO Station", "aveiro"),
-        createTestStationWithNameAndCity(2L, "Porto Station", "PORTO"),
-        createTestStationWithNameAndCity(3L, "Lisboa Station", "Lisboa")
-    );
+    List<Station> allStations =
+        Arrays.asList(createTestStationWithNameAndCity(1L, "AVEIRO Station", "aveiro"),
+            createTestStationWithNameAndCity(2L, "Porto Station", "PORTO"),
+            createTestStationWithNameAndCity(3L, "Lisboa Station", "Lisboa"));
     when(stationRepository.findAll()).thenReturn(allStations);
 
     // When
     List<Station> result = stationService.searchStations("aveiro", "AVEIRO", null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .first()
-        .extracting(Station::getName)
-        .isEqualTo("AVEIRO Station");
+    assertThat(result).hasSize(1).first().extracting(Station::getName).isEqualTo("AVEIRO Station");
     verify(stationRepository).findAll();
   }
 
@@ -165,23 +153,18 @@ class StationLimitAndSearchTest {
   @Requirement("STATION-SEARCH-4")
   void whenSearchingStationsWithMultipleCriteria_thenReturnsMatchingStations() {
     // Given
-    List<Station> allStations = Arrays.asList(
-        createTestStationWithDetails(1L, "Station A", "Aveiro", "Portugal"),
-        createTestStationWithDetails(2L, "Station B", "Porto", "Portugal"),
-        createTestStationWithDetails(3L, "Station C", "Aveiro", "Spain"),
-        createTestStationWithDetails(4L, "Station D", "Madrid", "Spain")
-    );
+    List<Station> allStations =
+        Arrays.asList(createTestStationWithDetails(1L, "Station A", "Aveiro", "Portugal"),
+            createTestStationWithDetails(2L, "Station B", "Porto", "Portugal"),
+            createTestStationWithDetails(3L, "Station C", "Aveiro", "Spain"),
+            createTestStationWithDetails(4L, "Station D", "Madrid", "Spain"));
     when(stationRepository.findAll()).thenReturn(allStations);
 
     // When
     List<Station> result = stationService.searchStations(null, "Aveiro", "Portugal", null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .first()
-        .extracting(Station::getName)
-        .isEqualTo("Station A");
+    assertThat(result).hasSize(1).first().extracting(Station::getName).isEqualTo("Station A");
     verify(stationRepository).findAll();
   }
 
@@ -193,7 +176,7 @@ class StationLimitAndSearchTest {
     double centerLat = 38.7223;
     double centerLon = -9.1393;
     int radius = 100; // Large radius to include all stations
-    
+
     List<Station> largeNearbyList = new ArrayList<>();
     for (int i = 1; i <= 600; i++) {
       Station station = createTestStation((long) i, "Nearby Station " + i);
@@ -229,4 +212,4 @@ class StationLimitAndSearchTest {
     station.setCountry(country);
     return station;
   }
-} 
+}

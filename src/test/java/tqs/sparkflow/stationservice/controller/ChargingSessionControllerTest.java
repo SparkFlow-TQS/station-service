@@ -36,7 +36,8 @@ class ChargingSessionControllerTest {
     @Requirement("CHARGING-SESSION-1")
     void whenStartSession_thenReturnSuccess() {
         // Given
-        when(chargingSessionService.createSession(anyString(), anyString())).thenReturn(testSession);
+        when(chargingSessionService.createSession(anyString(), anyString()))
+                .thenReturn(testSession);
 
         // When
         var response = chargingSessionController.startSession("STATION-001", "USER-001");
@@ -75,4 +76,4 @@ class ChargingSessionControllerTest {
         // Then
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
-} 
+}

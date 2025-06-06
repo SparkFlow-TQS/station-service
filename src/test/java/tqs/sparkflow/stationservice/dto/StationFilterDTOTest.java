@@ -27,7 +27,9 @@ class StationFilterDTOTest {
         Integer maxPower = 50;
 
         // When
-        StationFilterDTO filterDTO = new StationFilterDTO(name, address, city, country, latitude, longitude, status, isOperational, price, minPrice, maxPrice, radius, minPower, maxPower);
+        StationFilterDTO filterDTO =
+                new StationFilterDTO(name, address, city, country, latitude, longitude, status,
+                        isOperational, price, minPrice, maxPrice, radius, minPower, maxPower);
 
         // Then
         assertThat(filterDTO.getName()).isEqualTo(name);
@@ -182,7 +184,8 @@ class StationFilterDTOTest {
         String toString = filterDTO.toString();
 
         // Then
-        String expectedContent = "StationFilterDTO{name='Test Station', address='Test Address', city='Test City', country='Test Country', latitude=41.1579, longitude=-8.6291, status='Available', isOperational=true, price=0.5, minPrice=0.0, maxPrice=1.0, radius=10, minPower=20, maxPower=50}";
+        String expectedContent =
+                "StationFilterDTO{name='Test Station', address='Test Address', city='Test City', country='Test Country', latitude=41.1579, longitude=-8.6291, status='Available', isOperational=true, price=0.5, minPrice=0.0, maxPrice=1.0, radius=10, minPower=20, maxPower=50}";
         assertThat(toString).startsWith(expectedContent);
     }
-} 
+}

@@ -25,7 +25,7 @@ public class OpenChargeMapService {
   private final StationRepository stationRepository;
   private final String apiKey;
   private final String baseUrl;
-  
+
   /**
    * Creates a new instance of OpenChargeMapService.
    *
@@ -34,9 +34,7 @@ public class OpenChargeMapService {
    * @param apiKey The OpenChargeMap API key
    * @param baseUrl The base URL for the OpenChargeMap API
    */
-  public OpenChargeMapService(
-      RestTemplate restTemplate,
-      StationRepository stationRepository,
+  public OpenChargeMapService(RestTemplate restTemplate, StationRepository stationRepository,
       @Value("${openchargemap.api.key}") String apiKey,
       @Value("${openchargemap.api.url}") String baseUrl) {
     this.restTemplate = restTemplate;
@@ -93,16 +91,10 @@ public class OpenChargeMapService {
     }
 
     try {
-      String url = String.format(
-          "%s?key=%s&latitude=%f&longitude=%f&distance=%d",
-          baseUrl, apiKey, latitude, longitude, radius);
-      ResponseEntity<List<Map<String, Object>>> response =
-          restTemplate.exchange(
-              url,
-              HttpMethod.GET,
-              null,
-              new ParameterizedTypeReference<List<Map<String, Object>>>() {}
-          );
+      String url = String.format("%s?key=%s&latitude=%f&longitude=%f&distance=%d", baseUrl, apiKey,
+          latitude, longitude, radius);
+      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(url,
+          HttpMethod.GET, null, new ParameterizedTypeReference<List<Map<String, Object>>>() {});
 
       List<Map<String, Object>> responseBody = response.getBody();
       if (responseBody == null || responseBody.isEmpty()) {
@@ -149,9 +141,7 @@ public class OpenChargeMapService {
   }
 
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
-    return stationsData.stream()
-        .map(this::convertMapToStation)
-        .toList();
+    return stationsData.stream().map(this::convertMapToStation).toList();
   }
 
   private Station convertMapToStation(Map<String, Object> data) {
@@ -231,7 +221,8 @@ public class OpenChargeMapService {
     station.setCountry(country != null ? country.toString() : UNKNOWN_VALUE);
   }
 
-  private void setStationQuantityOfChargers(List<Map<String, Object>> connections, Station station) {
+  private void setStationQuantityOfChargers(List<Map<String, Object>> connections,
+      Station station) {
     if (connections == null || connections.isEmpty()) {
       station.setQuantityOfChargers(1); // Default to 1 if no connections
       return;
@@ -257,7 +248,7 @@ public class OpenChargeMapService {
         totalChargers += 1;
       }
     }
-    
+
     // Ensure at least 1 charger
     station.setQuantityOfChargers(totalChargers > 0 ? totalChargers : 1);
   }

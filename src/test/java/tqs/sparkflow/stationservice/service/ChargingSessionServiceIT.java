@@ -18,9 +18,8 @@ import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-@SpringBootTest(
-    classes = {StationServiceApplication.class, TestConfig.class},
-    properties = {"spring.main.allow-bean-definition-overriding=true"})
+@SpringBootTest(classes = {StationServiceApplication.class, TestConfig.class},
+        properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 @Transactional
 class ChargingSessionServiceIT {
@@ -40,7 +39,7 @@ class ChargingSessionServiceIT {
     void setUp() {
         chargingSessionRepository.deleteAll();
         stationRepository.deleteAll();
-        
+
         // Create a test station with valid data
         testStation = new Station();
         testStation.setName("Test Station");
@@ -111,24 +110,22 @@ class ChargingSessionServiceIT {
     void whenEndSession_withNonExistentSession_thenThrowException() {
         // When/Then
         assertThatThrownBy(() -> chargingSessionService.endSession("999"))
-            .isInstanceOf(ChargingSessionNotFoundException.class)
-            .hasMessageContaining("Session not found: 999");
+                .isInstanceOf(ChargingSessionNotFoundException.class)
+                .hasMessageContaining("Session not found: 999");
     }
 
     @Test
     void whenGetSession_withNonExistentSession_thenThrowException() {
         // When/Then
         assertThatThrownBy(() -> chargingSessionService.getSession("999"))
-            .isInstanceOf(ChargingSessionNotFoundException.class)
-            .hasMessageContaining("Session not found: 999");
+                .isInstanceOf(ChargingSessionNotFoundException.class)
+                .hasMessageContaining("Session not found: 999");
     }
 
     /**
-     * Tests the complete charging session flow from creation to completion.
-     * Verifies that:
-     * 1. A session can be created and starts immediately
-     * 2. The session can be completed with an end time
-     * 3. All state transitions maintain the correct timestamps
+     * Tests the complete charging session flow from creation to completion. Verifies that: 1. A
+     * session can be created and starts immediately 2. The session can be completed with an end
+     * time 3. All state transitions maintain the correct timestamps
      */
     @Test
     void whenCompleteChargingFlow_thenAllStatesAreCorrect() {
@@ -140,12 +137,12 @@ class ChargingSessionServiceIT {
         ChargingSession created = chargingSessionService.createSession(stationId, userId);
         assertThat(created.isFinished()).isFalse();
         assertThat(created.getStartTime()).isNotNull();
-        
+
         ChargingSession completed = chargingSessionService.endSession(created.getId().toString());
         assertThat(completed.isFinished()).isTrue();
-        
+
         // Then
         assertThat(created.getStartTime()).isNotNull();
         assertThat(completed.getEndTime()).isNotNull();
     }
-} 
+}

@@ -25,7 +25,8 @@ public class RoutePlanningController {
     }
 
     @PostMapping("/plan-route")
-    public ResponseEntity<?> planRoute(@Valid @RequestBody RoutePlanningRequestDTO request, BindingResult bindingResult) {
+    public ResponseEntity<?> planRoute(@Valid @RequestBody RoutePlanningRequestDTO request,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -41,4 +42,4 @@ public class RoutePlanningController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-} 
+}

@@ -9,8 +9,7 @@ public class RoutePlanningResponseDTO {
     private Double distance;
     private Double batteryUsage;
 
-    public RoutePlanningResponseDTO() {
-    }
+    public RoutePlanningResponseDTO() {}
 
     public RoutePlanningResponseDTO(List<Station> stations, Double distance, Double batteryUsage) {
         this.stations = stations;
@@ -44,12 +43,13 @@ public class RoutePlanningResponseDTO {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         RoutePlanningResponseDTO that = (RoutePlanningResponseDTO) o;
-        return Objects.equals(stations, that.stations) &&
-               Objects.equals(distance, that.distance) &&
-               Objects.equals(batteryUsage, that.batteryUsage);
+        return Objects.equals(stations, that.stations) && Objects.equals(distance, that.distance)
+                && Objects.equals(batteryUsage, that.batteryUsage);
     }
 
     @Override
@@ -59,10 +59,7 @@ public class RoutePlanningResponseDTO {
 
     @Override
     public String toString() {
-        return "RoutePlanningResponseDTO{" +
-               "stations=" + stations +
-               ", distance=" + distance +
-               ", batteryUsage=" + batteryUsage +
-               "}";
+        return "RoutePlanningResponseDTO{" + "stations=" + stations + ", distance=" + distance
+                + ", batteryUsage=" + batteryUsage + "}";
     }
-} 
+}

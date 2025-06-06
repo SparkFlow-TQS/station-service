@@ -50,7 +50,8 @@ class RoutePlanningResponseDTOTest {
         double batteryUsage = 25.0;
 
         // When
-        RoutePlanningResponseDTO responseDTO = new RoutePlanningResponseDTO(stations, distance, batteryUsage);
+        RoutePlanningResponseDTO responseDTO =
+                new RoutePlanningResponseDTO(stations, distance, batteryUsage);
 
         // Then
         assertThat(responseDTO.getStations()).isEqualTo(stations);
@@ -148,18 +149,22 @@ class RoutePlanningResponseDTOTest {
 
         stations3.add(station3);
 
-        RoutePlanningResponseDTO responseDTO1 = new RoutePlanningResponseDTO(stations1, 100.0, 25.0);
-        RoutePlanningResponseDTO responseDTO2 = new RoutePlanningResponseDTO(stations2, 100.0, 25.0);
-        RoutePlanningResponseDTO responseDTO3 = new RoutePlanningResponseDTO(stations3, 200.0, 50.0);
+        RoutePlanningResponseDTO responseDTO1 =
+                new RoutePlanningResponseDTO(stations1, 100.0, 25.0);
+        RoutePlanningResponseDTO responseDTO2 =
+                new RoutePlanningResponseDTO(stations2, 100.0, 25.0);
+        RoutePlanningResponseDTO responseDTO3 =
+                new RoutePlanningResponseDTO(stations3, 200.0, 50.0);
 
         // Then
         assertThat(responseDTO1).isEqualTo(responseDTO2);
         assertThat(responseDTO1).isNotEqualTo(responseDTO3);
         assertThat(responseDTO1.hashCode()).isEqualTo(responseDTO2.hashCode());
         assertThat(responseDTO1.hashCode()).isNotEqualTo(responseDTO3.hashCode());
-        
+
         // Check toString() format
-        String expectedContent = "RoutePlanningResponseDTO{stations=[Station{id=1, name='Station 1'}], distance=100.0, batteryUsage=25.0}";
+        String expectedContent =
+                "RoutePlanningResponseDTO{stations=[Station{id=1, name='Station 1'}], distance=100.0, batteryUsage=25.0}";
         assertThat(responseDTO1.toString()).startsWith(expectedContent);
         assertThat(responseDTO2.toString()).startsWith(expectedContent);
     }
@@ -191,7 +196,8 @@ class RoutePlanningResponseDTOTest {
         String toString = responseDTO.toString();
 
         // Then
-        String expectedContent = "RoutePlanningResponseDTO{stations=[Station{id=1, name='Station 1'}], distance=100.0, batteryUsage=25.0}";
+        String expectedContent =
+                "RoutePlanningResponseDTO{stations=[Station{id=1, name='Station 1'}], distance=100.0, batteryUsage=25.0}";
         assertThat(toString).startsWith(expectedContent);
     }
-} 
+}

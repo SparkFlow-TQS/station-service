@@ -27,8 +27,8 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Test configuration for the station service.
- * Provides all necessary beans and security configurations for testing.
+ * Test configuration for the station service. Provides all necessary beans and security
+ * configurations for testing.
  */
 @TestConfiguration
 @EnableWebSecurity
@@ -62,17 +62,11 @@ public class TestConfig {
     @Bean
     @Primary
     public UserDetailsService userDetailsService() {
-        UserDetails admin = User.builder()
-            .username("admin")
-            .password(passwordEncoder().encode("admin"))
-            .roles("ADMIN")
-            .build();
-        
-        UserDetails user = User.builder()
-            .username("user")
-            .password(passwordEncoder().encode("user"))
-            .roles("USER")
-            .build();
+        UserDetails admin = User.builder().username("admin")
+                .password(passwordEncoder().encode("admin")).roles("ADMIN").build();
+
+        UserDetails user = User.builder().username("user")
+                .password(passwordEncoder().encode("user")).roles("USER").build();
 
         return new InMemoryUserDetailsManager(admin, user);
     }
@@ -88,14 +82,14 @@ public class TestConfig {
 
     @Bean
     @Primary
-    public AuthenticationManager authenticationManager(AuthenticationProvider authenticationProvider) {
+    public AuthenticationManager authenticationManager(
+            AuthenticationProvider authenticationProvider) {
         return new ProviderManager(authenticationProvider);
     }
 
     /**
-     * Creates a security filter chain for tests.
-     * Configures security settings including CSRF, headers, session management,
-     * and endpoint authorization rules.
+     * Creates a security filter chain for tests. Configures security settings including CSRF,
+     * headers, session management, and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
      * @param authenticationManager the AuthenticationManager to use
@@ -104,43 +98,40 @@ public class TestConfig {
      */
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        return http
-            .csrf(csrf -> csrf.disable())
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/v1/stations/**").permitAll()
-                    .requestMatchers("/api/v1/charging-sessions/**").permitAll()
-                    .requestMatchers("/api/v1/openchargemap/**").permitAll()
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/v1/bookings/**").authenticated()
-                    .anyRequest().authenticated()
-            )
-            .authenticationManager(authenticationManager)
-            .httpBasic(basic -> basic
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Unauthorized");
-                }))
-            .exceptionHandling(handling -> handling
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Unauthorized");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Access Denied");
-                }))
-            .securityContext(context -> context.requireExplicitSave(false))
-            .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            AuthenticationManager authenticationManager) throws Exception {
+        return http.csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/stations/**")
+                        .permitAll().requestMatchers("/api/v1/charging-sessions/**").permitAll()
+                        .requestMatchers("/api/v1/openchargemap/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/bookings/**").authenticated().anyRequest()
+                        .authenticated())
+                .authenticationManager(authenticationManager).httpBasic(basic -> basic
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Unauthorized");
+                        }))
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Unauthorized");
+                        }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .securityContext(context -> context.requireExplicitSave(false)).build();
     }
 
     @Bean
     @Primary
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
+        configuration
+                .setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

@@ -42,7 +42,8 @@ class RoutePlanningControllerTest {
         request.setBatteryCapacity(55.0);
         request.setCarAutonomy(20.0);
 
-        RoutePlanningResponseDTO response = new RoutePlanningResponseDTO(new ArrayList<>(), 100.0, 5.0);
+        RoutePlanningResponseDTO response =
+                new RoutePlanningResponseDTO(new ArrayList<>(), 100.0, 5.0);
         when(routePlanningService.planRoute(request)).thenReturn(response);
         when(bindingResult.hasErrors()).thenReturn(false);
 
@@ -80,7 +81,8 @@ class RoutePlanningControllerTest {
         request.setCarAutonomy(20.0);
 
         when(bindingResult.hasErrors()).thenReturn(false);
-        when(routePlanningService.planRoute(request)).thenThrow(new RuntimeException("Service error"));
+        when(routePlanningService.planRoute(request))
+                .thenThrow(new RuntimeException("Service error"));
 
         // Act
         ResponseEntity<?> result = routePlanningController.planRoute(request, bindingResult);
@@ -88,4 +90,4 @@ class RoutePlanningControllerTest {
         // Assert
         assertEquals(400, result.getStatusCode().value());
     }
-} 
+}

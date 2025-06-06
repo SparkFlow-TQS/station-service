@@ -12,15 +12,13 @@ import tqs.sparkflow.stationservice.model.ChargingSession;
 
 @Repository
 public interface ChargingSessionRepository extends JpaRepository<ChargingSession, Long> {
-  
+
   @Query("SELECT cs FROM ChargingSession cs WHERE cs.stationId = :stationId AND cs.finished = false")
   List<ChargingSession> findUnfinishedSessionsByStation(@Param("stationId") Long stationId);
-  
-  @Query("SELECT cs FROM ChargingSession cs WHERE cs.stationId = :stationId AND cs.finished = false " +
-         "AND (cs.startTime <= :endTime AND (cs.endTime IS NULL OR cs.endTime >= :startTime))")
+
+  @Query("SELECT cs FROM ChargingSession cs WHERE cs.stationId = :stationId AND cs.finished = false "
+      + "AND (cs.startTime <= :endTime AND (cs.endTime IS NULL OR cs.endTime >= :startTime))")
   List<ChargingSession> findUnfinishedSessionsByStationInTimeRange(
-      @Param("stationId") Long stationId,
-      @Param("startTime") LocalDateTime startTime,
-      @Param("endTime") LocalDateTime endTime
-  );
-} 
+      @Param("stationId") Long stationId, @Param("startTime") LocalDateTime startTime,
+      @Param("endTime") LocalDateTime endTime);
+}

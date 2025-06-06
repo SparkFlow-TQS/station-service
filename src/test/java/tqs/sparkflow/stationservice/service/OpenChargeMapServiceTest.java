@@ -49,11 +49,11 @@ class OpenChargeMapServiceTest {
     void getStationsByCity_returnsEmptyListOnNullResponse() {
         // Given
         lenient().when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
-            .thenReturn(null);
-        
+                .thenReturn(null);
+
         // When
         List<Station> stations = service.getStationsByCity("City");
-        
+
         // Then
         assertThat(stations).isEmpty();
     }
@@ -63,22 +63,21 @@ class OpenChargeMapServiceTest {
     @Requirement("OCM-4")
     void populateStations_invalidLatitude_throwsException() {
         assertThatThrownBy(() -> service.populateStations(-100, 0, 10))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Latitude must be between -90 and 90 degrees");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Latitude must be between -90 and 90 degrees");
     }
 
     @Test
     void populateStations_invalidLongitude_throwsException() {
         assertThatThrownBy(() -> service.populateStations(0, -200, 10))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Longitude must be between -180 and 180 degrees");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Longitude must be between -180 and 180 degrees");
     }
 
     @Test
     void populateStations_invalidRadius_throwsException() {
         assertThatThrownBy(() -> service.populateStations(0, 0, 0))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Radius must be positive");
+                .isInstanceOf(IllegalArgumentException.class).hasMessage("Radius must be positive");
     }
 
     @Test
@@ -100,10 +99,10 @@ class OpenChargeMapServiceTest {
 
         OpenChargeMapResponse response = new OpenChargeMapResponse();
         response.setStations(List.of(ocmStation));
-        
+
         // Use anyString() for URL to handle any URL formatting issues
         when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
-            .thenReturn(response);
+                .thenReturn(response);
 
         // When
         List<Station> stations = service.getStationsByCity(cityParam);
@@ -133,12 +132,12 @@ class OpenChargeMapServiceTest {
         OpenChargeMapResponse response = new OpenChargeMapResponse();
         List<OpenChargeMapStation> stations = new ArrayList<>();
         stations.add(ocmStation1);
-        stations.add(null);  // Add null station
+        stations.add(null); // Add null station
         response.setStations(stations);
 
         // Use anyString() for URL to handle any URL formatting issues
         when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
-            .thenReturn(response);
+                .thenReturn(response);
 
         // When
         List<Station> result = service.getStationsByCity(cityParam);

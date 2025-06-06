@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 @TestConfiguration
 public class TestBeansConfig {
-    
+
     @Bean
     @Primary
     public RestTemplate restTemplate() {
@@ -20,4 +20,4 @@ public class TestBeansConfig {
     public String userServiceUrl() {
         return "http://mock-user-service";
     }
-} 
+}

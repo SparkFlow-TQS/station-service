@@ -33,43 +33,25 @@ public class StationStepDefinitions {
   @Given("there are stations in the system")
   public void thereAreStationsInTheSystem() {
     // Add test stations to the repository
-    Station station1 = new Station.Builder()
-        .name("Test Station 1")
-        .address("Test Address 1")
-        .city("Test City")
-        .country("Test Country")
-        .latitude(38.7223)
-        .longitude(-9.1393)
-        .quantityOfChargers(2)
-        .power(22)
-        .status("Available")
-        .isOperational(true)
-        .price(0.30)
-        .build();
+    Station station1 =
+        new Station.Builder().name("Test Station 1").address("Test Address 1").city("Test City")
+            .country("Test Country").latitude(38.7223).longitude(-9.1393).quantityOfChargers(2)
+            .power(22).status("Available").isOperational(true).price(0.30).build();
     station1.setId(1L);
     stationRepository.save(station1);
 
-    Station station2 = new Station.Builder()
-        .name("Test Station 2")
-        .address("Test Address 2")
-        .city("Test City")
-        .country("Test Country")
-        .latitude(38.7223)
-        .longitude(-9.1393)
-        .quantityOfChargers(3)
-        .power(22)
-        .status("Available")
-        .isOperational(true)
-        .price(0.30)
-        .build();
+    Station station2 =
+        new Station.Builder().name("Test Station 2").address("Test Address 2").city("Test City")
+            .country("Test Country").latitude(38.7223).longitude(-9.1393).quantityOfChargers(3)
+            .power(22).status("Available").isOperational(true).price(0.30).build();
     station2.setId(2L);
     stationRepository.save(station2);
   }
 
   @When("I request all stations")
   public void iRequestAllStations() {
-    response = restTemplate.exchange("http://localhost:" + port + "/api/v1/stations", HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<Station>>() {});
+    response = restTemplate.exchange("http://localhost:" + port + "/api/v1/stations",
+        HttpMethod.GET, null, new ParameterizedTypeReference<List<Station>>() {});
   }
 
   @Then("I should receive a list of stations")
@@ -84,27 +66,18 @@ public class StationStepDefinitions {
 
   @Given("there is a station with ID {string}")
   public void thereIsAStationWithId(String id) {
-    Station station = new Station.Builder()
-        .name("Test Station " + id)
-        .address("Test Address")
-        .city("Test City")
-        .country("Test Country")
-        .latitude(38.7223)
-        .longitude(-9.1393)
-        .quantityOfChargers(2)
-        .power(22)
-        .status("Available")
-        .isOperational(true)
-        .price(0.30)
-        .build();
+    Station station =
+        new Station.Builder().name("Test Station " + id).address("Test Address").city("Test City")
+            .country("Test Country").latitude(38.7223).longitude(-9.1393).quantityOfChargers(2)
+            .power(22).status("Available").isOperational(true).price(0.30).build();
     station.setId(Long.parseLong(id));
     stationRepository.save(station);
   }
 
   @When("I request the station with ID {string}")
   public void iRequestTheStationWithId(String id) {
-    singleResponse =
-        restTemplate.getForEntity("http://localhost:" + port + "/api/v1/stations/" + id, Station.class);
+    singleResponse = restTemplate
+        .getForEntity("http://localhost:" + port + "/api/v1/stations/" + id, Station.class);
   }
 
   @Then("I should receive the station details")

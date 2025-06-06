@@ -34,7 +34,7 @@ class RoutePlanningServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        
+
         // Create test stations
         Station portoStation = new Station();
         portoStation.setId(1L);
@@ -96,7 +96,8 @@ class RoutePlanningServiceTest {
         lisbonStation.setIsOperational(true);
         lisbonStation.setPrice(0.30);
 
-        testStations = Arrays.asList(portoStation, aveiroStation, coimbraStation, leiriaStation, lisbonStation);
+        testStations = Arrays.asList(portoStation, aveiroStation, coimbraStation, leiriaStation,
+                lisbonStation);
         when(stationRepository.findAll()).thenReturn(testStations);
     }
 
@@ -126,9 +127,8 @@ class RoutePlanningServiceTest {
         System.out.println("Total distance: " + response.getDistance() + " km");
         System.out.println("Estimated battery usage: " + response.getBatteryUsage() + " kWh");
         System.out.println("Charging stations along the route:");
-        response.getStations().forEach(station -> 
-            System.out.println("- " + station.getName() + " (" + station.getCity() + ")")
-        );
+        response.getStations().forEach(station -> System.out
+                .println("- " + station.getName() + " (" + station.getCity() + ")"));
     }
 
     @Test
@@ -152,4 +152,4 @@ class RoutePlanningServiceTest {
         assertThat(response.getDistance()).isGreaterThan(0);
         assertThat(response.getBatteryUsage()).isGreaterThan(0);
     }
-} 
+}

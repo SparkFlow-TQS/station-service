@@ -166,7 +166,8 @@ class StationDTOTest {
         String toString = stationDTO.toString();
 
         // Then
-        String expectedContent = "StationDTO{id=1, name='Test Station', address='Test Address', city='Test City', country='Test Country', latitude=41.1579, longitude=-8.6291, status='Available', isOperational=true, price=0.5, quantityOfChargers=2, power=50}";
+        String expectedContent =
+                "StationDTO{id=1, name='Test Station', address='Test Address', city='Test City', country='Test Country', latitude=41.1579, longitude=-8.6291, status='Available', isOperational=true, price=0.5, quantityOfChargers=2, power=50}";
         assertThat(toString).startsWith(expectedContent);
     }
-} 
+}

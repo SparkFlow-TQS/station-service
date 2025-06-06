@@ -25,7 +25,7 @@ class BaseStationFieldsTest {
   void whenCreatingEmptyBaseFields_thenAllFieldsAreNull() {
     // Create a new instance without setting any values
     BaseStationFields emptyFields = new BaseStationFields() {};
-    
+
     assertThat(emptyFields.getCity()).isNull();
     assertThat(emptyFields.getCountry()).isNull();
     assertThat(emptyFields.getLatitude()).isNull();
@@ -42,10 +42,10 @@ class BaseStationFieldsTest {
     baseFields.setLatitude(41.1579);
     baseFields.setLongitude(-8.6291); // Required field
     baseFields.setStatus("Available"); // Required field
-    
+
     // When
     var violations = validator.validate(baseFields);
-    
+
     // Then
     assertThat(violations).isEmpty();
   }
@@ -56,10 +56,10 @@ class BaseStationFieldsTest {
     baseFields.setLatitude(91.0);
     baseFields.setLongitude(-8.6291); // Required field
     baseFields.setStatus("Available"); // Required field
-    
+
     // When
     var violations = validator.validate(baseFields);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
     assertThat(violations.iterator().next().getMessage())
@@ -72,10 +72,10 @@ class BaseStationFieldsTest {
     baseFields.setLatitude(41.1579); // Required field
     baseFields.setLongitude(-8.6291);
     baseFields.setStatus("Available"); // Required field
-    
+
     // When
     var violations = validator.validate(baseFields);
-    
+
     // Then
     assertThat(violations).isEmpty();
   }
@@ -86,10 +86,10 @@ class BaseStationFieldsTest {
     baseFields.setLatitude(41.1579); // Required field
     baseFields.setLongitude(181.0);
     baseFields.setStatus("Available"); // Required field
-    
+
     // When
     var violations = validator.validate(baseFields);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
     assertThat(violations.iterator().next().getMessage())
@@ -128,4 +128,4 @@ class BaseStationFieldsTest {
     assertThat(baseFields.getStatus()).isEqualTo(status);
     assertThat(baseFields.getAddress()).isEqualTo(address);
   }
-} 
+}

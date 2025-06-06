@@ -37,8 +37,7 @@ public class Station extends BaseStationFields {
   private Integer quantityOfChargers;
 
   /** Creates a new Station. */
-  public Station() {
-  }
+  public Station() {}
 
   /**
    * Creates a new Station with the given details.
@@ -53,16 +52,8 @@ public class Station extends BaseStationFields {
    * @param quantityOfChargers The number of chargers available at the station
    * @param status The status of the station
    */
-  public Station(
-      String externalId,
-      String name,
-      String address,
-      String city,
-      String country,
-      double latitude,
-      double longitude,
-      Integer quantityOfChargers,
-      String status) {
+  public Station(String externalId, String name, String address, String city, String country,
+      double latitude, double longitude, Integer quantityOfChargers, String status) {
     this.externalId = externalId;
     this.name = name;
     this.address = address;
@@ -88,16 +79,8 @@ public class Station extends BaseStationFields {
    * @param power The power rating of the station in kW
    * @param isOperational Whether the station is operational
    */
-  public Station(
-      String externalId,
-      String name,
-      String address,
-      String city,
-      String country,
-      Double latitude,
-      Double longitude,
-      Integer quantityOfChargers,
-      Integer power,
+  public Station(String externalId, String name, String address, String city, String country,
+      Double latitude, Double longitude, Integer quantityOfChargers, Integer power,
       Boolean isOperational) {
     this.externalId = externalId;
     this.name = name;
@@ -126,18 +109,9 @@ public class Station extends BaseStationFields {
    * @param isOperational Whether the station is operational
    * @param price The price per kWh in euros
    */
-  public Station(
-      String externalId,
-      String name,
-      String address,
-      String city,
-      String country,
-      Double latitude,
-      Double longitude,
-      Integer quantityOfChargers,
-      Integer power,
-      Boolean isOperational,
-      Double price) {
+  public Station(String externalId, String name, String address, String city, String country,
+      Double latitude, Double longitude, Integer quantityOfChargers, Integer power,
+      Boolean isOperational, Double price) {
     this.externalId = externalId;
     this.name = name;
     this.address = address;

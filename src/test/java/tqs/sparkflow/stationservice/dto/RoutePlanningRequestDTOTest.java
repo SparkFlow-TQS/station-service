@@ -94,4 +94,4 @@ class RoutePlanningRequestDTOTest {
         assertThat(toString).contains("batteryCapacity=50.0");
         assertThat(toString).contains("carAutonomy=0.2");
     }
-} 
+}

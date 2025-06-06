@@ -23,10 +23,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = {StationServiceApplication.class, TestConfig.class, OpenChargeMapTestConfig.class},
-    properties = {"spring.main.allow-bean-definition-overriding=true"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {StationServiceApplication.class, TestConfig.class,
+                OpenChargeMapTestConfig.class},
+        properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 class StationControllerIT {
 
@@ -55,17 +55,17 @@ class StationControllerIT {
         Station station = createTestStation("Test Station");
 
         // When
-        ResponseEntity<Station> response = restTemplate.postForEntity(baseUrl, station, Station.class);
+        ResponseEntity<Station> response =
+                restTemplate.postForEntity(baseUrl, station, Station.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
         Station responseStation = response.getBody();
-        assertThat(responseStation).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getName()).isEqualTo(station.getName());
-                assertThat(s.getQuantityOfChargers()).isEqualTo(station.getQuantityOfChargers());
-            });
+        assertThat(responseStation).isNotNull().satisfies(s -> {
+            assertThat(s.getName()).isEqualTo(station.getName());
+            assertThat(s.getQuantityOfChargers()).isEqualTo(station.getQuantityOfChargers());
+        });
     }
 
     @Test
@@ -79,15 +79,15 @@ class StationControllerIT {
         stationRepository.save(station2);
 
         // When
-        ResponseEntity<List<Station>> response = restTemplate.exchange(baseUrl, HttpMethod.GET, null,
-            new ParameterizedTypeReference<List<Station>>() {});
+        ResponseEntity<List<Station>> response = restTemplate.exchange(baseUrl, HttpMethod.GET,
+                null, new ParameterizedTypeReference<List<Station>>() {});
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).hasSize(2);
         assertThat(response.getBody()).extracting(Station::getName)
-            .containsExactlyInAnyOrder("Station 1", "Station 2");
+                .containsExactlyInAnyOrder("Station 1", "Station 2");
     }
 
     @Test
@@ -100,17 +100,16 @@ class StationControllerIT {
         final String expectedName = station.getName();
 
         // When
-        ResponseEntity<Station> response = restTemplate.getForEntity(baseUrl + "/" + station.getId(),
-            Station.class);
+        ResponseEntity<Station> response =
+                restTemplate.getForEntity(baseUrl + "/" + station.getId(), Station.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         Station responseStation = response.getBody();
-        assertThat(responseStation).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getName()).isEqualTo(expectedName);
-            });
+        assertThat(responseStation).isNotNull().satisfies(s -> {
+            assertThat(s.getName()).isEqualTo(expectedName);
+        });
     }
 
     @Test
@@ -118,7 +117,8 @@ class StationControllerIT {
     @Requirement("STATION-IT-4")
     void whenGettingNonExistentStationById_thenReturnsNotFound() {
         // When
-        ResponseEntity<Station> response = restTemplate.getForEntity(baseUrl + "/999", Station.class);
+        ResponseEntity<Station> response =
+                restTemplate.getForEntity(baseUrl + "/999", Station.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -152,17 +152,15 @@ class StationControllerIT {
 
         // When
         ResponseEntity<List<Station>> response = restTemplate.exchange(baseUrl + "/quantity/5",
-            HttpMethod.GET, null, new ParameterizedTypeReference<List<Station>>() {});
+                HttpMethod.GET, null, new ParameterizedTypeReference<List<Station>>() {});
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         List<Station> stations = response.getBody();
-        assertThat(stations).isNotNull()
-            .hasSize(1)
-            .satisfies(list -> {
-                assertThat(list.get(0).getQuantityOfChargers()).isEqualTo(5);
-            });
+        assertThat(stations).isNotNull().hasSize(1).satisfies(list -> {
+            assertThat(list.get(0).getQuantityOfChargers()).isEqualTo(5);
+        });
     }
 
     @Test
@@ -170,33 +168,24 @@ class StationControllerIT {
     @Requirement("STATION-IT-7")
     void whenCreateStation_thenReturnCreatedStation() {
         // Given
-        Station station = new Station.Builder()
-            .name("Test Station")
-            .address("Test Address")
-            .city("Lisbon")
-            .country("Portugal")
-            .latitude(38.7223)
-            .longitude(-9.1393)
-            .quantityOfChargers(5)
-            .power(22)
-            .status("Available")
-            .isOperational(true)
-            .price(0.30)
-            .build();
+        Station station = new Station.Builder().name("Test Station").address("Test Address")
+                .city("Lisbon").country("Portugal").latitude(38.7223).longitude(-9.1393)
+                .quantityOfChargers(5).power(22).status("Available").isOperational(true).price(0.30)
+                .build();
 
         // When
-        ResponseEntity<Station> response = restTemplate.postForEntity(baseUrl, station, Station.class);
+        ResponseEntity<Station> response =
+                restTemplate.postForEntity(baseUrl, station, Station.class);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
         Station responseStation = response.getBody();
-        assertThat(responseStation).isNotNull()
-            .satisfies(s -> {
-                assertThat(s.getName()).isEqualTo(station.getName());
-                assertThat(s.getLatitude()).isEqualTo(station.getLatitude());
-                assertThat(s.getLongitude()).isEqualTo(station.getLongitude());
-            });
+        assertThat(responseStation).isNotNull().satisfies(s -> {
+            assertThat(s.getName()).isEqualTo(station.getName());
+            assertThat(s.getLatitude()).isEqualTo(station.getLatitude());
+            assertThat(s.getLongitude()).isEqualTo(station.getLongitude());
+        });
     }
 
     private Station createTestStation(String name) {

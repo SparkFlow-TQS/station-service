@@ -1,7 +1,6 @@
 package tqs.sparkflow.stationservice.config;
 
 import java.util.Arrays;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -11,11 +10,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.servlet.FilterChain;
 
 /**
  * Security configuration for the application. Configures security settings including CSRF
@@ -35,67 +33,38 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable())
-        .headers(
-            headers ->
-                headers
-                    .contentTypeOptions(content -> {})
-                    .frameOptions(frame -> frame.deny())
-                    .xssProtection(xss -> {})
-                    .contentSecurityPolicy(
-                        csp ->
-                            csp.policyDirectives(
-                                "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
-                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                                    + "style-src 'self' 'unsafe-inline'; "
-                                    + "img-src 'self' data:; "
-                                    + "font-src 'self'; "
-                                    + "connect-src 'self' *; "
-                                    + "base-uri 'self'; "
-                                    + "form-action 'self'; "
-                                    + "frame-ancestors 'none'; "
-                                    + "object-src 'none'")))
-        .authorizeHttpRequests(
-            auth ->
-                auth
-                    // Swagger UI endpoints first
-                    .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/swagger-resources/**",
-                        "/webjars/**")
-                    .permitAll()
-                    // Actuator endpoints for monitoring
-                    .requestMatchers("/actuator/**")
-                    .permitAll()
-                    // Then other endpoints
-                    .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**", "/api/v1/openchargemap/**")
-                    .permitAll()
-                    .requestMatchers("/bookings/**", "/api/v1/bookings/**")
-                    .hasAnyRole("USER", "ADMIN")
-                    .requestMatchers("/admin/**", "/api/v1/admin/**")
-                    .hasRole("ADMIN")
-                    .anyRequest()
-                    .authenticated())
-        .addFilterBefore(
-            new OncePerRequestFilter() {
-              @Override
-              protected void doFilterInternal(
-                  @NonNull HttpServletRequest request,
-                  @NonNull HttpServletResponse response,
-                  @NonNull FilterChain filterChain)
-                  throws jakarta.servlet.ServletException, java.io.IOException {
-                // Set SameSite attribute for JSESSIONID cookie
-                response.addHeader(
-                    "Set-Cookie",
-                    "JSESSIONID="
-                        + request.getSession().getId()
-                        + "; SameSite=Strict; Secure; HttpOnly");
-                filterChain.doFilter(request, response);
-              }
-            },
-            org.springframework.security.web.context.SecurityContextHolderFilter.class);
+        .csrf(csrf -> csrf.disable()).headers(headers -> headers.contentTypeOptions(content -> {
+        }).frameOptions(frame -> frame.deny()).xssProtection(xss -> {
+        }).contentSecurityPolicy(
+            csp -> csp.policyDirectives("default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
+                + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                + "style-src 'self' 'unsafe-inline'; " + "img-src 'self' data:; "
+                + "font-src 'self'; " + "connect-src 'self' *; " + "base-uri 'self'; "
+                + "form-action 'self'; " + "frame-ancestors 'none'; " + "object-src 'none'")))
+        .authorizeHttpRequests(auth -> auth
+            // Swagger UI endpoints first
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+                "/swagger-resources/**", "/webjars/**")
+            .permitAll()
+            // Actuator endpoints for monitoring
+            .requestMatchers("/actuator/**").permitAll()
+            // Then other endpoints
+            .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**",
+                "/api/v1/openchargemap/**")
+            .permitAll().requestMatchers("/bookings/**", "/api/v1/bookings/**")
+            .hasAnyRole("USER", "ADMIN").requestMatchers("/admin/**", "/api/v1/admin/**")
+            .hasRole("ADMIN").anyRequest().authenticated())
+        .addFilterBefore(new OncePerRequestFilter() {
+          @Override
+          protected void doFilterInternal(@NonNull HttpServletRequest request,
+              @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+              throws jakarta.servlet.ServletException, java.io.IOException {
+            // Set SameSite attribute for JSESSIONID cookie
+            response.addHeader("Set-Cookie", "JSESSIONID=" + request.getSession().getId()
+                + "; SameSite=Strict; Secure; HttpOnly");
+            filterChain.doFilter(request, response);
+          }
+        }, org.springframework.security.web.context.SecurityContextHolderFilter.class);
 
     return http.build();
   }
@@ -108,8 +77,8 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(
-        Arrays.asList("http://localhost:3000", "http://localhost:8082"));
+    configuration
+        .setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("*"));
     configuration.setExposedHeaders(Arrays.asList("Authorization"));

@@ -21,19 +21,14 @@ import tqs.sparkflow.stationservice.model.ChargingSession;
 
 @WebMvcTest(controllers = {StationController.class, ChargingSessionController.class})
 @Import({SecurityConfig.class, WebConfig.class})
-@TestPropertySource(properties = {
-    "spring.main.allow-bean-definition-overriding=true",
-    "spring.security.user.name=test",
-    "spring.security.user.password=test",
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "spring.jpa.show-sql=true",
-    "spring.jpa.properties.hibernate.format_sql=true",
-    "spring.jpa.properties.hibernate.jdbc.time_zone=UTC",
-    "spring.jpa.properties.hibernate.query.fail_on_pagination_over_collection_fetch=false",
-    "spring.jpa.properties.hibernate.id.new_generator_mappings=false",
-    "spring.flyway.enabled=false",
-    "spring.flyway.baseline-on-migrate=false"
-})
+@TestPropertySource(properties = {"spring.main.allow-bean-definition-overriding=true",
+        "spring.security.user.name=test", "spring.security.user.password=test",
+        "spring.jpa.hibernate.ddl-auto=create-drop", "spring.jpa.show-sql=true",
+        "spring.jpa.properties.hibernate.format_sql=true",
+        "spring.jpa.properties.hibernate.jdbc.time_zone=UTC",
+        "spring.jpa.properties.hibernate.query.fail_on_pagination_over_collection_fetch=false",
+        "spring.jpa.properties.hibernate.id.new_generator_mappings=false",
+        "spring.flyway.enabled=false", "spring.flyway.baseline-on-migrate=false"})
 class SecurityConfigTest {
 
     @Autowired
@@ -47,8 +42,7 @@ class SecurityConfigTest {
 
     @Test
     void whenAccessingPublicEndpoint_thenSuccess() throws Exception {
-        mockMvc.perform(get("/api/v1/stations"))
-            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/stations")).andExpect(status().isOk());
     }
 
     @Test
@@ -58,20 +52,17 @@ class SecurityConfigTest {
         ChargingSession session = new ChargingSession("1", "1");
         when(chargingSessionService.getSession("1")).thenReturn(session);
 
-        mockMvc.perform(get("/api/v1/charging-sessions/1"))
-            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/charging-sessions/1")).andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void whenAccessingAdminEndpoint_thenSuccess() throws Exception {
-        mockMvc.perform(get("/api/v1/stations/1"))
-            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/stations/1")).andExpect(status().isOk());
     }
 
     @Test
     void whenAccessingProtectedEndpointWithoutAuth_thenForbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/charging-sessions/1"))
-            .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/charging-sessions/1")).andExpect(status().isForbidden());
     }
-} 
+}

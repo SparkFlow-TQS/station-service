@@ -55,18 +55,14 @@ class StationTest {
     station.setLongitude(-8.6291);
     station.setStatus("Available");
     station.setQuantityOfChargers(1);
-    
+
     // When
     var violations = validator.validate(station);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
-    assertThat(violations.stream()
-        .filter(v -> v.getPropertyPath().toString().equals("name"))
-        .findFirst()
-        .get()
-        .getMessage())
-        .isEqualTo("Station name cannot be empty");
+    assertThat(violations.stream().filter(v -> v.getPropertyPath().toString().equals("name"))
+        .findFirst().get().getMessage()).isEqualTo("Station name cannot be empty");
   }
 
   @Test
@@ -77,18 +73,14 @@ class StationTest {
     station.setLatitude(41.1579);
     station.setLongitude(-8.6291);
     station.setQuantityOfChargers(1);
-    
+
     // When
     var violations = validator.validate(station);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
-    assertThat(violations.stream()
-        .filter(v -> v.getPropertyPath().toString().equals("status"))
-        .findFirst()
-        .get()
-        .getMessage())
-        .isEqualTo("Status cannot be empty");
+    assertThat(violations.stream().filter(v -> v.getPropertyPath().toString().equals("status"))
+        .findFirst().get().getMessage()).isEqualTo("Status cannot be empty");
   }
 
   @Test
@@ -99,18 +91,15 @@ class StationTest {
     station.setLatitude(41.1579);
     station.setLongitude(-8.6291);
     station.setStatus("Available");
-    
+
     // When
     var violations = validator.validate(station);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
-    assertThat(violations.stream()
-        .filter(v -> v.getPropertyPath().toString().equals("quantityOfChargers"))
-        .findFirst()
-        .get()
-        .getMessage())
-        .isEqualTo("Quantity of chargers must be at least 1");
+    assertThat(
+        violations.stream().filter(v -> v.getPropertyPath().toString().equals("quantityOfChargers"))
+            .findFirst().get().getMessage()).isEqualTo("Quantity of chargers must be at least 1");
   }
 
   @Test
@@ -118,18 +107,14 @@ class StationTest {
     // Given
     station.setLatitude(null);
     station.setLongitude(-8.6291); // Keep other required fields valid
-    
+
     // When
     var violations = validator.validate(station);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
-    assertThat(violations.stream()
-        .filter(v -> v.getPropertyPath().toString().equals("latitude"))
-        .findFirst()
-        .get()
-        .getMessage())
-        .isEqualTo("Latitude cannot be null");
+    assertThat(violations.stream().filter(v -> v.getPropertyPath().toString().equals("latitude"))
+        .findFirst().get().getMessage()).isEqualTo("Latitude cannot be null");
   }
 
   @Test
@@ -137,18 +122,14 @@ class StationTest {
     // Given
     station.setLongitude(null);
     station.setLatitude(41.1579); // Keep other required fields valid
-    
+
     // When
     var violations = validator.validate(station);
-    
+
     // Then
     assertThat(violations).isNotEmpty();
-    assertThat(violations.stream()
-        .filter(v -> v.getPropertyPath().toString().equals("longitude"))
-        .findFirst()
-        .get()
-        .getMessage())
-        .isEqualTo("Longitude cannot be null");
+    assertThat(violations.stream().filter(v -> v.getPropertyPath().toString().equals("longitude"))
+        .findFirst().get().getMessage()).isEqualTo("Longitude cannot be null");
   }
 
   @Test
@@ -230,19 +211,8 @@ class StationTest {
     Double price = 0.35;
 
     // When
-    Station station = new Station(
-        externalId,
-        name,
-        address,
-        city,
-        country,
-        latitude,
-        longitude,
-        quantityOfChargers,
-        power,
-        isOperational,
-        price
-    );
+    Station station = new Station(externalId, name, address, city, country, latitude, longitude,
+        quantityOfChargers, power, isOperational, price);
 
     // Then
     assertThat(station.getExternalId()).isEqualTo(externalId);
@@ -275,20 +245,10 @@ class StationTest {
     String status = "Available";
 
     // When
-    Station station = new Station.Builder()
-        .externalId(externalId)
-        .name(name)
-        .address(address)
-        .city(city)
-        .country(country)
-        .latitude(latitude)
-        .longitude(longitude)
-        .quantityOfChargers(quantityOfChargers)
-        .power(power)
-        .isOperational(isOperational)
-        .price(price)
-        .status(status)
-        .build();
+    Station station = new Station.Builder().externalId(externalId).name(name).address(address)
+        .city(city).country(country).latitude(latitude).longitude(longitude)
+        .quantityOfChargers(quantityOfChargers).power(power).isOperational(isOperational)
+        .price(price).status(status).build();
 
     // Then
     assertThat(station.getExternalId()).isEqualTo(externalId);
@@ -313,11 +273,7 @@ class StationTest {
     Double latitude = 40.7128;
 
     // When
-    Station station = new Station.Builder()
-        .name(name)
-        .address(address)
-        .latitude(latitude)
-        .build();
+    Station station = new Station.Builder().name(name).address(address).latitude(latitude).build();
 
     // Then
     assertThat(station.getName()).isEqualTo(name);

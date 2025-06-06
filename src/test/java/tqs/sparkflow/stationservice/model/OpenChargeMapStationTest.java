@@ -11,7 +11,7 @@ class OpenChargeMapStationTest {
     @Test
     void whenCreatingEmptyStation_thenAllFieldsAreNull() {
         OpenChargeMapStation station = new OpenChargeMapStation();
-        
+
         assertThat(station.getId()).isNull();
         assertThat(station.getName()).isNull();
         assertThat(station.getAddress()).isNull();
@@ -75,17 +75,17 @@ class OpenChargeMapStationTest {
     void testConnectionsList() {
         OpenChargeMapStation station = new OpenChargeMapStation();
         List<OpenChargeMapStation.Connection> connections = new ArrayList<>();
-        
+
         OpenChargeMapStation.Connection connection1 = new OpenChargeMapStation.Connection();
         connection1.setQuantity(2);
         connections.add(connection1);
-        
+
         OpenChargeMapStation.Connection connection2 = new OpenChargeMapStation.Connection();
         connection2.setQuantity(3);
         connections.add(connection2);
-        
+
         station.setConnections(connections);
-        
+
         assertThat(station.getConnections()).hasSize(2);
         assertThat(station.getConnections().get(0).getQuantity()).isEqualTo(2);
         assertThat(station.getConnections().get(1).getQuantity()).isEqualTo(3);
@@ -95,7 +95,7 @@ class OpenChargeMapStationTest {
     void testCalculateQuantityOfChargers_withNullConnections() {
         OpenChargeMapStation station = new OpenChargeMapStation();
         station.setConnections(null);
-        
+
         assertThat(station.calculateQuantityOfChargers()).isEqualTo(1);
     }
 
@@ -103,7 +103,7 @@ class OpenChargeMapStationTest {
     void testCalculateQuantityOfChargers_withEmptyConnections() {
         OpenChargeMapStation station = new OpenChargeMapStation();
         station.setConnections(new ArrayList<>());
-        
+
         assertThat(station.calculateQuantityOfChargers()).isEqualTo(1);
     }
 
@@ -111,17 +111,17 @@ class OpenChargeMapStationTest {
     void testCalculateQuantityOfChargers_withMultipleConnections() {
         OpenChargeMapStation station = new OpenChargeMapStation();
         List<OpenChargeMapStation.Connection> connections = new ArrayList<>();
-        
+
         OpenChargeMapStation.Connection connection1 = new OpenChargeMapStation.Connection();
         connection1.setQuantity(2);
         connections.add(connection1);
-        
+
         OpenChargeMapStation.Connection connection2 = new OpenChargeMapStation.Connection();
         connection2.setQuantity(3);
         connections.add(connection2);
-        
+
         station.setConnections(connections);
-        
+
         assertThat(station.calculateQuantityOfChargers()).isEqualTo(5);
     }
 
@@ -129,17 +129,17 @@ class OpenChargeMapStationTest {
     void testCalculateQuantityOfChargers_withNullQuantities() {
         OpenChargeMapStation station = new OpenChargeMapStation();
         List<OpenChargeMapStation.Connection> connections = new ArrayList<>();
-        
+
         OpenChargeMapStation.Connection connection1 = new OpenChargeMapStation.Connection();
         connection1.setQuantity(null);
         connections.add(connection1);
-        
+
         OpenChargeMapStation.Connection connection2 = new OpenChargeMapStation.Connection();
         connection2.setQuantity(null);
         connections.add(connection2);
-        
+
         station.setConnections(connections);
-        
+
         assertThat(station.calculateQuantityOfChargers()).isEqualTo(2);
     }
 
@@ -156,4 +156,4 @@ class OpenChargeMapStationTest {
         station.setConnectorType("Type2");
         assertThat(station.getConnectorType()).isEqualTo("Type2");
     }
-} 
+}

@@ -8,11 +8,11 @@ import jakarta.validation.constraints.NotBlank;
 /** Station model for OpenChargeMap API. */
 public class OpenChargeMapStation extends BaseStationFields {
     private List<Connection> connections;
-    
+
     @NotNull(message = "Quantity of chargers cannot be null")
     @Min(value = 1, message = "Quantity of chargers must be at least 1")
     private Integer quantityOfChargers;
-    
+
     private Integer power;
 
     private String status;
@@ -22,49 +22,99 @@ public class OpenChargeMapStation extends BaseStationFields {
 
     private String id;
 
+    /**
+     * Gets the power of the station.
+     *
+     * @return The power of the station
+     */
     public Integer getPower() {
         return power;
     }
 
+    /**
+     * Sets the power of the station.
+     *
+     * @param power The power of the station
+     */
     public void setPower(Integer power) {
         this.power = power;
     }
 
+    /**
+     * Gets the connections of the station.
+     *
+     * @return The connections of the station
+     */
     public List<Connection> getConnections() {
         return connections;
     }
 
+    /**
+     * Sets the connections of the station.
+     *
+     * @param connections The connections of the station
+     */
     public void setConnections(List<Connection> connections) {
         this.connections = connections;
     }
 
+    /**
+     * Gets the quantity of chargers of the station.
+     *
+     * @return The quantity of chargers of the station
+     */
     public Integer getQuantityOfChargers() {
         return quantityOfChargers;
     }
 
+    /**
+     * Sets the quantity of chargers of the station.
+     *
+     * @param quantityOfChargers The quantity of chargers of the station
+     */
     public void setQuantityOfChargers(Integer quantityOfChargers) {
         this.quantityOfChargers = quantityOfChargers;
     }
 
+    /**
+     * Gets the status of the station.
+     *
+     * @return The status of the station
+     */
     public String getStatus() {
         return status;
     }
 
+    /**
+     * Sets the status of the station.
+     *
+     * @param status The status of the station
+     */
     public void setStatus(String status) {
         this.status = status;
     }
 
+    /**
+     * Gets the connector type of the station.
+     *
+     * @return The connector type of the station
+     */
     public String getConnectorType() {
         return connectorType;
     }
 
+    /**
+     * Sets the connector type of the station.
+     *
+     * @param connectorType The connector type of the station
+     */
     public void setConnectorType(String connectorType) {
         this.connectorType = connectorType;
     }
 
     /**
-     * Calculates the total quantity of chargers based on the connections data.
-     * Each connection can specify a quantity, and if unspecified, it counts as one charger.
+     * Calculates the total quantity of chargers based on the connections data. Each connection can
+     * specify a quantity, and if unspecified, it counts as one charger.
      *
      * @return The total quantity of chargers
      */
@@ -78,7 +128,7 @@ public class OpenChargeMapStation extends BaseStationFields {
             Integer quantity = connection.getQuantity();
             totalChargers += (quantity != null) ? quantity : 1;
         }
-        
+
         return totalChargers > 0 ? totalChargers : 1; // Ensure at least 1 charger
     }
 
@@ -86,19 +136,39 @@ public class OpenChargeMapStation extends BaseStationFields {
     public static class Connection {
         private Integer quantity;
 
+        /**
+         * Gets the quantity of the connection.
+         *
+         * @return The quantity of the connection
+         */
         public Integer getQuantity() {
             return quantity;
         }
 
+        /**
+         * Sets the quantity of the connection.
+         *
+         * @param quantity The quantity of the connection
+         */
         public void setQuantity(Integer quantity) {
             this.quantity = quantity;
         }
     }
 
+    /**
+     * Gets the id of the station.
+     *
+     * @return The id of the station
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Sets the id of the station.
+     *
+     * @param id The id of the station
+     */
     public void setId(String id) {
         this.id = id;
     }

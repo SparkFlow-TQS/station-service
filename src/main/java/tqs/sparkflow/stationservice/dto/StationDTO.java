@@ -9,8 +9,7 @@ public class StationDTO extends BaseStationFields {
     private Integer quantityOfChargers;
     private Integer power;
 
-    public StationDTO() {
-    }
+    public StationDTO() {}
 
     public StationDTO(Station station) {
         this.id = station.getId();
@@ -53,13 +52,16 @@ public class StationDTO extends BaseStationFields {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        if (!super.equals(o))
+            return false;
         StationDTO stationDTO = (StationDTO) o;
-        return Objects.equals(id, stationDTO.id) &&
-               Objects.equals(quantityOfChargers, stationDTO.quantityOfChargers) &&
-               Objects.equals(power, stationDTO.power);
+        return Objects.equals(id, stationDTO.id)
+                && Objects.equals(quantityOfChargers, stationDTO.quantityOfChargers)
+                && Objects.equals(power, stationDTO.power);
     }
 
     @Override
@@ -69,19 +71,11 @@ public class StationDTO extends BaseStationFields {
 
     @Override
     public String toString() {
-        return "StationDTO{" +
-               "id=" + id +
-               ", name='" + getName() + '\'' +
-               ", address='" + getAddress() + '\'' +
-               ", city='" + getCity() + '\'' +
-               ", country='" + getCountry() + '\'' +
-               ", latitude=" + getLatitude() +
-               ", longitude=" + getLongitude() +
-               ", status='" + getStatus() + '\'' +
-               ", isOperational=" + getIsOperational() +
-               ", price=" + getPrice() +
-               ", quantityOfChargers=" + quantityOfChargers +
-               ", power=" + power +
-               '}';
+        return "StationDTO{" + "id=" + id + ", name='" + getName() + '\'' + ", address='"
+                + getAddress() + '\'' + ", city='" + getCity() + '\'' + ", country='" + getCountry()
+                + '\'' + ", latitude=" + getLatitude() + ", longitude=" + getLongitude()
+                + ", status='" + getStatus() + '\'' + ", isOperational=" + getIsOperational()
+                + ", price=" + getPrice() + ", quantityOfChargers=" + quantityOfChargers
+                + ", power=" + power + '}';
     }
-} 
+}
