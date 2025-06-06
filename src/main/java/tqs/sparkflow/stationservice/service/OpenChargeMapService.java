@@ -144,7 +144,7 @@ public class OpenChargeMapService {
     return stationsData.stream().map(this::convertMapToStation).toList();
   }
 
-  private Station convertMapToStation(Map<String, Object> data) {
+  protected Station convertMapToStation(Map<String, Object> data) {
     try {
       Map<String, Object> addressInfo = getAddressInfo(data);
       List<Map<String, Object>> connections = getConnections(data);
