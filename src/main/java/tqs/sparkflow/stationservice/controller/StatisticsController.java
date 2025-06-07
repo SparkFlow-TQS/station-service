@@ -1,6 +1,5 @@
 package tqs.sparkflow.stationservice.controller;
 
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/statistics")
-@Requirement("SPARKFLOW-18")
 public class StatisticsController {
 
     @Autowired

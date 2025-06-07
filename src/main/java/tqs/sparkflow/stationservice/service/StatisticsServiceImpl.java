@@ -1,14 +1,11 @@
 package tqs.sparkflow.stationservice.service;
 
-import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.springframework.stereotype.Service;
 import tqs.sparkflow.stationservice.dto.StatisticsDTO;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
-@Requirement("SPARKFLOW-18")
 public class StatisticsServiceImpl implements StatisticsService {
 
     @Override

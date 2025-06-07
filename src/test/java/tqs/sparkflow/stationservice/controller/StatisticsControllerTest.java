@@ -1,10 +1,12 @@
 package tqs.sparkflow.stationservice.controller;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Requirement("SPARKFLOW-18")
 class StatisticsControllerTest {
 
     @Test
