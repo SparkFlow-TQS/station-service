@@ -88,9 +88,18 @@ public class RoutePlanningServiceTest {
         RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
 
         assertNotNull(response);
-        assertFalse(response.getStations().isEmpty());
         assertTrue(response.getDistance() > 0);
         assertTrue(response.getBatteryUsage() > 0);
+
+        // If battery usage is high enough, we should have charging stations
+        double batteryPercentage = response.getBatteryUsage() / request.getBatteryCapacity();
+        if (batteryPercentage > config.getMaxBatteryPercentage()) {
+            assertFalse(response.getStations().isEmpty(),
+                    "Should have charging stations for high battery usage");
+        } else {
+            assertTrue(response.getStations().isEmpty(),
+                    "Should have no charging stations for direct route");
+        }
     }
 
     @Test
@@ -148,8 +157,8 @@ public class RoutePlanningServiceTest {
         request.setStartLongitude(-8.6291);
         request.setDestLatitude(38.7223);
         request.setDestLongitude(-9.1393);
-        request.setBatteryCapacity(75.0);
-        request.setCarAutonomy(300.0);
+        request.setBatteryCapacity(50.0);
+        request.setCarAutonomy(100.0);
         return request;
     }
 }

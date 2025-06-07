@@ -1,8 +1,8 @@
 package tqs.sparkflow.stationservice.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
@@ -18,16 +18,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class RoutePlanningServiceImpl implements RoutePlanningService {
-
-  private static final double MIN_BATTERY_PERCENTAGE = 0.2; // 20% minimum battery level
-  private static final double MAX_BATTERY_PERCENTAGE = 0.8; // 80% maximum battery level for
-                                                            // charging
-  private static final double MAX_DETOUR_DISTANCE = 20.0; // Maximum 20km detour from route
-  private static final double MIN_LATITUDE = -90.0;
-  private static final double MAX_LATITUDE = 90.0;
-  private static final double MIN_LONGITUDE = -180.0;
-  private static final double MAX_LONGITUDE = 180.0;
-  private static final double REQUESTS_PER_SECOND = 10.0; // Rate limit: 10 requests per second
 
   private final StationRepository stationRepository;
   private final RoutePlanningConfig config;
@@ -73,16 +63,21 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
           "No charging stations available in the system");
     }
 
-    // Calculate route and find optimal charging stations
-    double distance = calculateDistance(request.getStartLatitude(), request.getStartLongitude(),
-        request.getDestLatitude(), request.getDestLongitude());
+    // Calculate total route distance
+    double totalDistance = calculateDistance(request.getStartLatitude(),
+        request.getStartLongitude(), request.getDestLatitude(), request.getDestLongitude());
 
-    double batteryUsage = distance / request.getCarAutonomy();
-    double batteryPercentage = batteryUsage / request.getBatteryCapacity();
+    // Calculate if direct route is possible
+    double batteryNeeded = totalDistance / request.getCarAutonomy();
+    double batteryPercentage = batteryNeeded / request.getBatteryCapacity();
 
-    if (batteryPercentage > config.getMaxBatteryPercentage()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "No suitable charging stations found for the given route");
+    if (batteryPercentage <= config.getMaxBatteryPercentage()) {
+      // Direct route is possible
+      RoutePlanningResponseDTO response = new RoutePlanningResponseDTO();
+      response.setStations(new ArrayList<>());
+      response.setDistance(totalDistance);
+      response.setBatteryUsage(batteryNeeded);
+      return response;
     }
 
     // Find optimal charging stations
@@ -98,8 +93,8 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
     // Create response
     RoutePlanningResponseDTO response = new RoutePlanningResponseDTO();
     response.setStations(optimalStations);
-    response.setDistance(distance);
-    response.setBatteryUsage(batteryUsage);
+    response.setDistance(totalDistance);
+    response.setBatteryUsage(batteryNeeded);
     return response;
   }
 
@@ -128,12 +123,60 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
 
   private List<Station> findOptimalChargingStations(List<Station> stations, double startLat,
       double startLon, double destLat, double destLon, double batteryCapacity, double carAutonomy) {
-    // Filter stations within max detour distance
-    return stations.stream().filter(station -> {
+
+    // First, filter stations within max detour distance
+    List<Station> candidateStations = stations.stream().filter(station -> {
       double detourDistance = calculateDetourDistance(startLat, startLon, destLat, destLon,
           station.getLatitude(), station.getLongitude());
       return detourDistance <= config.getMaxDetourDistance();
     }).collect(Collectors.toList());
+
+    // Sort stations by their optimality score
+    return candidateStations.stream()
+        .sorted(Comparator.comparingDouble(station -> calculateStationScore(station, startLat,
+            startLon, destLat, destLon, batteryCapacity, carAutonomy)))
+        .limit(3) // Return top 3 most optimal stations
+        .collect(Collectors.toList());
+  }
+
+  private double calculateStationScore(Station station, double startLat, double startLon,
+      double destLat, double destLon, double batteryCapacity, double carAutonomy) {
+
+    // Calculate distances
+    double distanceToStart =
+        calculateDistance(startLat, startLon, station.getLatitude(), station.getLongitude());
+    double distanceToDest =
+        calculateDistance(station.getLatitude(), station.getLongitude(), destLat, destLon);
+    double totalDistance = distanceToStart + distanceToDest;
+
+    // Calculate battery usage
+    double batteryToStation = distanceToStart / carAutonomy;
+    double batteryFromStation = distanceToDest / carAutonomy;
+
+    // Calculate optimality score (lower is better)
+    double score = 0;
+
+    // Prefer stations that are closer to the midpoint of the route
+    double directDistance = calculateDistance(startLat, startLon, destLat, destLon);
+    double detourRatio = totalDistance / directDistance;
+    score += detourRatio * 100; // Weight for detour distance
+
+    // Prefer stations with higher power (faster charging)
+    score -= station.getPower() * 0.1; // Weight for charging speed
+
+    // Prefer stations that maintain battery level between min and max thresholds
+    double batteryAtStation = batteryCapacity - batteryToStation;
+    if (batteryAtStation < config.getMinBatteryPercentage() * batteryCapacity) {
+      score += 1000; // Heavy penalty for stations that would leave battery too low
+    }
+    if (batteryAtStation > config.getMaxBatteryPercentage() * batteryCapacity) {
+      score += 500; // Penalty for stations that would leave battery too high
+    }
+
+    // Prefer stations with more available chargers
+    score -= station.getQuantityOfChargers() * 10; // Weight for charger availability
+
+    return score;
   }
 
   private double calculateDetourDistance(double startLat, double startLon, double destLat,
