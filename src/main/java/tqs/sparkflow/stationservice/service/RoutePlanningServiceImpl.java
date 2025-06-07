@@ -85,11 +85,6 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
         request.getStartLatitude(), request.getStartLongitude(), request.getDestLatitude(),
         request.getDestLongitude(), request.getBatteryCapacity(), request.getCarAutonomy());
 
-    if (optimalStations.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "No suitable charging stations found for the given route");
-    }
-
     // Create response
     RoutePlanningResponseDTO response = new RoutePlanningResponseDTO();
     response.setStations(optimalStations);
@@ -124,19 +119,45 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
   private List<Station> findOptimalChargingStations(List<Station> stations, double startLat,
       double startLon, double destLat, double destLon, double batteryCapacity, double carAutonomy) {
 
-    // First, filter stations within max detour distance
+    // Calculate direct route distance
+    double directDistance = calculateDistance(startLat, startLon, destLat, destLon);
+
+    // Filter stations within max detour distance and not too far from the route
     List<Station> candidateStations = stations.stream().filter(station -> {
       double detourDistance = calculateDetourDistance(startLat, startLon, destLat, destLon,
           station.getLatitude(), station.getLongitude());
-      return detourDistance <= config.getMaxDetourDistance();
+      double totalDistance =
+          calculateDistance(startLat, startLon, station.getLatitude(), station.getLongitude())
+              + calculateDistance(station.getLatitude(), station.getLongitude(), destLat, destLon);
+      double detourRatio = totalDistance / directDistance;
+
+      // Station must be within max detour distance and not require a detour more than 50% longer
+      // than direct route
+      return detourDistance <= config.getMaxDetourDistance() && detourRatio <= 1.5;
     }).collect(Collectors.toList());
 
-    // Sort stations by their optimality score
-    return candidateStations.stream()
-        .sorted(Comparator.comparingDouble(station -> calculateStationScore(station, startLat,
-            startLon, destLat, destLon, batteryCapacity, carAutonomy)))
-        .limit(3) // Return top 3 most optimal stations
-        .collect(Collectors.toList());
+    // If no stations are within the acceptable detour distance, throw an exception
+    if (candidateStations.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "No suitable charging stations found for the given route");
+    }
+
+    // Score and sort stations by optimality
+    List<Station> optimalStations = candidateStations.stream()
+        .map(station -> new Object[] {station,
+            calculateStationScore(station, startLat, startLon, destLat, destLon, batteryCapacity,
+                carAutonomy)})
+        .filter(arr -> (double) arr[1] < Double.MAX_VALUE)
+        .sorted(Comparator.comparingDouble(arr -> (double) arr[1])).limit(3)
+        .map(arr -> (Station) arr[0]).collect(Collectors.toList());
+
+    // If no stations are suitable after scoring, throw an exception
+    if (optimalStations.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "No suitable charging stations found for the given route");
+    }
+
+    return optimalStations;
   }
 
   private double calculateStationScore(Station station, double startLat, double startLon,
@@ -159,31 +180,59 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
     // Prefer stations that are closer to the midpoint of the route
     double directDistance = calculateDistance(startLat, startLon, destLat, destLon);
     double detourRatio = totalDistance / directDistance;
-    score += detourRatio * 100; // Weight for detour distance
 
-    // Prefer stations with higher power (faster charging)
-    score -= station.getPower() * 0.1; // Weight for charging speed
+    // Heavily penalize stations that are too far from the route
+    if (detourRatio > 1.5 || totalDistance > directDistance * 2.5) { // If detour is more than 50%
+                                                                     // longer than direct route or
+                                                                     // total distance is more than
+                                                                     // 2.5x
+      return Double.MAX_VALUE; // Effectively exclude this station
+    }
 
-    // Prefer stations that maintain battery level between min and max thresholds
+    // Calculate battery at station
     double batteryAtStation = batteryCapacity - batteryToStation;
+
+    // Exclude stations that would leave battery too low or too high
     if (batteryAtStation < config.getMinBatteryPercentage() * batteryCapacity) {
-      score += 1000; // Heavy penalty for stations that would leave battery too low
+      return Double.MAX_VALUE;
     }
     if (batteryAtStation > config.getMaxBatteryPercentage() * batteryCapacity) {
-      score += 500; // Penalty for stations that would leave battery too high
+      return Double.MAX_VALUE;
     }
 
+    // Score based on detour ratio (lower is better)
+    score += detourRatio * 1000; // Increased weight for detour distance
+
+    // Prefer stations with higher power (faster charging)
+    score -= station.getPower() * 0.1;
+
     // Prefer stations with more available chargers
-    score -= station.getQuantityOfChargers() * 10; // Weight for charger availability
+    score -= station.getQuantityOfChargers() * 10;
 
     return score;
   }
 
-  private double calculateDetourDistance(double startLat, double startLon, double destLat,
-      double destLon, double stationLat, double stationLon) {
+  double calculateDetourDistance(double startLat, double startLon, double destLat, double destLon,
+      double stationLat, double stationLon) {
+    // Calculate direct distance between start and destination
     double directDistance = calculateDistance(startLat, startLon, destLat, destLon);
-    double viaStationDistance = calculateDistance(startLat, startLon, stationLat, stationLon)
-        + calculateDistance(stationLat, stationLon, destLat, destLon);
+
+    // Calculate distance from start to station
+    double startToStation = calculateDistance(startLat, startLon, stationLat, stationLon);
+
+    // Calculate distance from station to destination
+    double stationToDest = calculateDistance(stationLat, stationLon, destLat, destLon);
+
+    // Calculate total distance via station
+    double viaStationDistance = startToStation + stationToDest;
+
+    // If the station is too far from the route, return a large value to exclude it
+    if (viaStationDistance > directDistance * 1.5) { // If detour is more than 50% longer than
+                                                     // direct route
+      return Double.MAX_VALUE;
+    }
+
+    // Return the additional distance required to go via the station
     return viaStationDistance - directDistance;
   }
 }

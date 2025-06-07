@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class RoutePlanningServiceTest {
+class RoutePlanningServiceTest {
 
     @Mock
     private StationRepository stationRepository;
@@ -149,6 +149,77 @@ public class RoutePlanningServiceTest {
 
         assertEquals(HttpStatus.TOO_MANY_REQUESTS, exception.getStatusCode());
         assertEquals("Rate limit exceeded", exception.getReason());
+    }
+
+    @Test
+    void whenNoAvailableStations_thenThrowsServiceUnavailable() {
+        when(stationRepository.findAll()).thenReturn(new ArrayList<>());
+
+        RoutePlanningRequestDTO request = createValidRequest();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> routePlanningService.planRoute(request));
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exception.getStatusCode());
+        assertEquals("No charging stations available in the system", exception.getReason());
+    }
+
+    @Test
+    void whenBatteryLevelTooLow_thenPenalizesStation() {
+        // Create a station that would leave battery too low
+        Station lowBatteryStation = new Station();
+        lowBatteryStation.setLatitude(40.0);
+        lowBatteryStation.setLongitude(-8.5);
+        lowBatteryStation.setPower(100);
+        lowBatteryStation.setQuantityOfChargers(4);
+        lowBatteryStation.setIsOperational(true);
+        lowBatteryStation.setStatus("Available");
+
+        when(stationRepository.findAll()).thenReturn(List.of(lowBatteryStation));
+
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(20.0); // Small battery
+        request.setCarAutonomy(50.0); // Low autonomy
+
+        RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
+
+        assertNotNull(response);
+        assertTrue(response.getStations().isEmpty()); // Should be penalized out of selection
+    }
+
+    @Test
+    void whenBatteryLevelTooHigh_thenPenalizesStation() {
+        // Create a station that would leave battery too high
+        Station highBatteryStation = new Station();
+        highBatteryStation.setLatitude(38.8); // Very close to destination
+        highBatteryStation.setLongitude(-9.0);
+        highBatteryStation.setPower(100);
+        highBatteryStation.setQuantityOfChargers(4);
+        highBatteryStation.setIsOperational(true);
+        highBatteryStation.setStatus("Available");
+
+        when(stationRepository.findAll()).thenReturn(List.of(highBatteryStation));
+
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(100.0); // Large battery
+        request.setCarAutonomy(200.0); // High autonomy
+
+        RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
+
+        assertNotNull(response);
+        assertTrue(response.getStations().isEmpty()); // Should be penalized out of selection
+    }
+
+    @Test
+    void whenInvalidLongitude_thenThrowsBadRequest() {
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setStartLongitude(200.0); // Invalid longitude
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> routePlanningService.planRoute(request));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Invalid start longitude", exception.getReason());
     }
 
     private RoutePlanningRequestDTO createValidRequest() {
