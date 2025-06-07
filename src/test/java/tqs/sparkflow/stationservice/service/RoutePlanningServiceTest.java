@@ -4,20 +4,22 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 import tqs.sparkflow.stationservice.dto.RoutePlanningRequestDTO;
 import tqs.sparkflow.stationservice.dto.RoutePlanningResponseDTO;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
 class RoutePlanningServiceTest {
@@ -95,11 +97,13 @@ class RoutePlanningServiceTest {
 
         testStations = Arrays.asList(portoStation, aveiroStation, coimbraStation, leiriaStation,
                 lisbonStation);
-        when(stationRepository.findAll()).thenReturn(testStations);
     }
 
     @Test
     void testPlanRouteFromPortoToLisbon() {
+        // Given
+        when(stationRepository.findAll()).thenReturn(testStations);
+
         // Create route planning request
         RoutePlanningRequestDTO request = new RoutePlanningRequestDTO();
         request.setStartLatitude(41.1579); // Porto
@@ -118,19 +122,13 @@ class RoutePlanningServiceTest {
         assertThat(response.getStations()).isNotEmpty();
         assertThat(response.getDistance()).isGreaterThan(0);
         assertThat(response.getBatteryUsage()).isGreaterThan(0);
-
-        // Print route details
-        System.out.println("Route from Porto to Lisbon:");
-        System.out.println("Total distance: " + response.getDistance() + " km");
-        System.out.println("Estimated battery usage: " + response.getBatteryUsage() + " kWh");
-        System.out.println("Charging stations along the route:");
-        response.getStations().forEach(station -> System.out
-                .println("- " + station.getName() + " (" + station.getCity() + ")"));
     }
 
     @Test
     void whenFindingRoute_thenReturnsOptimalRoute() {
         // Given
+        when(stationRepository.findAll()).thenReturn(testStations);
+
         RoutePlanningRequestDTO request = new RoutePlanningRequestDTO();
         request.setStartLatitude(41.1579); // Porto
         request.setStartLongitude(-8.6291);
@@ -148,5 +146,128 @@ class RoutePlanningServiceTest {
         assertThat(response.getStations().get(0).getName()).isEqualTo("Leiria Fast Charge");
         assertThat(response.getDistance()).isGreaterThan(0);
         assertThat(response.getBatteryUsage()).isGreaterThan(0);
+    }
+
+    @Test
+    void whenCoordinatesAtBoundaries_thenAcceptsValidValues() {
+        // Test valid boundary coordinates with closer points to ensure route is possible
+        RoutePlanningRequestDTO request = new RoutePlanningRequestDTO();
+        request.setStartLatitude(41.1579); // Porto
+        request.setStartLongitude(-8.6291);
+        request.setDestLatitude(40.623361); // Aveiro
+        request.setDestLongitude(-8.650256);
+        request.setBatteryCapacity(40.0);
+        request.setCarAutonomy(5.0);
+
+        // When/Then
+        assertDoesNotThrow(() -> routePlanningService.planRoute(request));
+    }
+
+    @Test
+    void whenCoordinatesOutsideBoundaries_thenThrowsBadRequest() {
+        // Test invalid boundary coordinates
+        RoutePlanningRequestDTO request = new RoutePlanningRequestDTO();
+        request.setStartLatitude(91.0); // Invalid latitude
+        request.setStartLongitude(0.0);
+        request.setDestLatitude(0.0);
+        request.setDestLongitude(0.0);
+        request.setBatteryCapacity(40.0);
+        request.setCarAutonomy(5.0);
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Invalid start latitude");
+    }
+
+    @Test
+    void whenBatteryCapacityZero_thenThrowsBadRequest() {
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(0.0);
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Battery capacity must be greater than 0");
+    }
+
+    @Test
+    void whenCarAutonomyZero_thenThrowsBadRequest() {
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setCarAutonomy(0.0);
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Car autonomy must be greater than 0");
+    }
+
+    @Test
+    void whenInvalidCoordinates_thenThrowsBadRequest() {
+        // Given
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setStartLatitude(91.0); // Invalid latitude
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("statusCode", HttpStatus.BAD_REQUEST)
+                .hasMessageContaining("Invalid start latitude");
+    }
+
+    @Test
+    void whenInvalidBatteryCapacity_thenThrowsBadRequest() {
+        // Given
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(0.0); // Invalid battery capacity
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("statusCode", HttpStatus.BAD_REQUEST)
+                .hasMessageContaining("Battery capacity must be greater than 0");
+    }
+
+    @Test
+    void whenInvalidCarAutonomy_thenThrowsBadRequest() {
+        // Given
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setCarAutonomy(0.0); // Invalid car autonomy
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("statusCode", HttpStatus.BAD_REQUEST)
+                .hasMessageContaining("Car autonomy must be greater than 0");
+    }
+
+    @Test
+    void whenRateLimitExceeded_thenThrowsTooManyRequests() {
+        // Given
+        RoutePlanningRequestDTO request = createValidRequest();
+        when(stationRepository.findAll()).thenReturn(testStations);
+
+        // Simulate rate limit exceeded
+        for (int i = 0; i < 11; i++) {
+            routePlanningService.planRoute(request);
+        }
+
+        // When/Then
+        assertThatThrownBy(() -> routePlanningService.planRoute(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("statusCode", HttpStatus.TOO_MANY_REQUESTS)
+                .hasMessageContaining("Rate limit exceeded");
+    }
+
+    // Helper method to create a valid request
+    private RoutePlanningRequestDTO createValidRequest() {
+        RoutePlanningRequestDTO request = new RoutePlanningRequestDTO();
+        request.setStartLatitude(41.1579);
+        request.setStartLongitude(-8.6291);
+        request.setDestLatitude(38.7223);
+        request.setDestLongitude(-9.1393);
+        request.setBatteryCapacity(40.0);
+        request.setCarAutonomy(5.0);
+        return request;
     }
 }
