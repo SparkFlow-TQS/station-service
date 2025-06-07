@@ -72,6 +72,9 @@ public class SecurityConfig {
                     // Then other endpoints
                     .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**", "/api/v1/openchargemap/**")
                     .permitAll()
+                    // Statistics endpoints
+                    .requestMatchers("/statistics/**", "/api/v1/statistics/**")
+                    .permitAll()
                     .requestMatchers("/bookings/**", "/api/v1/bookings/**")
                     .hasAnyRole("USER", "ADMIN")
                     .requestMatchers("/admin/**", "/api/v1/admin/**")
