@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestPropertySource(properties = {"route.planning.min-battery-percentage=0.2",
     "route.planning.max-battery-percentage=0.8", "route.planning.max-detour-distance=20.0",
     "route.planning.requests-per-second=10.0"})
-public class RoutePlanningServiceIT {
+class RoutePlanningServiceIT {
 
   @Autowired
   private TestEntityManager entityManager;
@@ -164,7 +164,7 @@ public class RoutePlanningServiceIT {
   }
 
   @TestConfiguration
-  public static class TestConfig {
+  static class TestConfig {
     @Bean
     @Primary
     public RateLimiter routePlanningRateLimiter() {

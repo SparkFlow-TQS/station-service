@@ -14,8 +14,6 @@ import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 import tqs.sparkflow.stationservice.config.RoutePlanningConfig;
 
-import java.util.stream.Collectors;
-
 @Service
 public class RoutePlanningServiceImpl implements RoutePlanningService {
 
@@ -56,7 +54,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
     List<Station> allStations = stationRepository.findAll();
     List<Station> availableStations = allStations.stream()
         .filter(station -> station.getIsOperational() && "Available".equals(station.getStatus()))
-        .collect(Collectors.toList());
+        .toList();
 
     if (availableStations.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
@@ -134,7 +132,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
       // Station must be within max detour distance and not require a detour more than 50% longer
       // than direct route
       return detourDistance <= config.getMaxDetourDistance() && detourRatio <= 1.5;
-    }).collect(Collectors.toList());
+    }).toList();
 
     // If no stations are within the acceptable detour distance, throw an exception
     if (candidateStations.isEmpty()) {
@@ -149,7 +147,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
                 carAutonomy)})
         .filter(arr -> (double) arr[1] < Double.MAX_VALUE)
         .sorted(Comparator.comparingDouble(arr -> (double) arr[1])).limit(3)
-        .map(arr -> (Station) arr[0]).collect(Collectors.toList());
+        .map(arr -> (Station) arr[0]).toList();
 
     // If no stations are suitable after scoring, throw an exception
     if (optimalStations.isEmpty()) {
@@ -172,7 +170,6 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
 
     // Calculate battery usage
     double batteryToStation = distanceToStart / carAutonomy;
-    double batteryFromStation = distanceToDest / carAutonomy;
 
     // Calculate optimality score (lower is better)
     double score = 0;
