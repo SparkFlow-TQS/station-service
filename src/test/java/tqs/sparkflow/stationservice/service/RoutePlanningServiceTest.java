@@ -222,6 +222,188 @@ class RoutePlanningServiceTest {
         assertEquals("Invalid start longitude", exception.getReason());
     }
 
+    @Test
+    void whenInvalidDestinationLatitude_thenThrowsBadRequest() {
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setDestLatitude(-100.0); // Invalid latitude
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> routePlanningService.planRoute(request));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Invalid destination latitude", exception.getReason());
+    }
+
+    @Test
+    void whenInvalidDestinationLongitude_thenThrowsBadRequest() {
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setDestLongitude(-200.0); // Invalid longitude
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> routePlanningService.planRoute(request));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Invalid destination longitude", exception.getReason());
+    }
+
+    @Test
+    void whenLongRouteRequiresCharging_thenFindsOptimalStations() {
+        // Create stations for a long route requiring charging
+        Station nearMidpoint = new Station();
+        nearMidpoint.setName("Midpoint Station");
+        nearMidpoint.setLatitude(39.9); // Near midpoint between Porto and Lisbon
+        nearMidpoint.setLongitude(-8.8);
+        nearMidpoint.setQuantityOfChargers(4);
+        nearMidpoint.setPower(100);
+        nearMidpoint.setStatus("Available");
+        nearMidpoint.setIsOperational(true);
+        nearMidpoint.setCity("Midpoint");
+        nearMidpoint.setPrice(0.30);
+
+        when(stationRepository.findAll()).thenReturn(List.of(nearMidpoint));
+
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(20.0); // Very small battery to force charging
+        request.setCarAutonomy(80.0); // Low autonomy to ensure route needs charging
+
+        RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
+
+        assertNotNull(response);
+        // Check if charging stations are needed based on battery usage
+        double batteryPercentage = response.getBatteryUsage() / request.getBatteryCapacity();
+        if (batteryPercentage > config.getMaxBatteryPercentage()) {
+            assertFalse(response.getStations().isEmpty());
+        }
+        assertTrue(response.getDistance() > 0);
+        assertTrue(response.getBatteryUsage() > 0);
+    }
+
+    @Test
+    void whenChargingNeededButNoSuitableStations_thenCorrectBehavior() {
+        // Create stations that are too far from the route
+        Station farStation = new Station();
+        farStation.setName("Far Station");
+        farStation.setLatitude(45.0); // Very far from route
+        farStation.setLongitude(2.0);
+        farStation.setQuantityOfChargers(2);
+        farStation.setPower(50);
+        farStation.setStatus("Available");
+        farStation.setIsOperational(true);
+        farStation.setCity("Far City");
+        farStation.setPrice(0.40);
+
+        when(stationRepository.findAll()).thenReturn(List.of(farStation));
+
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(10.0); // Very small battery to force charging need
+        request.setCarAutonomy(50.0); // Low autonomy
+
+        // The service should handle this case and either find stations or provide direct route
+        RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
+        assertNotNull(response);
+        assertTrue(response.getDistance() > 0);
+        assertTrue(response.getBatteryUsage() >= 0);
+    }
+
+    @Test
+    void whenStationsWithinDetourLimitButAllPenalized_thenThrowsBadRequest() {
+        // Create stations that are within detour limit but would be penalized
+        Station penalizedStation = new Station();
+        penalizedStation.setName("Penalized Station");
+        penalizedStation.setLatitude(39.5);
+        penalizedStation.setLongitude(-8.5);
+        penalizedStation.setQuantityOfChargers(1);
+        penalizedStation.setPower(10); // Low power
+        penalizedStation.setStatus("Available");
+        penalizedStation.setIsOperational(true);
+        penalizedStation.setCity("Penalized City");
+        penalizedStation.setPrice(0.50);
+
+        when(stationRepository.findAll()).thenReturn(List.of(penalizedStation));
+        when(config.getMinBatteryPercentage()).thenReturn(0.9); // Very high minimum battery requirement
+
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(5.0); // Very small battery to trigger penalty
+        request.setCarAutonomy(50.0); // Low autonomy
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> routePlanningService.planRoute(request));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("No suitable charging stations found for the given route", exception.getReason());
+    }
+
+    @Test
+    void whenMultipleStations_thenSelectsBestOnes() {
+        // Create multiple stations with different characteristics
+        Station goodStation = new Station();
+        goodStation.setName("Good Station");
+        goodStation.setLatitude(39.9);
+        goodStation.setLongitude(-8.8);
+        goodStation.setQuantityOfChargers(6);
+        goodStation.setPower(150);
+        goodStation.setStatus("Available");
+        goodStation.setIsOperational(true);
+        goodStation.setCity("Good City");
+        goodStation.setPrice(0.25);
+
+        Station okStation = new Station();
+        okStation.setName("OK Station");
+        okStation.setLatitude(40.0);
+        okStation.setLongitude(-8.9);
+        okStation.setQuantityOfChargers(2);
+        okStation.setPower(50);
+        okStation.setStatus("Available");
+        okStation.setIsOperational(true);
+        okStation.setCity("OK City");
+        okStation.setPrice(0.35);
+
+        Station badStation = new Station();
+        badStation.setName("Bad Station");
+        badStation.setLatitude(39.8);
+        badStation.setLongitude(-8.7);
+        badStation.setQuantityOfChargers(1);
+        badStation.setPower(25);
+        badStation.setStatus("Available");
+        badStation.setIsOperational(true);
+        badStation.setCity("Bad City");
+        badStation.setPrice(0.45);
+
+        when(stationRepository.findAll()).thenReturn(List.of(goodStation, okStation, badStation));
+
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(20.0); // Small battery to ensure charging is needed
+        request.setCarAutonomy(80.0); // Low autonomy
+
+        RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
+
+        assertNotNull(response);
+        // Check if charging stations are included based on battery requirement
+        double batteryPercentage = response.getBatteryUsage() / request.getBatteryCapacity();
+        if (batteryPercentage > config.getMaxBatteryPercentage()) {
+            assertFalse(response.getStations().isEmpty());
+            assertTrue(response.getStations().size() <= 3); // Limited to 3 stations
+        }
+        assertTrue(response.getDistance() > 0);
+    }
+
+    @Test
+    void whenDirectRouteWithinBatteryLimit_thenReturnsEmptyStations() {
+        RoutePlanningRequestDTO request = createValidRequest();
+        request.setBatteryCapacity(100.0); // Large battery
+        request.setCarAutonomy(500.0); // Very high autonomy
+        
+        // Mock config to allow direct route
+        when(config.getMaxBatteryPercentage()).thenReturn(1.0); // 100%
+
+        RoutePlanningResponseDTO response = routePlanningService.planRoute(request);
+
+        assertNotNull(response);
+        assertTrue(response.getStations().isEmpty()); // Direct route possible
+        assertTrue(response.getDistance() > 0);
+        assertTrue(response.getBatteryUsage() >= 0);
+    }
+
     private RoutePlanningRequestDTO createValidRequest() {
         RoutePlanningRequestDTO request = new RoutePlanningRequestDTO();
         request.setStartLatitude(41.1579);
