@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -131,13 +130,6 @@ class ChargingSessionControllerIT {
     void whenGetSession_withNonExistentSession_thenReturnNotFound() {
         given().contentType(ContentType.JSON).when()
                 .get("/api/v1/charging-sessions/{sessionId}", "999").then().statusCode(404);
-    }
-
-    private ChargingSession createTestSession(String stationId, String userId) {
-        ChargingSession session = new ChargingSession();
-        session.setStationId(stationId);
-        session.setUserId(userId);
-        return session;
     }
 
     private Station createTestStation(String name) {

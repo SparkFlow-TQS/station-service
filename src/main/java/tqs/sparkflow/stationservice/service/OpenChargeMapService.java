@@ -167,7 +167,7 @@ public class OpenChargeMapService {
 
   private Map<String, Object> getAddressInfo(Map<String, Object> data) {
     Object addressInfo = data.get("AddressInfo");
-    if (addressInfo == null || !(addressInfo instanceof Map)) {
+    if (!(addressInfo instanceof Map)) {
       throw new IllegalStateException("AddressInfo is not a valid map");
     }
     @SuppressWarnings("unchecked")
@@ -177,7 +177,7 @@ public class OpenChargeMapService {
 
   private List<Map<String, Object>> getConnections(Map<String, Object> data) {
     Object connections = data.get("Connections");
-    if (connections == null || !(connections instanceof List)) {
+    if (!(connections instanceof List)) {
       throw new IllegalStateException("Connections is not a valid list");
     }
     @SuppressWarnings("unchecked")

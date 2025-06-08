@@ -24,10 +24,6 @@ public class Station extends BaseStationFields {
 
   private String externalId;
 
-  @NotBlank(message = "Station name cannot be empty")
-  @Column(name = "name")
-  private String name;
-
   @Column(name = "power")
   private Integer power;
 
@@ -141,18 +137,12 @@ public class Station extends BaseStationFields {
     this.externalId = externalId;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
+  @Override
   public String getAddress() {
     return address;
   }
 
+  @Override
   public void setAddress(String address) {
     this.address = address;
   }
