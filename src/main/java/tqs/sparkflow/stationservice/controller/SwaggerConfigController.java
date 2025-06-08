@@ -24,11 +24,11 @@ public class SwaggerConfigController {
   @GetMapping("/v3/api-docs/swagger-config")
   public ResponseEntity<Map<String, Object>> getSwaggerConfig(HttpServletRequest request) {
     Map<String, Object> config = new HashMap<>();
-        
+
     // Check if we're behind a proxy and determine the correct base path
     String forwardedPrefix = request.getHeader("X-Forwarded-Prefix");
     String basePath = "";
-        
+
     if (forwardedPrefix != null && !forwardedPrefix.isEmpty()) {
       basePath = forwardedPrefix;
     } else {
@@ -38,7 +38,7 @@ public class SwaggerConfigController {
         basePath = "/station";
       }
     }
-        
+
     // Use absolute paths with correct proxy prefix
     config.put("url", basePath + "/v3/api-docs");
     config.put("configUrl", basePath + "/v3/api-docs/swagger-config");
@@ -48,18 +48,18 @@ public class SwaggerConfigController {
     config.put("filter", "true");
     config.put("tryItOutEnabled", true);
     config.put("validatorUrl", "");
-        
+
     return ResponseEntity.ok(config);
   }
 
   @GetMapping("/swagger-ui.html")
   public ResponseEntity<Void> swaggerUiRedirect(HttpServletRequest request) {
     HttpHeaders headers = new HttpHeaders();
-        
+
     // Check if we're behind a proxy
     String forwardedPrefix = request.getHeader("X-Forwarded-Prefix");
     String contextPrefix = "";
-        
+
     if (forwardedPrefix != null) {
       contextPrefix = forwardedPrefix;
     } else {
@@ -69,8 +69,8 @@ public class SwaggerConfigController {
         contextPrefix = "/station";
       }
     }
-        
+
     headers.add("Location", contextPrefix + "/swagger-ui/index.html");
     return new ResponseEntity<>(headers, HttpStatus.FOUND);
   }
-} 
+}
