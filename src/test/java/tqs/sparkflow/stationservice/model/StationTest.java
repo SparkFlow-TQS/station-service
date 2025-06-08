@@ -317,10 +317,10 @@ class StationTest {
     assertEquals(station1, station1);
 
     // Test null
-    assertNotEquals(station1, null);
+    assertNotEquals(null, station1);
 
     // Test different class
-    assertNotEquals(station1, "Not a Station");
+    assertNotEquals("Not a Station", station1);
 
     // Test different id
     Station station2 = new Station();
@@ -352,7 +352,7 @@ class StationTest {
     station3.setLatitude(station1.getLatitude());
     station3.setLongitude(station1.getLongitude());
     station3.setStatus(station1.getStatus());
-    assertFalse(station1.equals(station3));
+    assertNotEquals(station1, station3);
 
     // Test different power
     Station station4 = new Station();
@@ -400,7 +400,7 @@ class StationTest {
     station6.setLatitude(station1.getLatitude());
     station6.setLongitude(station1.getLongitude());
     station6.setStatus(station1.getStatus());
-    assertTrue(station1.equals(station6));
+    assertEquals(station1, station6);
 
     // Test null fields
     Station station7 = new Station();

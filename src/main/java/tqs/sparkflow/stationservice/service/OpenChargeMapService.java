@@ -199,7 +199,21 @@ public class OpenChargeMapService {
   }
 
   private Number getNumber(Object obj) {
+    if (obj == null) {
+      return 0;
+    }
     return (Number) obj;
+  }
+
+  private boolean isString(Object obj) {
+    return obj instanceof String;
+  }
+
+  private String getString(Object obj) {
+    if (obj == null) {
+      return "";
+    }
+    return (String) obj;
   }
 
   private void setStationName(Map<String, Object> addressInfo, Station station) {
@@ -251,10 +265,9 @@ public class OpenChargeMapService {
       if (quantity != null) {
         if (isNumber(quantity)) {
           totalChargers += getNumber(quantity).intValue();
-        } else if (quantity instanceof String) {
-          String string = (String) quantity;
+        } else if (isString(quantity)) {
           try {
-            totalChargers += Integer.parseInt(string);
+            totalChargers += Integer.parseInt(getString(quantity));
           } catch (NumberFormatException e) {
             // If parsing fails, count as 1
             totalChargers += 1;
