@@ -92,42 +92,40 @@ public class TestConfig {
      * headers, session management, and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
-     * @param authenticationManager the AuthenticationManager to use
+     * @param authenticationProvider the AuthenticationProvider to use
      * @return the configured SecurityFilterChain
      * @throws Exception if an error occurs during configuration
      */
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-            .csrf(csrf -> csrf.disable())
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/v1/stations/**").permitAll()
-                    .requestMatchers("/api/v1/charging-sessions/**").permitAll()
-                    .requestMatchers("/api/v1/openchargemap/**").permitAll()
-                    .requestMatchers("/api/v1/statistics/**").permitAll()
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/v1/bookings/**").authenticated()
-                    .anyRequest().authenticated()
-            )
-            .authenticationManager(authenticationManager())
-            .httpBasic(basic -> basic
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Access Denied");
-                }))
-            .exceptionHandling(handling -> handling
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Access Denied");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Access Denied");
-                }))
-            .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            AuthenticationProvider authenticationProvider) throws Exception {
+        return http.csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/stations/**")
+                        .permitAll().requestMatchers("/api/v1/charging-sessions/**").permitAll()
+                        .requestMatchers("/api/v1/openchargemap/**").permitAll()
+                        .requestMatchers("/api/v1/statistics/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/bookings/**").authenticated().anyRequest()
+                        .authenticated())
+                .authenticationManager(authenticationManager(authenticationProvider))
+                .httpBasic(basic -> basic
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Access Denied");
+                        }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .build();
     }
 
     @Bean
