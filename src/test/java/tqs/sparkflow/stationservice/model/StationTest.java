@@ -1,6 +1,9 @@
 package tqs.sparkflow.stationservice.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -291,5 +294,175 @@ class StationTest {
     assertThat(testStation.getPrice()).isNull();
     assertThat(testStation.getQuantityOfChargers()).isNull();
     assertThat(testStation.getStatus()).isNull();
+  }
+
+  @Test
+  void testEquals() {
+    Station station1 = new Station();
+    station1.setId(1L);
+    station1.setExternalId("ext1");
+    station1.setPower(50);
+    station1.setQuantityOfChargers(2);
+    // Set base fields to ensure super.equals() passes
+    station1.setName("Test Station");
+    station1.setAddress("Test Address");
+    station1.setCity("Test City");
+    station1.setCountry("Test Country");
+    station1.setLatitude(40.0);
+    station1.setLongitude(-8.0);
+    station1.setStatus("Available");
+
+    // Test same object
+    assertTrue(station1.equals(station1));
+
+    // Test null
+    assertFalse(station1.equals(null));
+
+    // Test different class
+    assertFalse(station1.equals("Not a Station"));
+
+    // Test different id
+    Station station2 = new Station();
+    station2.setId(2L);
+    station2.setExternalId("ext1");
+    station2.setPower(50);
+    station2.setQuantityOfChargers(2);
+    // Copy base fields
+    station2.setName(station1.getName());
+    station2.setAddress(station1.getAddress());
+    station2.setCity(station1.getCity());
+    station2.setCountry(station1.getCountry());
+    station2.setLatitude(station1.getLatitude());
+    station2.setLongitude(station1.getLongitude());
+    station2.setStatus(station1.getStatus());
+    assertFalse(station1.equals(station2));
+
+    // Test different externalId
+    Station station3 = new Station();
+    station3.setId(1L);
+    station3.setExternalId("ext2");
+    station3.setPower(50);
+    station3.setQuantityOfChargers(2);
+    // Copy base fields
+    station3.setName(station1.getName());
+    station3.setAddress(station1.getAddress());
+    station3.setCity(station1.getCity());
+    station3.setCountry(station1.getCountry());
+    station3.setLatitude(station1.getLatitude());
+    station3.setLongitude(station1.getLongitude());
+    station3.setStatus(station1.getStatus());
+    assertFalse(station1.equals(station3));
+
+    // Test different power
+    Station station4 = new Station();
+    station4.setId(1L);
+    station4.setExternalId("ext1");
+    station4.setPower(100);
+    station4.setQuantityOfChargers(2);
+    // Copy base fields
+    station4.setName(station1.getName());
+    station4.setAddress(station1.getAddress());
+    station4.setCity(station1.getCity());
+    station4.setCountry(station1.getCountry());
+    station4.setLatitude(station1.getLatitude());
+    station4.setLongitude(station1.getLongitude());
+    station4.setStatus(station1.getStatus());
+    assertFalse(station1.equals(station4));
+
+    // Test different quantityOfChargers
+    Station station5 = new Station();
+    station5.setId(1L);
+    station5.setExternalId("ext1");
+    station5.setPower(50);
+    station5.setQuantityOfChargers(4);
+    // Copy base fields
+    station5.setName(station1.getName());
+    station5.setAddress(station1.getAddress());
+    station5.setCity(station1.getCity());
+    station5.setCountry(station1.getCountry());
+    station5.setLatitude(station1.getLatitude());
+    station5.setLongitude(station1.getLongitude());
+    station5.setStatus(station1.getStatus());
+    assertFalse(station1.equals(station5));
+
+    // Test equal stations
+    Station station6 = new Station();
+    station6.setId(1L);
+    station6.setExternalId("ext1");
+    station6.setPower(50);
+    station6.setQuantityOfChargers(2);
+    // Copy base fields
+    station6.setName(station1.getName());
+    station6.setAddress(station1.getAddress());
+    station6.setCity(station1.getCity());
+    station6.setCountry(station1.getCountry());
+    station6.setLatitude(station1.getLatitude());
+    station6.setLongitude(station1.getLongitude());
+    station6.setStatus(station1.getStatus());
+    assertTrue(station1.equals(station6));
+
+    // Test null fields
+    Station station7 = new Station();
+    station7.setId(1L);
+    station7.setExternalId(null);
+    station7.setPower(null);
+    station7.setQuantityOfChargers(null);
+    // Copy base fields
+    station7.setName(station1.getName());
+    station7.setAddress(station1.getAddress());
+    station7.setCity(station1.getCity());
+    station7.setCountry(station1.getCountry());
+    station7.setLatitude(station1.getLatitude());
+    station7.setLongitude(station1.getLongitude());
+    station7.setStatus(station1.getStatus());
+
+    Station station8 = new Station();
+    station8.setId(1L);
+    station8.setExternalId(null);
+    station8.setPower(null);
+    station8.setQuantityOfChargers(null);
+    // Copy base fields
+    station8.setName(station1.getName());
+    station8.setAddress(station1.getAddress());
+    station8.setCity(station1.getCity());
+    station8.setCountry(station1.getCountry());
+    station8.setLatitude(station1.getLatitude());
+    station8.setLongitude(station1.getLongitude());
+    station8.setStatus(station1.getStatus());
+
+    assertTrue(station7.equals(station8));
+  }
+
+  @Test
+  void testHashCode() {
+    Station station1 = new Station();
+    station1.setId(1L);
+    station1.setExternalId("ext1");
+    station1.setPower(50);
+    station1.setQuantityOfChargers(2);
+
+    Station station2 = new Station();
+    station2.setId(1L);
+    station2.setExternalId("ext1");
+    station2.setPower(50);
+    station2.setQuantityOfChargers(2);
+
+    // Equal objects should have equal hash codes
+    assertEquals(station1.hashCode(), station2.hashCode());
+
+    // Test with null fields
+    Station station3 = new Station();
+    station3.setId(1L);
+    station3.setExternalId(null);
+    station3.setPower(null);
+    station3.setQuantityOfChargers(null);
+
+    Station station4 = new Station();
+    station4.setId(1L);
+    station4.setExternalId(null);
+    station4.setPower(null);
+    station4.setQuantityOfChargers(null);
+
+    assertEquals(station3.hashCode(), station4.hashCode());
   }
 }
