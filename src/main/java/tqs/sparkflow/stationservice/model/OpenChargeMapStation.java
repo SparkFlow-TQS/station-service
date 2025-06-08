@@ -76,26 +76,6 @@ public class OpenChargeMapStation extends BaseStationFields {
     }
 
     /**
-     * Gets the status of the station.
-     *
-     * @return The status of the station
-     */
-    @Override
-    public String getStatus() {
-        return super.getStatus();
-    }
-
-    /**
-     * Sets the status of the station.
-     *
-     * @param status The status of the station
-     */
-    @Override
-    public void setStatus(String status) {
-        super.setStatus(status);
-    }
-
-    /**
      * Gets the connector type of the station.
      *
      * @return The connector type of the station

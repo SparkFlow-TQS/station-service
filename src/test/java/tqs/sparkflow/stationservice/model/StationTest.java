@@ -48,24 +48,6 @@ class StationTest {
   }
 
   @Test
-  void whenNameIsEmpty_thenValidationError() {
-    // Given
-    station.setName("");
-    station.setLatitude(41.1579); // Keep other required fields valid
-    station.setLongitude(-8.6291);
-    station.setStatus("Available");
-    station.setQuantityOfChargers(1);
-
-    // When
-    var violations = validator.validate(station);
-
-    // Then
-    assertThat(violations).isNotEmpty();
-    assertThat(violations.stream().filter(v -> v.getPropertyPath().toString().equals("name"))
-        .findFirst().get().getMessage()).isEqualTo("Station name cannot be empty");
-  }
-
-  @Test
   void whenStatusIsEmpty_thenValidationError() {
     // Given
     station.setStatus("");

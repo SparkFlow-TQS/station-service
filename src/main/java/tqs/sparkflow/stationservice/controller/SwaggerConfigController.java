@@ -18,6 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 public class SwaggerConfigController {
 
+  private static final String STATION_PATH = "/station";
+
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
@@ -34,8 +36,8 @@ public class SwaggerConfigController {
     } else {
       // Fallback: check if request is coming through nginx proxy based on request path
       String requestURI = request.getRequestURI();
-      if (requestURI.startsWith("/station/")) {
-        basePath = "/station";
+      if (requestURI.startsWith(STATION_PATH + "/")) {
+        basePath = STATION_PATH;
       }
     }
 
@@ -65,8 +67,8 @@ public class SwaggerConfigController {
     } else {
       // Check if the request comes through the nginx proxy
       String requestUri = request.getRequestURI();
-      if (requestUri.startsWith("/station")) {
-        contextPrefix = "/station";
+      if (requestUri.startsWith(STATION_PATH)) {
+        contextPrefix = STATION_PATH;
       }
     }
 
