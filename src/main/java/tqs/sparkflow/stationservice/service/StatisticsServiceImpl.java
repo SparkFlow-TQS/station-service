@@ -1,6 +1,5 @@
 package tqs.sparkflow.stationservice.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tqs.sparkflow.stationservice.dto.BookingDTO;
 import tqs.sparkflow.stationservice.dto.StatisticsDTO;
@@ -30,14 +29,16 @@ public class StatisticsServiceImpl implements StatisticsService {
     private static final double DEFAULT_KWH_PER_HOUR = 7.5; // Average kWh consumption per hour
     private static final double CO2_SAVED_PER_KWH = 0.4; // kg CO2 saved per kWh (vs gasoline car)
 
-    @Autowired
-    private ChargingSessionRepository chargingSessionRepository;
+    private final ChargingSessionRepository chargingSessionRepository;
+    private final BookingRepository bookingRepository;
+    private final StationRepository stationRepository;
 
-    @Autowired
-    private BookingRepository bookingRepository;
-
-    @Autowired
-    private StationRepository stationRepository;
+    public StatisticsServiceImpl(ChargingSessionRepository chargingSessionRepository,
+            BookingRepository bookingRepository, StationRepository stationRepository) {
+        this.chargingSessionRepository = chargingSessionRepository;
+        this.bookingRepository = bookingRepository;
+        this.stationRepository = stationRepository;
+    }
 
     @Override
     public StatisticsDTO.CurrentMonthStats getCurrentMonthStatistics(Long userId) {
@@ -78,7 +79,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         stats.setEstimatedKwh(totalKwh);
         stats.setCo2Saved((int) Math.round(totalKwh * CO2_SAVED_PER_KWH));
         stats.setAvgCostPerSession(
-                sessions.size() > 0 ? Math.round((totalCost / sessions.size()) * 100.0) / 100.0
+                !sessions.isEmpty() ? Math.round((totalCost / sessions.size()) * 100.0) / 100.0
                         : 0.0);
 
         return stats;
@@ -297,7 +298,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         details.setTotalReservations(bookings.size());
         details.setTotalCost(Math.round(totalCost * 100.0) / 100.0);
         details.setAvgCostPerSession(
-                sessions.size() > 0 ? Math.round((totalCost / sessions.size()) * 100.0) / 100.0
+                !sessions.isEmpty() ? Math.round((totalCost / sessions.size()) * 100.0) / 100.0
                         : 0.0);
         details.setReservations(bookings.stream().map(this::convertToBookingDTO).toList());
 
