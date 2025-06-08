@@ -25,12 +25,10 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 /**
- * Test configuration for the station service.
- * Provides all necessary beans and security configurations for testing.
+ * Test configuration for the station service. Provides all necessary beans and security
+ * configurations for testing.
  */
 @TestConfiguration
 @EnableWebSecurity
@@ -64,17 +62,11 @@ public class TestConfig {
     @Bean
     @Primary
     public UserDetailsService userDetailsService() {
-        UserDetails admin = User.builder()
-            .username("admin")
-            .password(passwordEncoder().encode("admin"))
-            .roles("ADMIN")
-            .build();
-        
-        UserDetails user = User.builder()
-            .username("user")
-            .password(passwordEncoder().encode("user"))
-            .roles("USER")
-            .build();
+        UserDetails admin = User.builder().username("admin")
+                .password(passwordEncoder().encode("admin")).roles("ADMIN").build();
+
+        UserDetails user = User.builder().username("user")
+                .password(passwordEncoder().encode("user")).roles("USER").build();
 
         return new InMemoryUserDetailsManager(admin, user);
     }
@@ -87,62 +79,61 @@ public class TestConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-    
 
     @Bean
     @Primary
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(authenticationProvider(userDetailsService()));
+    public AuthenticationManager authenticationManager(
+            AuthenticationProvider authenticationProvider) {
+        return new ProviderManager(authenticationProvider);
     }
 
     /**
-     * Creates a security filter chain for tests.
-     * Configures security settings including CSRF, headers, session management,
-     * and endpoint authorization rules.
+     * Creates a security filter chain for tests. Configures security settings including CSRF,
+     * headers, session management, and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
+     * @param authenticationProvider the AuthenticationProvider to use
      * @return the configured SecurityFilterChain
      * @throws Exception if an error occurs during configuration
      */
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-            .csrf(csrf -> csrf.disable())
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/v1/stations/**").permitAll()
-                    .requestMatchers("/api/v1/charging-sessions/**").permitAll()
-                    .requestMatchers("/api/v1/openchargemap/**").permitAll()
-                    .requestMatchers("/api/v1/statistics/**").permitAll()
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/v1/bookings/**").authenticated()
-                    .anyRequest().authenticated()
-            )
-            .authenticationManager(authenticationManager())
-            .httpBasic(basic -> basic
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Access Denied");
-                }))
-            .exceptionHandling(handling -> handling
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Access Denied");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Access Denied");
-                }))
-            .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            AuthenticationProvider authenticationProvider) throws Exception {
+        return http.csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/stations/**")
+                        .permitAll().requestMatchers("/api/v1/charging-sessions/**").permitAll()
+                        .requestMatchers("/api/v1/openchargemap/**").permitAll()
+                        .requestMatchers("/api/v1/statistics/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/bookings/**").authenticated().anyRequest()
+                        .authenticated())
+                .authenticationManager(authenticationManager(authenticationProvider))
+                .httpBasic(basic -> basic
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Access Denied");
+                        }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .build();
     }
 
     @Bean
     @Primary
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
+        configuration
+                .setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
@@ -152,11 +143,5 @@ public class TestConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    @Primary
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri("http://dummy-jwks").build();
     }
 }

@@ -113,7 +113,8 @@ class BookingControllerTest {
     @XrayTest(key = "BOOKING-3")
     @Requirement("BOOKING-3")
     void whenGetBookingById_thenReturnBooking() {
-        when(bookingService.getBookingById(anyLong(), anyLong())).thenReturn(Optional.of(testBooking));
+        when(bookingService.getBookingById(anyLong(), anyLong()))
+                .thenReturn(Optional.of(testBooking));
         when(principal.getName()).thenReturn("1");
 
         ResponseEntity<Booking> response = bookingController.getBookingById(1L, principal);
@@ -156,7 +157,8 @@ class BookingControllerTest {
         when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of(testBooking));
         when(principal.getName()).thenReturn("1");
 
-        ResponseEntity<List<Booking>> response = bookingController.getBookingsByStationId(1L, principal);
+        ResponseEntity<List<Booking>> response =
+                bookingController.getBookingsByStationId(1L, principal);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().satisfies(body -> {
@@ -170,10 +172,11 @@ class BookingControllerTest {
     @Requirement("BOOKING-7")
     void whenGetBookingsByStationId_withUserNotAuthorized_thenReturnBadRequest() {
         when(bookingService.getBookingsByStationId(99L, 99L))
-            .thenThrow(new IllegalStateException("User not found or not authorized"));
+                .thenThrow(new IllegalStateException("User not found or not authorized"));
         when(principal.getName()).thenReturn("99");
 
-        ResponseEntity<List<Booking>> response = bookingController.getBookingsByStationId(99L, principal);
+        ResponseEntity<List<Booking>> response =
+                bookingController.getBookingsByStationId(99L, principal);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -185,7 +188,8 @@ class BookingControllerTest {
         when(bookingService.getBookingsByStationId(1L, 1L)).thenReturn(List.of());
         when(principal.getName()).thenReturn("1");
 
-        ResponseEntity<List<Booking>> response = bookingController.getBookingsByStationId(1L, principal);
+        ResponseEntity<List<Booking>> response =
+                bookingController.getBookingsByStationId(1L, principal);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
@@ -211,7 +215,8 @@ class BookingControllerTest {
     @Requirement("BOOKING-12")
     void whenCreateBooking_withInvalidInput_thenBadRequest() {
         Booking inputBooking = new Booking(); // missing required fields
-        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException("Invalid input"));
+        when(bookingService.createBooking(any(Booking.class)))
+                .thenThrow(new IllegalStateException("Invalid input"));
 
         ResponseEntity<Booking> response = bookingController.createBooking(inputBooking, principal);
 
@@ -222,7 +227,8 @@ class BookingControllerTest {
     @XrayTest(key = "BOOKING-13")
     @Requirement("BOOKING-13")
     void whenCancelBooking_withoutPermission_thenForbidden() {
-        when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("User not authorized to cancel this booking"));
+        when(bookingService.cancelBooking(anyLong()))
+                .thenThrow(new IllegalStateException("User not authorized to cancel this booking"));
 
         ResponseEntity<Void> response = bookingController.cancelBooking(1L);
 
@@ -241,25 +247,25 @@ class BookingControllerTest {
     }
 
     static Stream<Arguments> createBookingExceptionProvider() {
-        return Stream.of(
-            Arguments.of(2L, 1L, "Station is not operational"),
-            Arguments.of(1L, 1L, "Time slot is already booked"),
-            Arguments.of(1L, 999L, "User not found or not authorized")
-        );
+        return Stream.of(Arguments.of(2L, 1L, "Station is not operational"),
+                Arguments.of(1L, 1L, "Time slot is already booked"),
+                Arguments.of(1L, 999L, "User not found or not authorized"));
     }
 
     @ParameterizedTest
     @MethodSource("createBookingExceptionProvider")
     @XrayTest(key = "BOOKING-16")
     @Requirement("BOOKING-16")
-    void whenCreateBooking_withBusinessException_thenBadRequest(Long stationId, Long userId, String exceptionMessage) {
+    void whenCreateBooking_withBusinessException_thenBadRequest(Long stationId, Long userId,
+            String exceptionMessage) {
         Booking inputBooking = new Booking();
         inputBooking.setStationId(stationId);
         inputBooking.setUserId(userId);
         inputBooking.setStartTime(now);
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);
-        when(bookingService.createBooking(any(Booking.class))).thenThrow(new IllegalStateException(exceptionMessage));
+        when(bookingService.createBooking(any(Booking.class)))
+                .thenThrow(new IllegalStateException(exceptionMessage));
 
         ResponseEntity<Booking> response = bookingController.createBooking(inputBooking, principal);
 
@@ -270,7 +276,8 @@ class BookingControllerTest {
     @XrayTest(key = "BOOKING-17")
     @Requirement("BOOKING-17")
     void whenCancelBooking_withNonExistentBooking_thenNotFound() {
-        when(bookingService.cancelBooking(anyLong())).thenThrow(new IllegalStateException("Booking not found"));
+        when(bookingService.cancelBooking(anyLong()))
+                .thenThrow(new IllegalStateException("Booking not found"));
 
         ResponseEntity<Void> response = bookingController.cancelBooking(999L);
 
@@ -287,4 +294,4 @@ class BookingControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
-} 
+}

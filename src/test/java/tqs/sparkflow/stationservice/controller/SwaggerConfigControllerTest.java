@@ -39,7 +39,8 @@ class SwaggerConfigControllerTest {
         when(request.getHeader("X-Forwarded-Prefix")).thenReturn("/api");
 
         // Act
-        ResponseEntity<Map<String, Object>> response = swaggerConfigController.getSwaggerConfig(request);
+        ResponseEntity<Map<String, Object>> response =
+                swaggerConfigController.getSwaggerConfig(request);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -57,7 +58,8 @@ class SwaggerConfigControllerTest {
         when(request.getRequestURI()).thenReturn("/station/v3/api-docs/swagger-config");
 
         // Act
-        ResponseEntity<Map<String, Object>> response = swaggerConfigController.getSwaggerConfig(request);
+        ResponseEntity<Map<String, Object>> response =
+                swaggerConfigController.getSwaggerConfig(request);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -75,7 +77,8 @@ class SwaggerConfigControllerTest {
         when(request.getRequestURI()).thenReturn("/v3/api-docs/swagger-config");
 
         // Act
-        ResponseEntity<Map<String, Object>> response = swaggerConfigController.getSwaggerConfig(request);
+        ResponseEntity<Map<String, Object>> response =
+                swaggerConfigController.getSwaggerConfig(request);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -96,7 +99,8 @@ class SwaggerConfigControllerTest {
 
         // Assert
         assertEquals(HttpStatus.FOUND, response.getStatusCode());
-        assertEquals("/api/swagger-ui/index.html", response.getHeaders().getFirst(HttpHeaders.LOCATION));
+        assertEquals("/api/swagger-ui/index.html",
+                response.getHeaders().getFirst(HttpHeaders.LOCATION));
     }
 
     @Test
@@ -110,7 +114,8 @@ class SwaggerConfigControllerTest {
 
         // Assert
         assertEquals(HttpStatus.FOUND, response.getStatusCode());
-        assertEquals("/station/swagger-ui/index.html", response.getHeaders().getFirst(HttpHeaders.LOCATION));
+        assertEquals("/station/swagger-ui/index.html",
+                response.getHeaders().getFirst(HttpHeaders.LOCATION));
     }
 
     @Test
@@ -124,6 +129,7 @@ class SwaggerConfigControllerTest {
 
         // Assert
         assertEquals(HttpStatus.FOUND, response.getStatusCode());
-        assertEquals("/swagger-ui/index.html", response.getHeaders().getFirst(HttpHeaders.LOCATION));
+        assertEquals("/swagger-ui/index.html",
+                response.getHeaders().getFirst(HttpHeaders.LOCATION));
     }
-} 
+}

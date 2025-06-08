@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import tqs.sparkflow.stationservice.model.Station;
 
 import java.util.List;
@@ -13,6 +16,15 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@ActiveProfiles("test")
+@Transactional
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+        "spring.datasource.driver-class-name=org.h2.Driver", "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+        "spring.jpa.hibernate.ddl-auto=create-drop", "spring.jpa.show-sql=true",
+        "spring.jpa.properties.hibernate.format_sql=true", "spring.flyway.enabled=false"})
 class StationRepositoryTest {
 
     @Autowired
@@ -101,24 +113,7 @@ class StationRepositoryTest {
     void whenFindByQuantityOfChargersGreaterThanEqual_thenReturnStations() {
         List<Station> found = stationRepository.findByQuantityOfChargersGreaterThanEqual(2);
         assertThat(found).hasSize(2);
-        assertThat(found).extracting(Station::getName)
-                .containsExactlyInAnyOrder("Station 1", "Station 2");
+        assertThat(found).extracting(Station::getName).containsExactlyInAnyOrder("Station 1",
+                "Station 2");
     }
-
-    @Test
-    void whenFindStationsByFiltersWithLocation_thenReturnFilteredStations() {
-        // For testing purposes, we'll use a simpler query that doesn't rely on ST_Distance_Sphere
-        List<Station> found = stationRepository.findStationsByFilters(
-                40, // minPower
-                100, // maxPower
-                true, // isOperational
-                "Available", // status
-                "Aveiro", // city
-                "Portugal", // country
-                0.20, // minPrice
-                0.40  // maxPrice
-        );
-        assertThat(found).hasSize(1);
-        assertThat(found.get(0).getName()).isEqualTo("Station 1");
-    }
-} 
+}

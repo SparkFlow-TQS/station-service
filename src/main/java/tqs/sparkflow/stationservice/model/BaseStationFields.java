@@ -1,107 +1,142 @@
 package tqs.sparkflow.stationservice.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.Objects;
 
+/**
+ * Base class containing common fields for station-related models. These fields are common between
+ * internal stations and OpenChargeMap stations.
+ */
 @MappedSuperclass
-public class BaseStationFields {
-  @Min(value = -90, message = "Latitude must be between -90 and 90 degrees")
-  @Max(value = 90, message = "Latitude must be between -90 and 90 degrees")
-  protected Double latitude;
+public abstract class BaseStationFields {
+    @Column(name = "city", nullable = true)
+    protected String city;
 
-  @Min(value = -180, message = "Longitude must be between -180 and 180 degrees")
-  @Max(value = 180, message = "Longitude must be between -180 and 180 degrees")
-  protected Double longitude;
+    @Column(name = "country", nullable = true)
+    protected String country;
 
-  @Min(value = 0, message = "Price must be non-negative")
-  protected Double price;
+    @NotNull(message = "Latitude cannot be null")
+    @Min(value = -90, message = "Latitude must be between -90 and 90 degrees")
+    @Max(value = 90, message = "Latitude must be between -90 and 90 degrees")
+    @Column(name = "latitude")
+    protected Double latitude;
 
-  protected Integer numberOfChargers;
-  protected Integer minPower;
-  protected Integer maxPower;
-  protected Boolean isOperational;
-  protected String status;
-  protected String city;
-  protected String country;
+    @NotNull(message = "Longitude cannot be null")
+    @Min(value = -180, message = "Longitude must be between -180 and 180 degrees")
+    @Max(value = 180, message = "Longitude must be between -180 and 180 degrees")
+    @Column(name = "longitude")
+    protected Double longitude;
 
-  public Double getLatitude() {
-    return latitude;
-  }
+    @Column(name = "price")
+    protected Double price;
 
-  public void setLatitude(Double latitude) {
-    this.latitude = latitude;
-  }
+    @Column(name = "is_operational")
+    protected Boolean isOperational;
 
-  public Double getLongitude() {
-    return longitude;
-  }
+    @NotBlank(message = "Status cannot be empty")
+    @Column(name = "status")
+    protected String status;
 
-  public void setLongitude(Double longitude) {
-    this.longitude = longitude;
-  }
+    protected String address;
 
-  public Double getPrice() {
-    return price;
-  }
+    @Column(name = "name", nullable = true)
+    protected String name;
 
-  public void setPrice(Double price) {
-    this.price = price;
-  }
+    public String getCity() {
+        return city;
+    }
 
-  public Integer getNumberOfChargers() {
-    return numberOfChargers;
-  }
+    public void setCity(String city) {
+        this.city = city;
+    }
 
-  public void setNumberOfChargers(Integer numberOfChargers) {
-    this.numberOfChargers = numberOfChargers;
-  }
+    public String getCountry() {
+        return country;
+    }
 
-  public Integer getMinPower() {
-    return minPower;
-  }
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
-  public void setMinPower(Integer minPower) {
-    this.minPower = minPower;
-  }
+    public Double getLatitude() {
+        return latitude;
+    }
 
-  public Integer getMaxPower() {
-    return maxPower;
-  }
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
 
-  public void setMaxPower(Integer maxPower) {
-    this.maxPower = maxPower;
-  }
+    public Double getLongitude() {
+        return longitude;
+    }
 
-  public Boolean getIsOperational() {
-    return isOperational;
-  }
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
 
-  public void setIsOperational(Boolean isOperational) {
-    this.isOperational = isOperational;
-  }
+    public Double getPrice() {
+        return price;
+    }
 
-  public String getStatus() {
-    return status;
-  }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-  public void setStatus(String status) {
-    this.status = status;
-  }
+    public Boolean getIsOperational() {
+        return isOperational;
+    }
 
-  public String getCity() {
-    return city;
-  }
+    public void setIsOperational(Boolean isOperational) {
+        this.isOperational = isOperational;
+    }
 
-  public void setCity(String city) {
-    this.city = city;
-  }
+    public String getStatus() {
+        return status;
+    }
 
-  public String getCountry() {
-    return country;
-  }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-  public void setCountry(String country) {
-    this.country = country;
-  }
-} 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        BaseStationFields that = (BaseStationFields) o;
+        return Objects.equals(city, that.city) && Objects.equals(country, that.country)
+                && Objects.equals(latitude, that.latitude)
+                && Objects.equals(longitude, that.longitude) && Objects.equals(price, that.price)
+                && Objects.equals(isOperational, that.isOperational)
+                && Objects.equals(status, that.status) && Objects.equals(address, that.address)
+                && Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(city, country, latitude, longitude, price, isOperational, status,
+                address, name);
+    }
+}

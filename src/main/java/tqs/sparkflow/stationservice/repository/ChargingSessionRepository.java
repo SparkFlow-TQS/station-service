@@ -12,7 +12,7 @@ import tqs.sparkflow.stationservice.model.ChargingSession;
 
 @Repository
 public interface ChargingSessionRepository extends JpaRepository<ChargingSession, Long> {
-  
+
   @Query("SELECT cs FROM ChargingSession cs WHERE cs.stationId = :stationId AND cs.finished = false")
   List<ChargingSession> findUnfinishedSessionsByStation(@Param("stationId") Long stationId);
   
