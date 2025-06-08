@@ -33,41 +33,70 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        // CSRF protection is disabled because this is a REST API using token-based authentication
-        // and not session-based authentication. The API is meant to be consumed by other services
-        // and clients, making CSRF protection unnecessary.
-        .csrf(csrf -> csrf.disable()).headers(headers -> headers.contentTypeOptions(content -> {
-        }).frameOptions(frame -> frame.deny()).xssProtection(xss -> {
-        }).contentSecurityPolicy(
-            csp -> csp.policyDirectives("default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
-                + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                + "style-src 'self' 'unsafe-inline'; " + "img-src 'self' data:; "
-                + "font-src 'self'; " + "connect-src 'self' *; " + "base-uri 'self'; "
-                + "form-action 'self'; " + "frame-ancestors 'none'; " + "object-src 'none'")))
-        .authorizeHttpRequests(auth -> auth
-            // Swagger UI endpoints first
-            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                "/swagger-resources/**", "/webjars/**")
-            .permitAll()
-            // Actuator endpoints for monitoring
-            .requestMatchers("/actuator/**").permitAll()
-            // Then other endpoints
-            .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**",
-                "/api/v1/openchargemap/**")
-            .permitAll().requestMatchers("/bookings/**", "/api/v1/bookings/**")
-            .hasAnyRole("USER", "ADMIN").requestMatchers("/admin/**", "/api/v1/admin/**")
-            .hasRole("ADMIN").anyRequest().authenticated())
-        .addFilterBefore(new OncePerRequestFilter() {
-          @Override
-          protected void doFilterInternal(@NonNull HttpServletRequest request,
-              @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
-              throws jakarta.servlet.ServletException, java.io.IOException {
-            // Set SameSite attribute for JSESSIONID cookie
-            response.addHeader("Set-Cookie", "JSESSIONID=" + request.getSession().getId()
-                + "; SameSite=Strict; Secure; HttpOnly");
-            filterChain.doFilter(request, response);
-          }
-        }, org.springframework.security.web.context.SecurityContextHolderFilter.class);
+        .csrf(csrf -> csrf.disable())
+        .headers(
+            headers ->
+                headers
+                    .contentTypeOptions(content -> {})
+                    .frameOptions(frame -> frame.deny())
+                    .xssProtection(xss -> {})
+                    .contentSecurityPolicy(
+                        csp ->
+                            csp.policyDirectives(
+                                "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; "
+                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                                    + "style-src 'self' 'unsafe-inline'; "
+                                    + "img-src 'self' data:; "
+                                    + "font-src 'self'; "
+                                    + "connect-src 'self' *; "
+                                    + "base-uri 'self'; "
+                                    + "form-action 'self'; "
+                                    + "frame-ancestors 'none'; "
+                                    + "object-src 'none'")))
+        .authorizeHttpRequests(
+            auth ->
+                auth
+                    // Swagger UI endpoints first
+                    .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/webjars/**")
+                    .permitAll()
+                    // Actuator endpoints for monitoring
+                    .requestMatchers("/actuator/**")
+                    .permitAll()
+                    // Then other endpoints
+                    .requestMatchers("/", "/stations/**", "/api/v1/stations/**", "/api/openchargemap/**", "/api/v1/openchargemap/**")
+                    .permitAll()
+                    // Statistics endpoints
+                    .requestMatchers("/statistics/**", "/api/v1/statistics/**")
+                    .permitAll()
+                    .requestMatchers("/bookings/**", "/api/v1/bookings/**")
+                    .hasAnyRole("USER", "ADMIN")
+                    .requestMatchers("/admin/**", "/api/v1/admin/**")
+                    .hasRole("ADMIN")
+                    .anyRequest()
+                    .authenticated())
+        .addFilterBefore(
+            new OncePerRequestFilter() {
+              @Override
+              protected void doFilterInternal(
+                  @NonNull HttpServletRequest request,
+                  @NonNull HttpServletResponse response,
+                  @NonNull FilterChain filterChain)
+                  throws jakarta.servlet.ServletException, java.io.IOException {
+                // Set SameSite attribute for JSESSIONID cookie
+                response.addHeader(
+                    "Set-Cookie",
+                    "JSESSIONID="
+                        + request.getSession().getId()
+                        + "; SameSite=Strict; Secure; HttpOnly");
+                filterChain.doFilter(request, response);
+              }
+            },
+            org.springframework.security.web.context.SecurityContextHolderFilter.class);
 
     return http.build();
   }
