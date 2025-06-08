@@ -156,7 +156,6 @@ class ChargingSessionServiceTest {
                 // Given
                 String stationId = "1";
                 String userId = "123";
-                LocalDateTime now = LocalDateTime.now();
 
                 ChargingSession session = new ChargingSession(stationId, userId);
 
@@ -165,8 +164,8 @@ class ChargingSessionServiceTest {
                 userBooking.setStationId(Long.valueOf(stationId));
                 userBooking.setUserId(Long.valueOf(userId));
                 userBooking.setStatus(BookingStatus.ACTIVE);
-                userBooking.setStartTime(now.minusMinutes(30));
-                userBooking.setEndTime(now.plusMinutes(30));
+                userBooking.setStartTime(LocalDateTime.now().minusMinutes(30));
+                userBooking.setEndTime(LocalDateTime.now().plusMinutes(30));
 
                 when(chargingSessionRepository.save(any(ChargingSession.class)))
                                 .thenReturn(session);

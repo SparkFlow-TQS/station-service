@@ -3,6 +3,7 @@ package tqs.sparkflow.stationservice.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.doNothing;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +54,6 @@ class BookingServiceTest {
 
         private static final String USER_SERVICE_URL = "http://test-user-service:8081";
         private static final String USERS_PATH = "/users/";
-        private static final String ADMIN_ROLE_CHECK = "/has-role/ADMIN";
 
         private Booking testBooking;
         private Station testStation;
@@ -423,8 +424,21 @@ class BookingServiceTest {
                 when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
                                 .thenReturn(new Object());
 
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
+                // Station setup with single charger
+                Station singleChargerStation = new Station();
+                singleChargerStation.setId(1L);
+                singleChargerStation.setQuantityOfChargers(1);
+                singleChargerStation.setIsOperational(true);
+                when(stationService.getStationById(1L)).thenReturn(singleChargerStation);
+
+                // Create a cancelled booking that overlaps with the new booking
+                Booking cancelledBooking = new Booking();
+                cancelledBooking.setId(2L);
+                cancelledBooking.setStationId(1L);
+                cancelledBooking.setUserId(2L);
+                cancelledBooking.setStartTime(now);
+                cancelledBooking.setEndTime(now.plusHours(2));
+                cancelledBooking.setStatus(BookingStatus.CANCELLED);
 
                 // No overlapping active bookings - booking should succeed (cancelled bookings are
                 // ignored)
