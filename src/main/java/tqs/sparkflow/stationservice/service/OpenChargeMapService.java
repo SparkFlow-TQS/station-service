@@ -188,7 +188,8 @@ public class OpenChargeMapService {
   private void setStationId(Map<String, Object> data, Station station) {
     Object id = data.get("ID");
     if (id instanceof Number) {
-      station.setId(((Number) id).longValue());
+      Number number = (Number) id;
+      station.setId(number.longValue());
     } else if (id != null) {
       station.setId(Long.parseLong(id.toString()));
     }
@@ -207,8 +208,18 @@ public class OpenChargeMapService {
   private void setStationCoordinates(Map<String, Object> addressInfo, Station station) {
     Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
     Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
-    station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
-    station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
+    if (lat instanceof Number) {
+      Number number = (Number) lat;
+      station.setLatitude(number.doubleValue());
+    } else {
+      station.setLatitude(0.0);
+    }
+    if (lon instanceof Number) {
+      Number number = (Number) lon;
+      station.setLongitude(number.doubleValue());
+    } else {
+      station.setLongitude(0.0);
+    }
   }
 
   private void setStationCity(Map<String, Object> addressInfo, Station station) {
@@ -234,10 +245,12 @@ public class OpenChargeMapService {
       Object quantity = connection.get("Quantity");
       if (quantity != null) {
         if (quantity instanceof Number) {
-          totalChargers += ((Number) quantity).intValue();
+          Number number = (Number) quantity;
+          totalChargers += number.intValue();
         } else if (quantity instanceof String) {
+          String string = (String) quantity;
           try {
-            totalChargers += Integer.parseInt((String) quantity);
+            totalChargers += Integer.parseInt(string);
           } catch (NumberFormatException e) {
             // If parsing fails, count as 1
             totalChargers += 1;
