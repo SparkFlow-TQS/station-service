@@ -15,4 +15,4 @@ class OpenApiConfigTest {
     void contextLoads() {
         assertThat(openApiConfig).isNotNull();
     }
-} 
+}

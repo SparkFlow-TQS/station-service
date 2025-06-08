@@ -14,4 +14,4 @@ class OpenChargeMapResponseTest {
         assertThat(response.getStations()).hasSize(1);
         assertThat(response.getStations().get(0).getId()).isEqualTo("1");
     }
-} 
+}

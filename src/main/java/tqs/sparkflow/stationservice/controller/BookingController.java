@@ -41,23 +41,19 @@ public class BookingController {
    * @return ResponseEntity containing the created booking or error status
    */
   @PostMapping
-  @Operation(
-      summary = "Create a new booking",
-      description = "Creates a new booking for a charging station"
-  )
+  @Operation(summary = "Create a new booking",
+      description = "Creates a new booking for a charging station")
   @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Booking created successfully",
-            content = @Content(schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or station not operational"),
-        @ApiResponse(responseCode = "401", description = "User not authenticated"),
-        @ApiResponse(responseCode = "404", description = "User or station not found")
-  })
+      @ApiResponse(responseCode = "201", description = "Booking created successfully",
+          content = @Content(schema = @Schema(implementation = Booking.class))),
+      @ApiResponse(responseCode = "400", description = "Invalid input or station not operational"),
+      @ApiResponse(responseCode = "401", description = "User not authenticated"),
+      @ApiResponse(responseCode = "404", description = "User or station not found")})
   public ResponseEntity<Booking> createBooking(
-        @Parameter(description = "Booking details", required = true)
-        @RequestBody Booking booking,
-        Principal principal) {
+      @Parameter(description = "Booking details", required = true) @RequestBody Booking booking,
+      Principal principal) {
     // Validate required fields first
-    if (booking.getStationId() == null || booking.getUserId() == null 
+    if (booking.getStationId() == null || booking.getUserId() == null
         || booking.getStartTime() == null || booking.getEndTime() == null) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -86,30 +82,26 @@ public class BookingController {
    * @return ResponseEntity containing the created booking or error status
    */
   @PostMapping("/recurring")
-  @Operation(
-      summary = "Create a recurring booking",
-      description = "Creates a recurring booking for a charging station"
-  )
+  @Operation(summary = "Create a recurring booking",
+      description = "Creates a recurring booking for a charging station")
   @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Recurring booking created successfully",
-            content = @Content(schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or station not operational"),
-        @ApiResponse(responseCode = "401", description = "User not authenticated"),
-        @ApiResponse(responseCode = "404", description = "User or station not found")
-  })
+      @ApiResponse(responseCode = "201", description = "Recurring booking created successfully",
+          content = @Content(schema = @Schema(implementation = Booking.class))),
+      @ApiResponse(responseCode = "400", description = "Invalid input or station not operational"),
+      @ApiResponse(responseCode = "401", description = "User not authenticated"),
+      @ApiResponse(responseCode = "404", description = "User or station not found")})
   public ResponseEntity<Booking> createRecurringBooking(
-        @Parameter(description = "User ID", required = true)
-        @RequestParam Long userId,
-        @Parameter(description = "Station ID", required = true)
-        @RequestParam Long stationId,
-        @Parameter(description = "Start time (ISO-8601 format)", required = true)
-        @RequestParam LocalDateTime startTime,
-        @Parameter(description = "End time (ISO-8601 format)", required = true)
-        @RequestParam LocalDateTime endTime,
-        @Parameter(description = "Set of days for recurring booking (0-6, where 0 is Sunday)", required = true)
-        @RequestParam Set<Integer> recurringDays) {
+      @Parameter(description = "User ID", required = true) @RequestParam Long userId,
+      @Parameter(description = "Station ID", required = true) @RequestParam Long stationId,
+      @Parameter(description = "Start time (ISO-8601 format)",
+          required = true) @RequestParam LocalDateTime startTime,
+      @Parameter(description = "End time (ISO-8601 format)",
+          required = true) @RequestParam LocalDateTime endTime,
+      @Parameter(description = "Set of days for recurring booking (0-6, where 0 is Sunday)",
+          required = true) @RequestParam Set<Integer> recurringDays) {
     try {
-      Booking booking = bookingService.createRecurringBooking(userId, stationId, startTime, endTime, recurringDays);
+      Booking booking = bookingService.createRecurringBooking(userId, stationId, startTime, endTime,
+          recurringDays);
       return new ResponseEntity<>(booking, HttpStatus.CREATED);
     } catch (IllegalStateException e) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -124,25 +116,20 @@ public class BookingController {
    * @return ResponseEntity containing the booking if found and user has permission
    */
   @GetMapping("/{id}")
-  @Operation(
-      summary = "Get booking by ID",
-      description = "Retrieves a booking by its ID"
-  )
+  @Operation(summary = "Get booking by ID", description = "Retrieves a booking by its ID")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Booking found",
-        content = @Content(schema = @Schema(implementation = Booking.class))),
+          content = @Content(schema = @Schema(implementation = Booking.class))),
       @ApiResponse(responseCode = "401", description = "User not authenticated"),
-      @ApiResponse(responseCode = "403", description = "User not authorized to access this booking"),
-      @ApiResponse(responseCode = "404", description = "Booking not found")
-  })
+      @ApiResponse(responseCode = "403",
+          description = "User not authorized to access this booking"),
+      @ApiResponse(responseCode = "404", description = "Booking not found")})
   public ResponseEntity<Booking> getBookingById(
-        @Parameter(description = "Booking ID", required = true)
-        @PathVariable Long id,
-        Principal principal) {
+      @Parameter(description = "Booking ID", required = true) @PathVariable Long id,
+      Principal principal) {
     Long requestingUserId = Long.valueOf(principal.getName());
-    return bookingService.getBookingById(id, requestingUserId)
-      .map(ResponseEntity::ok)
-      .orElse(ResponseEntity.notFound().build());
+    return bookingService.getBookingById(id, requestingUserId).map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
   }
 
   /**
@@ -152,21 +139,16 @@ public class BookingController {
    * @return ResponseEntity containing the list of bookings or error status
    */
   @GetMapping
-  @Operation(
-      summary = "Get all bookings",
-      description = "Retrieves all bookings for a user"
-  )
+  @Operation(summary = "Get all bookings", description = "Retrieves all bookings for a user")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Bookings found",
-        content = @Content(schema = @Schema(implementation = Booking.class))),
+          content = @Content(schema = @Schema(implementation = Booking.class))),
       @ApiResponse(responseCode = "204", description = "No bookings found"),
       @ApiResponse(responseCode = "400", description = "Invalid user ID"),
       @ApiResponse(responseCode = "401", description = "User not authenticated"),
-      @ApiResponse(responseCode = "404", description = "User not found")
-  })
+      @ApiResponse(responseCode = "404", description = "User not found")})
   public ResponseEntity<List<Booking>> getAllBookings(
-        @Parameter(description = "User ID", required = true)
-        @RequestParam Long userId) {
+      @Parameter(description = "User ID", required = true) @RequestParam Long userId) {
     try {
       List<Booking> bookings = bookingService.getAllBookings(userId);
       if (bookings.isEmpty()) {
@@ -185,19 +167,15 @@ public class BookingController {
    * @return ResponseEntity with no content if successful
    */
   @PostMapping("/{id}/cancel")
-  @Operation(
-      summary = "Cancel a booking",
-      description = "Cancels an existing booking"
-  )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "204", description = "Booking cancelled successfully"),
-      @ApiResponse(responseCode = "401", description = "User not authenticated"),
-      @ApiResponse(responseCode = "403", description = "User not authorized to cancel this booking"),
-      @ApiResponse(responseCode = "404", description = "Booking not found")
-  })
+  @Operation(summary = "Cancel a booking", description = "Cancels an existing booking")
+  @ApiResponses(
+      value = {@ApiResponse(responseCode = "204", description = "Booking cancelled successfully"),
+          @ApiResponse(responseCode = "401", description = "User not authenticated"),
+          @ApiResponse(responseCode = "403",
+              description = "User not authorized to cancel this booking"),
+          @ApiResponse(responseCode = "404", description = "Booking not found")})
   public ResponseEntity<Void> cancelBooking(
-        @Parameter(description = "Booking ID", required = true)
-        @PathVariable Long id) {
+      @Parameter(description = "Booking ID", required = true) @PathVariable Long id) {
     try {
       bookingService.cancelBooking(id);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -213,22 +191,18 @@ public class BookingController {
    * @return ResponseEntity containing the list of bookings or error status
    */
   @GetMapping("/station/{stationId}")
-  @Operation(
-      summary = "Get bookings by station ID",
-      description = "Retrieves all bookings for a specific station"
-  )
+  @Operation(summary = "Get bookings by station ID",
+      description = "Retrieves all bookings for a specific station")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Bookings found",
-        content = @Content(schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "204", description = "No bookings found for this station"),
-        @ApiResponse(responseCode = "400", description = "Invalid station ID"),
-        @ApiResponse(responseCode = "401", description = "User not authenticated"),
-        @ApiResponse(responseCode = "404", description = "Station not found")
-  })
+          content = @Content(schema = @Schema(implementation = Booking.class))),
+      @ApiResponse(responseCode = "204", description = "No bookings found for this station"),
+      @ApiResponse(responseCode = "400", description = "Invalid station ID"),
+      @ApiResponse(responseCode = "401", description = "User not authenticated"),
+      @ApiResponse(responseCode = "404", description = "Station not found")})
   public ResponseEntity<List<Booking>> getBookingsByStationId(
-        @Parameter(description = "Station ID", required = true)
-        @PathVariable Long stationId,
-        Principal principal) {
+      @Parameter(description = "Station ID", required = true) @PathVariable Long stationId,
+      Principal principal) {
     if (principal == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
@@ -252,21 +226,17 @@ public class BookingController {
    * @return ResponseEntity containing the list of bookings or error status
    */
   @GetMapping("/user/{userId}")
-  @Operation(
-      summary = "Get bookings by user ID",
-      description = "Retrieves all bookings for a specific user"
-  )
+  @Operation(summary = "Get bookings by user ID",
+      description = "Retrieves all bookings for a specific user")
   @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Bookings found",
-            content = @Content(schema = @Schema(implementation = Booking.class))),
-        @ApiResponse(responseCode = "204", description = "No bookings found for this user"),
-        @ApiResponse(responseCode = "400", description = "Invalid user ID"),
-        @ApiResponse(responseCode = "401", description = "User not authenticated"),
-        @ApiResponse(responseCode = "404", description = "User not found")
-  })
+      @ApiResponse(responseCode = "200", description = "Bookings found",
+          content = @Content(schema = @Schema(implementation = Booking.class))),
+      @ApiResponse(responseCode = "204", description = "No bookings found for this user"),
+      @ApiResponse(responseCode = "400", description = "Invalid user ID"),
+      @ApiResponse(responseCode = "401", description = "User not authenticated"),
+      @ApiResponse(responseCode = "404", description = "User not found")})
   public ResponseEntity<List<Booking>> getBookingsByUserId(
-        @Parameter(description = "User ID", required = true)
-        @PathVariable Long userId) {
+      @Parameter(description = "User ID", required = true) @PathVariable Long userId) {
     try {
       List<Booking> bookings = bookingService.getBookingsByUserId(userId);
       if (bookings.isEmpty()) {

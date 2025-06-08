@@ -18,7 +18,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest(HealthController.class)
-@ContextConfiguration(classes = {HealthController.class, HealthControllerTest.TestSecurityConfig.class})
+@ContextConfiguration(
+        classes = {HealthController.class, HealthControllerTest.TestSecurityConfig.class})
 class HealthControllerTest {
 
     @Autowired
@@ -29,12 +30,8 @@ class HealthControllerTest {
     static class TestSecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-            http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/v1/health").permitAll()
-                    .anyRequest().authenticated()
-                );
+            http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/v1/health").permitAll().anyRequest().authenticated());
             return http.build();
         }
     }
@@ -43,21 +40,18 @@ class HealthControllerTest {
     @XrayTest(key = "HEALTH-1")
     @Requirement("HEALTH-1")
     void healthCheck_returnsHealthyMessage() throws Exception {
-        mockMvc.perform(get("/api/v1/health"))
-            .andExpect(status().isOk())
-            .andExpect(content().string("Station Manager is healthy :)"));
+        mockMvc.perform(get("/api/v1/health")).andExpect(status().isOk())
+                .andExpect(content().string("Station Manager is healthy :)"));
     }
 
     @Test
     void healthCheck_returns200Status() throws Exception {
-        mockMvc.perform(get("/api/v1/health"))
-            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/health")).andExpect(status().isOk());
     }
 
     @Test
     void healthCheck_returnsCorrectContentType() throws Exception {
-        mockMvc.perform(get("/api/v1/health"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("text/plain;charset=UTF-8"));
+        mockMvc.perform(get("/api/v1/health")).andExpect(status().isOk())
+                .andExpect(content().contentType("text/plain;charset=UTF-8"));
     }
-} 
+}

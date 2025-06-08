@@ -39,7 +39,8 @@ class ChargingSessionServiceTest {
 
     @BeforeEach
     void setUp() {
-        chargingSessionService = new ChargingSessionService(chargingSessionRepository, bookingRepository, stationService);
+        chargingSessionService = new ChargingSessionService(chargingSessionRepository,
+                bookingRepository, stationService);
     }
 
     @Test
@@ -49,7 +50,8 @@ class ChargingSessionServiceTest {
         String userId = "1";
         ChargingSession session = new ChargingSession(stationId, userId);
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
-        when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class))).thenReturn(Arrays.asList());
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class)))
+                .thenReturn(Arrays.asList());
         doNothing().when(stationService).validateSessionStart(1L, 1L);
 
         // When
@@ -68,14 +70,16 @@ class ChargingSessionServiceTest {
         // Given
         String stationId = "1";
         String userId = "123";
-        doThrow(new IllegalStateException("Cannot start session: no booking or free chargers available"))
-            .when(stationService).validateSessionStart(1L, 123L);
+        doThrow(new IllegalStateException(
+                "Cannot start session: no booking or free chargers available")).when(stationService)
+                        .validateSessionStart(1L, 123L);
 
         // When/Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> 
-            chargingSessionService.createSession(stationId, userId));
-        
-        assertEquals("Cannot start session: no booking or free chargers available", exception.getMessage());
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> chargingSessionService.createSession(stationId, userId));
+
+        assertEquals("Cannot start session: no booking or free chargers available",
+                exception.getMessage());
         verify(stationService).validateSessionStart(1L, 123L);
         verify(chargingSessionRepository, never()).save(any(ChargingSession.class));
     }
@@ -87,7 +91,8 @@ class ChargingSessionServiceTest {
         String userId = "456";
         ChargingSession session = new ChargingSession(stationId, userId);
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
-        when(bookingRepository.findActiveBookingsForStationAtTime(eq(123L), any(LocalDateTime.class))).thenReturn(Arrays.asList());
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(123L),
+                any(LocalDateTime.class))).thenReturn(Arrays.asList());
         doNothing().when(stationService).validateSessionStart(123L, 456L);
 
         // When
@@ -102,14 +107,16 @@ class ChargingSessionServiceTest {
         // Given
         String stationId = "1";
         String userId = "1";
-        doThrow(new IllegalStateException("Cannot start session: no booking or free chargers available"))
-            .when(stationService).validateSessionStart(1L, 1L);
+        doThrow(new IllegalStateException(
+                "Cannot start session: no booking or free chargers available")).when(stationService)
+                        .validateSessionStart(1L, 1L);
 
         // When/Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> 
-            chargingSessionService.createSession(stationId, userId));
-        
-        assertEquals("Cannot start session: no booking or free chargers available", exception.getMessage());
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> chargingSessionService.createSession(stationId, userId));
+
+        assertEquals("Cannot start session: no booking or free chargers available",
+                exception.getMessage());
         verify(stationService).validateSessionStart(1L, 1L);
         verify(chargingSessionRepository, never()).save(any(ChargingSession.class));
     }
@@ -119,9 +126,12 @@ class ChargingSessionServiceTest {
         // Given
         String stationId = "1";
         String userId = "1";
-        ArgumentCaptor<ChargingSession> sessionCaptor = ArgumentCaptor.forClass(ChargingSession.class);
-        when(chargingSessionRepository.save(sessionCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class))).thenReturn(Arrays.asList());
+        ArgumentCaptor<ChargingSession> sessionCaptor =
+                ArgumentCaptor.forClass(ChargingSession.class);
+        when(chargingSessionRepository.save(sessionCaptor.capture()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class)))
+                .thenReturn(Arrays.asList());
         doNothing().when(stationService).validateSessionStart(1L, 1L);
 
         // When
@@ -134,7 +144,7 @@ class ChargingSessionServiceTest {
         assertFalse(capturedSession.isFinished());
         assertNotNull(capturedSession.getStartTime());
         assertNull(capturedSession.getEndTime());
-        
+
         assertNotNull(result);
         verify(chargingSessionRepository).save(any(ChargingSession.class));
         verify(stationService).validateSessionStart(1L, 1L);
@@ -146,9 +156,9 @@ class ChargingSessionServiceTest {
         String stationId = "1";
         String userId = "123";
         LocalDateTime now = LocalDateTime.now();
-        
+
         ChargingSession session = new ChargingSession(stationId, userId);
-        
+
         Booking userBooking = new Booking();
         userBooking.setId(1L);
         userBooking.setStationId(Long.valueOf(stationId));
@@ -156,28 +166,29 @@ class ChargingSessionServiceTest {
         userBooking.setStatus(BookingStatus.ACTIVE);
         userBooking.setStartTime(now.minusMinutes(30));
         userBooking.setEndTime(now.plusMinutes(30));
-        
+
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
         when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class)))
-            .thenReturn(Arrays.asList(userBooking));
+                .thenReturn(Arrays.asList(userBooking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(userBooking);
         doNothing().when(stationService).validateSessionStart(1L, 123L);
-        
+
         // When
         ChargingSession result = chargingSessionService.createSession(stationId, userId);
-        
+
         // Then
         assertNotNull(result);
         assertFalse(result.isFinished());
-        verify(bookingRepository).findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class));
-        
+        verify(bookingRepository).findActiveBookingsForStationAtTime(eq(1L),
+                any(LocalDateTime.class));
+
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository).save(bookingCaptor.capture());
-        
+
         Booking savedBooking = bookingCaptor.getValue();
         assertEquals(BookingStatus.COMPLETED, savedBooking.getStatus());
         assertEquals(userBooking.getId(), savedBooking.getId());
-        
+
         verify(stationService).validateSessionStart(1L, 123L);
     }
 
@@ -187,36 +198,36 @@ class ChargingSessionServiceTest {
         String stationId = "1";
         String userId = "123";
         LocalDateTime now = LocalDateTime.now();
-        
+
         ChargingSession session = new ChargingSession(stationId, userId);
-        
+
         Booking userBooking = new Booking();
         userBooking.setId(1L);
         userBooking.setStationId(1L);
         userBooking.setUserId(123L);
         userBooking.setStatus(BookingStatus.ACTIVE);
-        
+
         Booking otherUserBooking = new Booking();
         otherUserBooking.setId(2L);
         otherUserBooking.setStationId(1L);
         otherUserBooking.setUserId(456L);
         otherUserBooking.setStatus(BookingStatus.ACTIVE);
-        
+
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
         when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class)))
-            .thenReturn(Arrays.asList(userBooking, otherUserBooking));
+                .thenReturn(Arrays.asList(userBooking, otherUserBooking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(userBooking);
         doNothing().when(stationService).validateSessionStart(1L, 123L);
-        
+
         // When
         chargingSessionService.createSession(stationId, userId);
-        
+
         // Then
         verify(bookingRepository, times(1)).save(any(Booking.class));
-        
+
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository).save(bookingCaptor.capture());
-        
+
         Booking savedBooking = bookingCaptor.getValue();
         assertEquals(BookingStatus.COMPLETED, savedBooking.getStatus());
         assertEquals(123L, savedBooking.getUserId());
@@ -228,17 +239,18 @@ class ChargingSessionServiceTest {
         String stationId = "1";
         String userId = "123";
         ChargingSession session = new ChargingSession(stationId, userId);
-        
+
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
         when(bookingRepository.findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class)))
-            .thenReturn(Arrays.asList());
+                .thenReturn(Arrays.asList());
         doNothing().when(stationService).validateSessionStart(1L, 123L);
-        
+
         // When
         chargingSessionService.createSession(stationId, userId);
-        
+
         // Then
-        verify(bookingRepository).findActiveBookingsForStationAtTime(eq(1L), any(LocalDateTime.class));
+        verify(bookingRepository).findActiveBookingsForStationAtTime(eq(1L),
+                any(LocalDateTime.class));
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
@@ -269,7 +281,7 @@ class ChargingSessionServiceTest {
         ChargingSession session = new ChargingSession();
         session.setStartTime(LocalDateTime.now());
         LocalDateTime beforeEnd = LocalDateTime.now();
-        
+
         when(chargingSessionRepository.findById(sessionId)).thenReturn(Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
 
@@ -280,7 +292,8 @@ class ChargingSessionServiceTest {
         assertNotNull(result);
         assertNotNull(result.getEndTime());
         assertTrue(result.isFinished());
-        assertTrue(result.getEndTime().isAfter(beforeEnd) || result.getEndTime().isEqual(beforeEnd));
+        assertTrue(
+                result.getEndTime().isAfter(beforeEnd) || result.getEndTime().isEqual(beforeEnd));
         assertTrue(result.getEndTime().isAfter(result.getStartTime()));
     }
 
@@ -288,12 +301,14 @@ class ChargingSessionServiceTest {
     void whenEndSession_withNonExistentSession_thenThrowException() {
         // Given
         String sessionId = "999";
-        when(chargingSessionRepository.findById(Long.valueOf(sessionId))).thenReturn(Optional.empty());
+        when(chargingSessionRepository.findById(Long.valueOf(sessionId)))
+                .thenReturn(Optional.empty());
 
         // When/Then
-        ChargingSessionNotFoundException exception = assertThrows(ChargingSessionNotFoundException.class, () -> 
-            chargingSessionService.endSession(sessionId));
-        
+        ChargingSessionNotFoundException exception =
+                assertThrows(ChargingSessionNotFoundException.class,
+                        () -> chargingSessionService.endSession(sessionId));
+
         assertEquals("Session not found: " + sessionId, exception.getMessage());
         verify(chargingSessionRepository, never()).save(any(ChargingSession.class));
     }
@@ -306,7 +321,7 @@ class ChargingSessionServiceTest {
         session.setId(sessionId);
         session.setFinished(true);
         session.setEndTime(LocalDateTime.now().minusMinutes(30));
-        
+
         when(chargingSessionRepository.findById(sessionId)).thenReturn(Optional.of(session));
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
 
@@ -345,12 +360,14 @@ class ChargingSessionServiceTest {
     void whenGetSession_withNonExistentSession_thenThrowException() {
         // Given
         String sessionId = "999";
-        when(chargingSessionRepository.findById(Long.valueOf(sessionId))).thenReturn(Optional.empty());
+        when(chargingSessionRepository.findById(Long.valueOf(sessionId)))
+                .thenReturn(Optional.empty());
 
         // When/Then
-        ChargingSessionNotFoundException exception = assertThrows(ChargingSessionNotFoundException.class, () -> 
-            chargingSessionService.getSession(sessionId));
-        
+        ChargingSessionNotFoundException exception =
+                assertThrows(ChargingSessionNotFoundException.class,
+                        () -> chargingSessionService.getSession(sessionId));
+
         assertEquals("Session not found: " + sessionId, exception.getMessage());
     }
 
@@ -360,8 +377,8 @@ class ChargingSessionServiceTest {
         String invalidSessionId = "invalid";
 
         // When/Then
-        assertThrows(NumberFormatException.class, () -> 
-            chargingSessionService.getSession(invalidSessionId));
+        assertThrows(NumberFormatException.class,
+                () -> chargingSessionService.getSession(invalidSessionId));
     }
 
     @Test
@@ -371,8 +388,8 @@ class ChargingSessionServiceTest {
         String userId = "1";
 
         // When/Then
-        assertThrows(NumberFormatException.class, () -> 
-            chargingSessionService.createSession(invalidStationId, userId));
+        assertThrows(NumberFormatException.class,
+                () -> chargingSessionService.createSession(invalidStationId, userId));
     }
 
     @Test
@@ -382,8 +399,8 @@ class ChargingSessionServiceTest {
         String invalidUserId = "invalid";
 
         // When/Then
-        assertThrows(NumberFormatException.class, () -> 
-            chargingSessionService.createSession(stationId, invalidUserId));
+        assertThrows(NumberFormatException.class,
+                () -> chargingSessionService.createSession(stationId, invalidUserId));
     }
 
     @Test
@@ -392,8 +409,8 @@ class ChargingSessionServiceTest {
         String invalidSessionId = "invalid";
 
         // When/Then
-        assertThrows(NumberFormatException.class, () -> 
-            chargingSessionService.endSession(invalidSessionId));
+        assertThrows(NumberFormatException.class,
+                () -> chargingSessionService.endSession(invalidSessionId));
     }
 
     @Test
@@ -402,20 +419,21 @@ class ChargingSessionServiceTest {
         String stationId = "42";
         String userId = "123";
         ChargingSession session = new ChargingSession(stationId, userId);
-        
+
         when(chargingSessionRepository.save(any(ChargingSession.class))).thenReturn(session);
-        when(bookingRepository.findActiveBookingsForStationAtTime(eq(42L), any(LocalDateTime.class)))
-            .thenReturn(Arrays.asList());
+        when(bookingRepository.findActiveBookingsForStationAtTime(eq(42L),
+                any(LocalDateTime.class))).thenReturn(Arrays.asList());
         doNothing().when(stationService).validateSessionStart(42L, 123L);
-        
+
         // When
         chargingSessionService.createSession(stationId, userId);
-        
+
         // Then
         ArgumentCaptor<Long> stationIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<LocalDateTime> timeCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(bookingRepository).findActiveBookingsForStationAtTime(stationIdCaptor.capture(), timeCaptor.capture());
-        
+        verify(bookingRepository).findActiveBookingsForStationAtTime(stationIdCaptor.capture(),
+                timeCaptor.capture());
+
         assertEquals(42L, stationIdCaptor.getValue());
         assertNotNull(timeCaptor.getValue());
         assertTrue(timeCaptor.getValue().isBefore(LocalDateTime.now().plusSeconds(1)));

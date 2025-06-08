@@ -2,9 +2,7 @@ package tqs.sparkflow.stationservice.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import tqs.sparkflow.stationservice.dto.StationFilterDTO;
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.ChargingSession;
@@ -24,7 +22,15 @@ public class StationService {
   // Maximum number of stations to return per search to prevent performance issues
   private static final int MAX_SEARCH_RESULTS = 500;
 
-  public StationService(StationRepository stationRepository, BookingRepository bookingRepository, ChargingSessionRepository chargingSessionRepository) {
+  /**
+   * Constructs a new StationService with the given repositories.
+   *
+   * @param stationRepository The repository for station data
+   * @param bookingRepository The repository for booking data
+   * @param chargingSessionRepository The repository for charging session data
+   */
+  public StationService(StationRepository stationRepository, BookingRepository bookingRepository,
+      ChargingSessionRepository chargingSessionRepository) {
     this.stationRepository = stationRepository;
     this.bookingRepository = bookingRepository;
     this.chargingSessionRepository = chargingSessionRepository;
@@ -37,8 +43,8 @@ public class StationService {
    */
   public List<Station> getAllStations() {
     List<Station> allStations = stationRepository.findAll();
-    return allStations.size() > MAX_SEARCH_RESULTS ? 
-           allStations.subList(0, MAX_SEARCH_RESULTS) : allStations;
+    return allStations.size() > MAX_SEARCH_RESULTS ? allStations.subList(0, MAX_SEARCH_RESULTS)
+        : allStations;
   }
 
   /**
@@ -62,9 +68,8 @@ public class StationService {
     if (id == null) {
       throw new NullPointerException("Station ID cannot be null");
     }
-    return stationRepository
-      .findById(id)
-      .orElseThrow(() -> new IllegalArgumentException("Station not found with id: " + id));
+    return stationRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Station not found with id: " + id));
   }
 
   /**
@@ -75,11 +80,8 @@ public class StationService {
    * @throws IllegalArgumentException if no station exists with the given external ID
    */
   public Station getStationByExternalId(String externalId) {
-    return stationRepository
-      .findByExternalId(externalId)
-      .orElseThrow(
-        () ->
-          new IllegalArgumentException("Station not found with external id: " + externalId));
+    return stationRepository.findByExternalId(externalId).orElseThrow(
+        () -> new IllegalArgumentException("Station not found with external id: " + externalId));
   }
 
   /**
@@ -153,15 +155,12 @@ public class StationService {
    * @param minChargers The minimum number of chargers
    * @return List of matching stations
    */
-  public List<Station> searchStations(
-      String name, String city, String country, Integer minChargers) {
-    return stationRepository.findAll()
-        .stream()
-        .filter(station -> matchesNameFilter(station, name))
+  public List<Station> searchStations(String name, String city, String country,
+      Integer minChargers) {
+    return stationRepository.findAll().stream().filter(station -> matchesNameFilter(station, name))
         .filter(station -> matchesCityFilter(station, city))
         .filter(station -> matchesCountryFilter(station, country))
-        .filter(station -> matchesMinChargersFilter(station, minChargers))
-        .limit(MAX_SEARCH_RESULTS)
+        .filter(station -> matchesMinChargersFilter(station, minChargers)).limit(MAX_SEARCH_RESULTS)
         .toList();
   }
 
@@ -172,7 +171,7 @@ public class StationService {
     if (isEmptyFilter(name)) {
       return true;
     }
-    return station.getName() != null 
+    return station.getName() != null
         && station.getName().toLowerCase().contains(name.toLowerCase());
   }
 
@@ -183,7 +182,7 @@ public class StationService {
     if (isEmptyFilter(city)) {
       return true;
     }
-    return station.getCity() != null 
+    return station.getCity() != null
         && station.getCity().toLowerCase().contains(city.toLowerCase());
   }
 
@@ -194,7 +193,7 @@ public class StationService {
     if (isEmptyFilter(country)) {
       return true;
     }
-    return station.getCountry() != null 
+    return station.getCountry() != null
         && station.getCountry().toLowerCase().contains(country.toLowerCase());
   }
 
@@ -205,7 +204,7 @@ public class StationService {
     if (minChargers == null || minChargers <= 0) {
       return true;
     }
-    return station.getQuantityOfChargers() != null 
+    return station.getQuantityOfChargers() != null
         && station.getQuantityOfChargers() >= minChargers;
   }
 
@@ -238,24 +237,21 @@ public class StationService {
     if (radius > 600) {
       throw new IllegalArgumentException("Radius cannot be greater than 600 km");
     }
-    
-    return stationRepository.findAll().stream()
-      .filter(station -> {
-        if (station.getLatitude() == null || station.getLongitude() == null) {
-          return false;
-        }
-        double distance = calculateDistance(
-            latitude, longitude,
-            station.getLatitude(), station.getLongitude()
-        );
-        return distance <= radius;
-      })
-      .limit(MAX_SEARCH_RESULTS)  // Limit to maximum results
-      .toList();
+
+    return stationRepository.findAll().stream().filter(station -> {
+      if (station.getLatitude() == null || station.getLongitude() == null) {
+        return false;
+      }
+      double distance =
+          calculateDistance(latitude, longitude, station.getLatitude(), station.getLongitude());
+      return distance <= radius;
+    }).limit(MAX_SEARCH_RESULTS) // Limit to maximum results
+        .toList();
   }
 
   /**
    * Calculates the distance between two points using the Haversine formula.
+   * 
    * @param lat1 Latitude of first point
    * @param lon1 Longitude of first point
    * @param lat2 Latitude of second point
@@ -267,13 +263,13 @@ public class StationService {
 
     double latDistance = Math.toRadians(lat2 - lat1);
     double lonDistance = Math.toRadians(lon2 - lon1);
-    
+
     double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
         + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-    
+            * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
     return R * c;
   }
 
@@ -302,31 +298,16 @@ public class StationService {
    * @return List of stations matching the filter criteria
    */
   public List<Station> getStationsByFilters(StationFilterDTO filter) {
-    if (filter.getLatitude() != null && filter.getLongitude() != null && filter.getRadius() != null) {
-      return stationRepository.findStationsByFiltersWithLocation(
-          filter.getMinPower(),
-          filter.getMaxPower(),
-          filter.getIsOperational(),
-          filter.getStatus(),
-          filter.getCity(),
-          filter.getCountry(),
-          filter.getMinPrice(),
-          filter.getMaxPrice(),
-          filter.getLatitude(),
-          filter.getLongitude(),
-          filter.getRadius()
-      );
+    if (filter.getLatitude() != null && filter.getLongitude() != null
+        && filter.getRadius() != null) {
+      return stationRepository.findStationsByFiltersWithLocation(filter.getMinPower(),
+          filter.getMaxPower(), filter.getIsOperational(), filter.getStatus(), filter.getCity(),
+          filter.getCountry(), filter.getMinPrice(), filter.getMaxPrice(), filter.getLatitude(),
+          filter.getLongitude(), filter.getRadius());
     } else {
-      return stationRepository.findStationsByFilters(
-          filter.getMinPower(),
-          filter.getMaxPower(),
-          filter.getIsOperational(),
-          filter.getStatus(),
-          filter.getCity(),
-          filter.getCountry(),
-          filter.getMinPrice(),
-          filter.getMaxPrice()
-      );
+      return stationRepository.findStationsByFilters(filter.getMinPower(), filter.getMaxPower(),
+          filter.getIsOperational(), filter.getStatus(), filter.getCity(), filter.getCountry(),
+          filter.getMinPrice(), filter.getMaxPrice());
     }
   }
 
@@ -340,10 +321,12 @@ public class StationService {
   public int getAvailableChargers(Long stationId, LocalDateTime currentTime) {
     Station station = getStationById(stationId);
     int totalChargers = station.getQuantityOfChargers();
-    
-    List<Booking> activeBookings = bookingRepository.findActiveBookingsForStationAtTime(stationId, currentTime);
-    List<ChargingSession> unfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStation(stationId);
-    
+
+    List<Booking> activeBookings =
+        bookingRepository.findActiveBookingsForStationAtTime(stationId, currentTime);
+    List<ChargingSession> unfinishedSessions =
+        chargingSessionRepository.findUnfinishedSessionsByStation(stationId);
+
     return totalChargers - activeBookings.size() - unfinishedSessions.size();
   }
 
@@ -356,23 +339,26 @@ public class StationService {
    * @param endTime The end time
    * @return true if the user can use the station, false otherwise
    */
-  public boolean canUseStation(Long stationId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
-    List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(stationId, startTime, endTime);
-    
-    boolean hasUserBooking = overlappingBookings.stream()
-        .anyMatch(booking -> booking.getUserId().equals(userId));
-    
+  public boolean canUseStation(Long stationId, Long userId, LocalDateTime startTime,
+      LocalDateTime endTime) {
+    List<Booking> overlappingBookings =
+        bookingRepository.findOverlappingBookings(stationId, startTime, endTime);
+
+    boolean hasUserBooking =
+        overlappingBookings.stream().anyMatch(booking -> booking.getUserId().equals(userId));
+
     if (hasUserBooking) {
       return true;
     }
-    
+
     Station station = getStationById(stationId);
     int totalChargers = station.getQuantityOfChargers();
-    
-    List<ChargingSession> unfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime);
-    
+
+    List<ChargingSession> unfinishedSessions = chargingSessionRepository
+        .findUnfinishedSessionsByStationInTimeRange(stationId, startTime, endTime);
+
     int usedChargers = overlappingBookings.size() + unfinishedSessions.size();
-    
+
     return usedChargers < totalChargers;
   }
 
@@ -385,17 +371,17 @@ public class StationService {
    * @param endTime The end time
    * @throws IllegalStateException if no chargers are available
    */
-  public void validateBooking(Long stationId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
+  public void validateBooking(Long stationId, Long userId, LocalDateTime startTime,
+      LocalDateTime endTime) {
     if (!canUseStation(stationId, userId, startTime, endTime)) {
       throw new IllegalStateException("No chargers available for the requested time slot");
     }
   }
 
   /**
-   * Checks if a user can start a charging session immediately.
-   * A user can start a session if:
-   * 1. They have an active booking for this station at the current time, OR
-   * 2. There are free chargers available (total - active bookings without sessions - unfinished sessions)
+   * Checks if a user can start a charging session immediately. A user can start a session if: 1.
+   * They have an active booking for this station at the current time, OR 2. There are free chargers
+   * available (total - active bookings without sessions - unfinished sessions)
    *
    * @param stationId The station ID
    * @param userId The user ID
@@ -403,30 +389,31 @@ public class StationService {
    */
   public boolean canStartSession(Long stationId, Long userId) {
     LocalDateTime now = LocalDateTime.now();
-    
+
     // Check if user has an active booking for this station at current time
-    List<Booking> activeBookings = bookingRepository.findActiveBookingsForStationAtTime(stationId, now);
-    boolean hasUserBooking = activeBookings.stream()
-        .anyMatch(booking -> booking.getUserId().equals(userId));
-    
+    List<Booking> activeBookings =
+        bookingRepository.findActiveBookingsForStationAtTime(stationId, now);
+    boolean hasUserBooking =
+        activeBookings.stream().anyMatch(booking -> booking.getUserId().equals(userId));
+
     if (hasUserBooking) {
       return true;
     }
-    
+
     // Check if there are free chargers available
     Station station = getStationById(stationId);
     int totalChargers = station.getQuantityOfChargers();
-    
+
     // Count bookings where owner hasn't started a session yet
-    long bookingsWithoutSessions = activeBookings.stream()
-        .filter(booking -> !hasActiveSessionForBooking(booking))
-        .count();
-    
+    long bookingsWithoutSessions =
+        activeBookings.stream().filter(booking -> !hasActiveSessionForBooking(booking)).count();
+
     // Count unfinished sessions
-    List<ChargingSession> unfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStation(stationId);
-    
+    List<ChargingSession> unfinishedSessions =
+        chargingSessionRepository.findUnfinishedSessionsByStation(stationId);
+
     int usedChargers = (int) bookingsWithoutSessions + unfinishedSessions.size();
-    
+
     return usedChargers < totalChargers;
   }
 
@@ -437,11 +424,10 @@ public class StationService {
    * @return true if the booking owner has an active session, false otherwise
    */
   private boolean hasActiveSessionForBooking(Booking booking) {
-    List<ChargingSession> userUnfinishedSessions = chargingSessionRepository.findUnfinishedSessionsByStation(booking.getStationId())
-        .stream()
-        .filter(session -> session.getUserId().equals(booking.getUserId().toString()))
-        .toList();
-    
+    List<ChargingSession> userUnfinishedSessions =
+        chargingSessionRepository.findUnfinishedSessionsByStation(booking.getStationId()).stream()
+            .filter(session -> session.getUserId().equals(booking.getUserId().toString())).toList();
+
     return !userUnfinishedSessions.isEmpty();
   }
 
@@ -454,7 +440,8 @@ public class StationService {
    */
   public void validateSessionStart(Long stationId, Long userId) {
     if (!canStartSession(stationId, userId)) {
-      throw new IllegalStateException("Cannot start session: no booking or free chargers available");
+      throw new IllegalStateException(
+          "Cannot start session: no booking or free chargers available");
     }
   }
 }

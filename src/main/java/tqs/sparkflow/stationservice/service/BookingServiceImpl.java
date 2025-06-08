@@ -27,12 +27,9 @@ public class BookingServiceImpl implements BookingService {
    * @param stationService The service for station operations
    * @param restTemplate The RestTemplate for making HTTP requests
    * @param userServiceUrl The URL of the user service
-  */
-  public BookingServiceImpl(
-      BookingRepository bookingRepository,
-      StationService stationService,
-      RestTemplate restTemplate,
-      String userServiceUrl) {
+   */
+  public BookingServiceImpl(BookingRepository bookingRepository, StationService stationService,
+      RestTemplate restTemplate, String userServiceUrl) {
     this.bookingRepository = bookingRepository;
     this.stationService = stationService;
     this.restTemplate = restTemplate;
@@ -50,11 +47,7 @@ public class BookingServiceImpl implements BookingService {
   private void validateUserPermission(Long userId, Long bookingUserId) {
     if (!userId.equals(bookingUserId)) {
       try {
-        restTemplate.getForObject(
-            userServiceUrl 
-            + USERS_PATH 
-            + userId 
-            + ADMIN_ROLE_CHECK,
+        restTemplate.getForObject(userServiceUrl + USERS_PATH + userId + ADMIN_ROLE_CHECK,
             Boolean.class);
       } catch (Exception e) {
         throw new IllegalStateException("User not authorized to access this booking");
@@ -64,7 +57,7 @@ public class BookingServiceImpl implements BookingService {
 
   @Override
   public Booking createRecurringBooking(Long userId, Long stationId, LocalDateTime startTime,
-                                          LocalDateTime endTime, Set<Integer> recurringDays) {
+      LocalDateTime endTime, Set<Integer> recurringDays) {
     validateUser(userId);
 
     Station station = stationService.getStationById(stationId);
@@ -88,12 +81,8 @@ public class BookingServiceImpl implements BookingService {
   @Override
   public Booking createBooking(Booking booking) {
     validateUser(booking.getUserId());
-    return createRecurringBooking(
-        booking.getUserId(),
-        booking.getStationId(),
-        booking.getStartTime(),
-        booking.getEndTime(),
-        booking.getRecurringDays());
+    return createRecurringBooking(booking.getUserId(), booking.getStationId(),
+        booking.getStartTime(), booking.getEndTime(), booking.getRecurringDays());
   }
 
   @Override
@@ -109,8 +98,7 @@ public class BookingServiceImpl implements BookingService {
   public List<Booking> getAllBookings(Long userId) {
     validateUser(userId);
     try {
-      restTemplate.getForObject(
-          userServiceUrl + USERS_PATH + userId + ADMIN_ROLE_CHECK,
+      restTemplate.getForObject(userServiceUrl + USERS_PATH + userId + ADMIN_ROLE_CHECK,
           Boolean.class);
     } catch (Exception e) {
       throw new IllegalStateException("User not authorized to access all bookings");
@@ -136,8 +124,7 @@ public class BookingServiceImpl implements BookingService {
   public List<Booking> getBookingsByStationId(Long stationId, Long requestingUserId) {
     validateUser(requestingUserId);
     try {
-      restTemplate.getForObject(
-          userServiceUrl + USERS_PATH + requestingUserId + ADMIN_ROLE_CHECK,
+      restTemplate.getForObject(userServiceUrl + USERS_PATH + requestingUserId + ADMIN_ROLE_CHECK,
           Boolean.class);
     } catch (Exception e) {
       // If not admin, only return bookings for this user
@@ -151,4 +138,4 @@ public class BookingServiceImpl implements BookingService {
     validateUser(userId);
     return bookingRepository.findByUserId(userId);
   }
-} 
+}
