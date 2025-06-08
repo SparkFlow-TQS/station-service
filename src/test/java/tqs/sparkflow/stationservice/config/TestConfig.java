@@ -115,6 +115,7 @@ public class TestConfig {
                 auth.requestMatchers("/api/v1/stations/**").permitAll()
                     .requestMatchers("/api/v1/charging-sessions/**").permitAll()
                     .requestMatchers("/api/v1/openchargemap/**").permitAll()
+                    .requestMatchers("/api/v1/statistics/**").permitAll()
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/v1/bookings/**").authenticated()
                     .anyRequest().authenticated()
