@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -313,13 +314,13 @@ class StationTest {
     station1.setStatus("Available");
 
     // Test same object
-    assertTrue(station1.equals(station1));
+    assertEquals(station1, station1);
 
     // Test null
-    assertFalse(station1.equals(null));
+    assertNotEquals(station1, null);
 
     // Test different class
-    assertFalse(station1.equals("Not a Station"));
+    assertNotEquals(station1, "Not a Station");
 
     // Test different id
     Station station2 = new Station();
@@ -335,7 +336,7 @@ class StationTest {
     station2.setLatitude(station1.getLatitude());
     station2.setLongitude(station1.getLongitude());
     station2.setStatus(station1.getStatus());
-    assertFalse(station1.equals(station2));
+    assertNotEquals(station1, station2);
 
     // Test different externalId
     Station station3 = new Station();
@@ -367,7 +368,7 @@ class StationTest {
     station4.setLatitude(station1.getLatitude());
     station4.setLongitude(station1.getLongitude());
     station4.setStatus(station1.getStatus());
-    assertFalse(station1.equals(station4));
+    assertNotEquals(station1, station4);
 
     // Test different quantityOfChargers
     Station station5 = new Station();
@@ -383,7 +384,7 @@ class StationTest {
     station5.setLatitude(station1.getLatitude());
     station5.setLongitude(station1.getLongitude());
     station5.setStatus(station1.getStatus());
-    assertFalse(station1.equals(station5));
+    assertNotEquals(station1, station5);
 
     // Test equal stations
     Station station6 = new Station();
@@ -430,7 +431,7 @@ class StationTest {
     station8.setLongitude(station1.getLongitude());
     station8.setStatus(station1.getStatus());
 
-    assertTrue(station7.equals(station8));
+    assertEquals(station7, station8);
   }
 
   @Test
