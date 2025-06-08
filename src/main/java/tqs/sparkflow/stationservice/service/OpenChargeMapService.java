@@ -187,12 +187,19 @@ public class OpenChargeMapService {
 
   private void setStationId(Map<String, Object> data, Station station) {
     Object id = data.get("ID");
-    if (id instanceof Number) {
-      Number number = (Number) id;
-      station.setId(number.longValue());
+    if (isNumber(id)) {
+      station.setId(getNumber(id).longValue());
     } else if (id != null) {
       station.setId(Long.parseLong(id.toString()));
     }
+  }
+
+  private boolean isNumber(Object obj) {
+    return obj instanceof Number;
+  }
+
+  private Number getNumber(Object obj) {
+    return (Number) obj;
   }
 
   private void setStationName(Map<String, Object> addressInfo, Station station) {
@@ -208,15 +215,13 @@ public class OpenChargeMapService {
   private void setStationCoordinates(Map<String, Object> addressInfo, Station station) {
     Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
     Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
-    if (lat instanceof Number) {
-      Number number = (Number) lat;
-      station.setLatitude(number.doubleValue());
+    if (isNumber(lat)) {
+      station.setLatitude(getNumber(lat).doubleValue());
     } else {
       station.setLatitude(0.0);
     }
-    if (lon instanceof Number) {
-      Number number = (Number) lon;
-      station.setLongitude(number.doubleValue());
+    if (isNumber(lon)) {
+      station.setLongitude(getNumber(lon).doubleValue());
     } else {
       station.setLongitude(0.0);
     }
@@ -244,9 +249,8 @@ public class OpenChargeMapService {
       // Get quantity from connection
       Object quantity = connection.get("Quantity");
       if (quantity != null) {
-        if (quantity instanceof Number) {
-          Number number = (Number) quantity;
-          totalChargers += number.intValue();
+        if (isNumber(quantity)) {
+          totalChargers += getNumber(quantity).intValue();
         } else if (quantity instanceof String) {
           String string = (String) quantity;
           try {
