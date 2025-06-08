@@ -26,16 +26,16 @@ class StatisticsControllerTest {
 
     @Mock
     private StatisticsService statisticsService;
-    
+
     @InjectMocks
     private StatisticsController statisticsController;
-    
+
     private StatisticsDTO.CurrentMonthStats currentMonthStats;
     private List<StatisticsDTO.MonthlyData> monthlyData;
     private List<StatisticsDTO.WeeklyData> weeklyData;
     private List<StatisticsDTO.CostTrendData> costTrendData;
     private StatisticsDTO.PeriodDetails periodDetails;
-    
+
     @BeforeEach
     void setUp() {
         currentMonthStats = new StatisticsDTO.CurrentMonthStats();
@@ -44,7 +44,7 @@ class StatisticsControllerTest {
         currentMonthStats.setTotalSessions(15);
         currentMonthStats.setCo2Saved(52);
         currentMonthStats.setAvgCostPerSession(3.03);
-        
+
         StatisticsDTO.MonthlyData monthData = new StatisticsDTO.MonthlyData();
         monthData.setMonth("Jan");
         monthData.setFullMonth("January 2024");
@@ -53,20 +53,20 @@ class StatisticsControllerTest {
         monthData.setDuration(20.5);
         monthData.setKwh(130);
         monthlyData = Arrays.asList(monthData);
-        
+
         StatisticsDTO.WeeklyData weekData = new StatisticsDTO.WeeklyData();
         weekData.setWeek("Week 1");
         weekData.setSessions(5);
         weekData.setCost(15.25);
         weekData.setDateRange("Jan 1 - Jan 7");
         weeklyData = Arrays.asList(weekData);
-        
+
         StatisticsDTO.CostTrendData trendData = new StatisticsDTO.CostTrendData();
         trendData.setMonth("Jan 2024");
         trendData.setCost(45.50);
         trendData.setSessions(15);
         costTrendData = Arrays.asList(trendData);
-        
+
         periodDetails = new StatisticsDTO.PeriodDetails();
         periodDetails.setTotalReservations(10);
         periodDetails.setTotalCost(35.75);
@@ -78,13 +78,12 @@ class StatisticsControllerTest {
     void shouldGetCurrentMonthStatisticsSuccessfully() {
         // Given
         Long userId = 123L;
-        when(statisticsService.getCurrentMonthStatistics(userId))
-            .thenReturn(currentMonthStats);
-        
+        when(statisticsService.getCurrentMonthStatistics(userId)).thenReturn(currentMonthStats);
+
         // When
-        ResponseEntity<StatisticsDTO.CurrentMonthStats> response = 
-            statisticsController.getCurrentMonthStatistics(userId);
-        
+        ResponseEntity<StatisticsDTO.CurrentMonthStats> response =
+                statisticsController.getCurrentMonthStatistics(userId);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -101,13 +100,12 @@ class StatisticsControllerTest {
         // Given
         Long userId = 123L;
         int months = 12;
-        when(statisticsService.getMonthlyData(userId, months))
-            .thenReturn(monthlyData);
-        
+        when(statisticsService.getMonthlyData(userId, months)).thenReturn(monthlyData);
+
         // When
-        ResponseEntity<List<StatisticsDTO.MonthlyData>> response = 
-            statisticsController.getMonthlyData(userId, months);
-        
+        ResponseEntity<List<StatisticsDTO.MonthlyData>> response =
+                statisticsController.getMonthlyData(userId, months);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -123,13 +121,12 @@ class StatisticsControllerTest {
     void shouldGetMonthlyDataWithDefaultMonthsParameter() {
         // Given
         Long userId = 123L;
-        when(statisticsService.getMonthlyData(eq(userId), eq(12)))
-            .thenReturn(monthlyData);
-        
+        when(statisticsService.getMonthlyData(userId, 12)).thenReturn(monthlyData);
+
         // When
-        ResponseEntity<List<StatisticsDTO.MonthlyData>> response = 
-            statisticsController.getMonthlyData(userId, 12);
-        
+        ResponseEntity<List<StatisticsDTO.MonthlyData>> response =
+                statisticsController.getMonthlyData(userId, 12);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -140,13 +137,12 @@ class StatisticsControllerTest {
     void shouldGetWeeklyDataForCurrentMonthSuccessfully() {
         // Given
         Long userId = 123L;
-        when(statisticsService.getWeeklyDataCurrentMonth(userId))
-            .thenReturn(weeklyData);
-        
+        when(statisticsService.getWeeklyDataCurrentMonth(userId)).thenReturn(weeklyData);
+
         // When
-        ResponseEntity<List<StatisticsDTO.WeeklyData>> response = 
-            statisticsController.getWeeklyDataCurrentMonth(userId);
-        
+        ResponseEntity<List<StatisticsDTO.WeeklyData>> response =
+                statisticsController.getWeeklyDataCurrentMonth(userId);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -162,13 +158,12 @@ class StatisticsControllerTest {
         // Given
         Long userId = 123L;
         int months = 8;
-        when(statisticsService.getCostTrendData(userId, months))
-            .thenReturn(costTrendData);
-        
+        when(statisticsService.getCostTrendData(userId, months)).thenReturn(costTrendData);
+
         // When
-        ResponseEntity<List<StatisticsDTO.CostTrendData>> response = 
-            statisticsController.getCostTrendData(userId, months);
-        
+        ResponseEntity<List<StatisticsDTO.CostTrendData>> response =
+                statisticsController.getCostTrendData(userId, months);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -183,13 +178,12 @@ class StatisticsControllerTest {
     void shouldGetCostTrendDataWithDefaultMonthsParameter() {
         // Given
         Long userId = 123L;
-        when(statisticsService.getCostTrendData(eq(userId), eq(8)))
-            .thenReturn(costTrendData);
-        
+        when(statisticsService.getCostTrendData(userId, 8)).thenReturn(costTrendData);
+
         // When
-        ResponseEntity<List<StatisticsDTO.CostTrendData>> response = 
-            statisticsController.getCostTrendData(userId, 8);
-        
+        ResponseEntity<List<StatisticsDTO.CostTrendData>> response =
+                statisticsController.getCostTrendData(userId, 8);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -202,13 +196,12 @@ class StatisticsControllerTest {
         Long userId = 123L;
         String type = "month";
         String value = "2024-01";
-        when(statisticsService.getPeriodDetails(userId, type, value))
-            .thenReturn(periodDetails);
-        
+        when(statisticsService.getPeriodDetails(userId, type, value)).thenReturn(periodDetails);
+
         // When
-        ResponseEntity<StatisticsDTO.PeriodDetails> response = 
-            statisticsController.getPeriodDetails(userId, type, value);
-        
+        ResponseEntity<StatisticsDTO.PeriodDetails> response =
+                statisticsController.getPeriodDetails(userId, type, value);
+
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -223,8 +216,8 @@ class StatisticsControllerTest {
         // Given
         Long userId = 123L;
         when(statisticsService.getCurrentMonthStatistics(userId))
-            .thenThrow(new RuntimeException("Database error"));
-        
+                .thenThrow(new RuntimeException("Database error"));
+
         // When & Then
         assertThrows(RuntimeException.class, () -> {
             statisticsController.getCurrentMonthStatistics(userId);
