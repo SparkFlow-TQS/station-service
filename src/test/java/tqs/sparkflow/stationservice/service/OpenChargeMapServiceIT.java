@@ -25,98 +25,92 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import tqs.sparkflow.stationservice.StationServiceApplication;
-import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.config.OpenChargeMapTestConfig;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @SpringBootTest(
-    classes = {
-        StationServiceApplication.class,
-        TestConfig.class,
-        TestcontainersConfiguration.class,
-        OpenChargeMapTestConfig.class
-    },
-    properties = {"spring.main.allow-bean-definition-overriding=true"})
+        classes = {StationServiceApplication.class, TestConfig.class,
+                OpenChargeMapTestConfig.class},
+        properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 @TestPropertySource(properties = {"openchargemap.api.key=test-key"})
 class OpenChargeMapServiceIT {
 
-  @Autowired
-  private StationRepository stationRepository;
+    @Autowired
+    private StationRepository stationRepository;
 
-  @Mock
-  private RestTemplate restTemplate;
+    @Mock
+    private RestTemplate restTemplate;
 
-  private OpenChargeMapService openChargeMapService;
+    private OpenChargeMapService openChargeMapService;
 
-  @BeforeEach
-  void setUp() {
-    stationRepository.deleteAll();
-    openChargeMapService = new OpenChargeMapService(restTemplate, stationRepository, "test-key", "http://test-url");
-  }
+    @BeforeEach
+    void setUp() {
+        stationRepository.deleteAll();
+        openChargeMapService = new OpenChargeMapService(restTemplate, stationRepository, "test-key",
+                "http://test-url");
+    }
 
-  @Test
-  void whenPopulatingStationsWithInvalidCoordinates_thenThrowsException() {
-    // Given
-    double invalidLatitude = 91.0;
-    double longitude = -9.1393;
-    int radius = 10;
+    @Test
+    void whenPopulatingStationsWithInvalidCoordinates_thenThrowsException() {
+        // Given
+        double invalidLatitude = 91.0;
+        double longitude = -9.1393;
+        int radius = 10;
 
-    // When/Then
-    assertThatThrownBy(() -> openChargeMapService.populateStations(invalidLatitude, longitude, radius))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Latitude must be between -90 and 90 degrees");
-  }
+        // When/Then
+        assertThatThrownBy(
+                () -> openChargeMapService.populateStations(invalidLatitude, longitude, radius))
+                        .isInstanceOf(IllegalArgumentException.class)
+                        .hasMessage("Latitude must be between -90 and 90 degrees");
+    }
 
-  @Test
-  void whenPopulatingStationsWithInvalidRadius_thenThrowsException() {
-    // Given
-    double latitude = 38.7223;
-    double longitude = -9.1393;
-    int invalidRadius = -1;
+    @Test
+    void whenPopulatingStationsWithInvalidRadius_thenThrowsException() {
+        // Given
+        double latitude = 38.7223;
+        double longitude = -9.1393;
+        int invalidRadius = -1;
 
-    // When/Then
-    assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Radius must be positive");
-  }
+        // When/Then
+        assertThatThrownBy(
+                () -> openChargeMapService.populateStations(latitude, longitude, invalidRadius))
+                        .isInstanceOf(IllegalArgumentException.class)
+                        .hasMessage("Radius must be positive");
+    }
 
-  @Test
-  void whenApiKeyInvalid_thenThrowsException() {
-    // Given
-    Mockito.when(restTemplate.exchange(
-        anyString(),
-        eq(HttpMethod.GET),
-        eq(null),
-        ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+    @Test
+    void whenApiKeyInvalid_thenThrowsException() {
+        // Given
+        Mockito.when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
+                ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+                .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-    // When/Then
-    assertThatThrownBy(() -> openChargeMapService.populateStations(38.7223, -9.1393, 10))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Invalid Open Charge Map API key");
-  }
+        // When/Then
+        assertThatThrownBy(() -> openChargeMapService.populateStations(38.7223, -9.1393, 10))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Invalid Open Charge Map API key");
+    }
 
-  @Test
-  void whenPopulatingStationsWithInvalidApiKey_thenThrowsException() {
-    // Given
-    double latitude = 38.7223;
-    double longitude = -9.1393;
-    int radius = 10;
+    @Test
+    void whenPopulatingStationsWithInvalidApiKey_thenThrowsException() {
+        // Given
+        double latitude = 38.7223;
+        double longitude = -9.1393;
+        int radius = 10;
 
-    // Mock RestTemplate to throw 401 Unauthorized
-    Mockito.lenient().when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            eq(null),
-            ArgumentMatchers.<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
-        .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+        // Mock RestTemplate to throw 401 Unauthorized
+        Mockito.lenient()
+                .when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(null),
+                        ArgumentMatchers
+                                .<ParameterizedTypeReference<List<Map<String, Object>>>>any()))
+                .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-    // When/Then
-    assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, radius))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Invalid Open Charge Map API key");
-  }
+        // When/Then
+        assertThatThrownBy(() -> openChargeMapService.populateStations(latitude, longitude, radius))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Invalid Open Charge Map API key");
+    }
 }

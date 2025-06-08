@@ -1,32 +1,52 @@
 package tqs.sparkflow.stationservice.service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import tqs.sparkflow.stationservice.dto.StationFilterDTO;
+import tqs.sparkflow.stationservice.model.Booking;
+import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.model.Station;
+import tqs.sparkflow.stationservice.repository.BookingRepository;
+import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
 @ExtendWith(MockitoExtension.class)
 class StationServiceTest {
 
-  @Mock private StationRepository stationRepository;
+  @Mock
+  private StationRepository stationRepository;
 
-  @InjectMocks private StationService stationService;
+  @Mock
+  private BookingRepository bookingRepository;
+
+  @Mock
+  private ChargingSessionRepository chargingSessionRepository;
+
+  @InjectMocks
+  private StationService stationService;
 
   private Station station1;
   private Station station2;
@@ -36,79 +56,33 @@ class StationServiceTest {
 
   @BeforeEach
   void setUp() {
-    // Create diverse test stations for comprehensive testing
-    station1 = new Station();
+    // Create test stations
+    station1 =
+        new Station.Builder().name("Tesla Supercharger Aveiro").address("Address 1").city("Aveiro")
+            .country("Portugal").latitude(40.623361).longitude(-8.650256).quantityOfChargers(4)
+            .power(50).price(0.30).status("Available").isOperational(true).build();
     station1.setId(1L);
-    station1.setName("Tesla Supercharger Aveiro");
-    station1.setAddress("Rua Dr. Mário Sacramento");
-    station1.setCity("Aveiro");
-    station1.setCountry("Portugal");
-    station1.setQuantityOfChargers(4);
-    station1.setPower(50);
-    station1.setPrice(0.30);
-    station1.setIsOperational(true);
-    station1.setStatus("Available");
-    station1.setLatitude(40.623361);
-    station1.setLongitude(-8.650256);
 
-    station2 = new Station();
+    station2 = new Station.Builder().name("IONITY Porto").address("Address 2").city("Porto")
+        .country("Portugal").latitude(41.1579).longitude(-8.6291).quantityOfChargers(8).power(150)
+        .price(0.35).status("In Use").isOperational(true).build();
     station2.setId(2L);
-    station2.setName("IONITY Porto");
-    station2.setAddress("A4 - Área de Serviço de Valongo");
-    station2.setCity("Porto");
-    station2.setCountry("Portugal");
-    station2.setQuantityOfChargers(8);
-    station2.setPower(150);
-    station2.setPrice(0.35);
-    station2.setIsOperational(true);
-    station2.setStatus("In Use");
-    station2.setLatitude(41.1579);
-    station2.setLongitude(-8.6291);
 
-    station3 = new Station();
+    station3 = new Station.Builder().name("FastCharge Madrid").address("Address 3").city("Madrid")
+        .country("Spain").latitude(38.7223).longitude(-9.1393).quantityOfChargers(1).power(22)
+        .price(0.25).status("Offline").isOperational(false).build();
     station3.setId(3L);
-    station3.setName("Mobi.E Lisbon");
-    station3.setAddress("Praça do Comércio");
-    station3.setCity("Lisbon");
-    station3.setCountry("Portugal");
-    station3.setQuantityOfChargers(1);
-    station3.setPower(22);
-    station3.setPrice(0.25);
-    station3.setIsOperational(false);
-    station3.setStatus("Offline");
-    station3.setLatitude(38.7223);
-    station3.setLongitude(-9.1393);
 
-    station4 = new Station();
+    station4 = new Station.Builder().name("EV Charge Coimbra").address("Address 4").city("Coimbra")
+        .country("Portugal").latitude(40.2033).longitude(-8.4103).quantityOfChargers(6).power(250)
+        .price(0.40).status("Available").isOperational(true).build();
     station4.setId(4L);
-    station4.setName("FastCharge Madrid");
-    station4.setAddress("Calle Mayor 456");
-    station4.setCity("Madrid");
-    station4.setCountry("Spain");
-    station4.setQuantityOfChargers(6);
-    station4.setPower(100);
-    station4.setPrice(0.45);
-    station4.setIsOperational(true);
-    station4.setStatus("Available");
-    station4.setLatitude(40.4168);
-    station4.setLongitude(-3.7038);
 
-    station5 = new Station();
+    station5 = new Station.Builder().name("EDP Charge Station").address("Address 5").city("Braga")
+        .country("Portugal").latitude(41.5454).longitude(-8.4265).quantityOfChargers(3).power(100)
+        .price(0.32).status("Available").isOperational(true).build();
     station5.setId(5L);
-    station5.setName("EV Charge Coimbra");
-    station5.setAddress("Praça da República 789");
-    station5.setCity("Coimbra");
-    station5.setCountry("Portugal");
-    station5.setQuantityOfChargers(3);
-    station5.setPower(43);
-    station5.setPrice(0.30);
-    station5.setIsOperational(true);
-    station5.setStatus("Available");
-    station5.setLatitude(40.2033);
-    station5.setLongitude(-8.4103);
   }
-
-  // ===== EXISTING CORE TESTS =====
 
   @Test
   @XrayTest(key = "STATION-SVC-1")
@@ -162,8 +136,7 @@ class StationServiceTest {
   void whenGettingStationByIdWithNullId_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.getStationById(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Station ID cannot be null");
+        .isInstanceOf(NullPointerException.class).hasMessageContaining("Station ID cannot be null");
   }
 
   // ===== ENHANCED SEARCH FUNCTIONALITY TESTS =====
@@ -180,64 +153,41 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations("Tesla", null, null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .containsExactly(station1);
+    assertThat(result).hasSize(1).containsExactly(station1);
     verify(stationRepository).findAll();
   }
 
-  @Test
-  @XrayTest(key = "STATION-SVC-24")
-  @Requirement("STATION-SVC-24")
-  void whenSearchingStationsWithPartialName_thenReturnsMatchingStations() {
+  @ParameterizedTest
+  @MethodSource("provideStationNameSearchTestCases")
+  @XrayTest(key = "STATION-SVC-24,STATION-SVC-45,STATION-SVC-46")
+  @Requirement("STATION-SVC-24,STATION-SVC-45,STATION-SVC-46")
+  void whenSearchingStationsByName_thenReturnsMatchingStations(String searchTerm,
+      List<String> expectedStationNames) {
     // Given
     List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search for partial name "EV" to avoid matching "Supercharger"
-    List<Station> result = stationService.searchStations("EV", null, null, null);
+    // When
+    List<Station> result = stationService.searchStations(searchTerm, null, null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .extracting(Station::getName)
-        .containsExactly("EV Charge Coimbra");
+    assertThat(result).hasSize(expectedStationNames.size()).extracting(Station::getName)
+        .containsExactlyInAnyOrderElementsOf(expectedStationNames);
   }
 
   @Test
-  @XrayTest(key = "STATION-SVC-45")
-  @Requirement("STATION-SVC-45")
-  void whenSearchingStationsWithChargeKeyword_thenReturnsAllMatchingStations() {
+  @XrayTest(key = "STATION-SVC-47")
+  @Requirement("STATION-SVC-47")
+  void whenGettingNearbyStationsWithMediumRadius_thenIncludesPortoAndCoimbra() {
     // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
+    List<Station> allStations = Arrays.asList(station1, station2, station3, station5);
     when(stationRepository.findAll()).thenReturn(allStations);
 
-    // When - Search for "Charge" which appears in multiple station names
-    List<Station> result = stationService.searchStations("Charge", null, null, null);
+    // When - Search within 70km from Aveiro (includes both Porto ~68km and Braga ~62km)
+    List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 70);
 
-    // Then - Should match Tesla "Supercharger", "FastCharge", and "EV Charge"
-    assertThat(result)
-        .hasSize(3)
-        .extracting(Station::getName)
-        .containsExactlyInAnyOrder("Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra");
-  }
-
-  @Test
-  @XrayTest(key = "STATION-SVC-46")
-  @Requirement("STATION-SVC-46")
-  void whenSearchingStationsWithSpecificPrefix_thenReturnsMatchingStations() {
-    // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station4, station5);
-    when(stationRepository.findAll()).thenReturn(allStations);
-
-    // When - Search for "Fast" to get only FastCharge Madrid
-    List<Station> result = stationService.searchStations("Fast", null, null, null);
-
-    // Then
-    assertThat(result)
-        .hasSize(1)
-        .extracting(Station::getName)
-        .containsExactly("FastCharge Madrid");
+    // Then - Should include all 2 nearby stations
+    assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(1L, 2L);
   }
 
   @Test
@@ -252,9 +202,7 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations("IONITY", null, null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .containsExactly(station2);
+    assertThat(result).hasSize(1).extracting(Station::getName).containsExactly("IONITY Porto");
   }
 
   @Test
@@ -269,9 +217,7 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations(null, "Porto", null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .containsExactly(station2);
+    assertThat(result).hasSize(1).containsExactly(station2);
   }
 
   @Test
@@ -286,10 +232,7 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations(null, null, "Portugal", null);
 
     // Then
-    assertThat(result)
-        .hasSize(4)
-        .extracting(Station::getCountry)
-        .containsOnly("Portugal");
+    assertThat(result).hasSize(4).extracting(Station::getCountry).containsOnly("Portugal");
   }
 
   @Test
@@ -304,10 +247,7 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations(null, null, null, 6);
 
     // Then - Should return station2 (8 chargers) and station4 (6 chargers)
-    assertThat(result)
-        .hasSize(2)
-        .extracting(Station::getId)
-        .containsExactlyInAnyOrder(2L, 4L);
+    assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(2L, 4L);
   }
 
   @Test
@@ -322,10 +262,8 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations(null, null, "Portugal", 3);
 
     // Then - Should return station1 (4 chargers), station2 (8 chargers), and station5 (3 chargers)
-    assertThat(result)
-        .hasSize(3)
-        .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 2L, 5L);
+    assertThat(result).hasSize(4).extracting(Station::getId).containsExactlyInAnyOrder(1L, 2L, 4L,
+        5L);
   }
 
   @Test
@@ -354,7 +292,7 @@ class StationServiceTest {
     stationWithNulls.setCity(null);
     stationWithNulls.setCountry(null);
     stationWithNulls.setQuantityOfChargers(null);
-    
+
     List<Station> allStations = Arrays.asList(station1, stationWithNulls);
     when(stationRepository.findAll()).thenReturn(allStations);
 
@@ -362,9 +300,8 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations("Tesla", null, null, null);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .containsExactly(station1);
+    assertThat(result).hasSize(1).extracting(Station::getName)
+        .containsExactly("Tesla Supercharger Aveiro");
   }
 
   @Test
@@ -379,9 +316,7 @@ class StationServiceTest {
     List<Station> result = stationService.searchStations("", "", "", null);
 
     // Then
-    assertThat(result)
-        .hasSize(2)
-        .containsExactlyInAnyOrder(station1, station2);
+    assertThat(result).hasSize(2).containsExactlyInAnyOrder(station1, station2);
   }
 
   // ===== DISTANCE CALCULATION AND NEARBY STATIONS TESTS =====
@@ -394,7 +329,7 @@ class StationServiceTest {
     Station nearbyStation = createTestStation(6L, "Very Close Station");
     nearbyStation.setLatitude(40.624361); // ~100m away from Aveiro
     nearbyStation.setLongitude(-8.651256);
-    
+
     List<Station> allStations = Arrays.asList(station1, station2, station3, nearbyStation);
     when(stationRepository.findAll()).thenReturn(allStations);
 
@@ -402,10 +337,7 @@ class StationServiceTest {
     List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 1);
 
     // Then - Should include station1 (exact location) and nearbyStation (~100m away)
-    assertThat(result)
-        .hasSize(2)
-        .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 6L);
+    assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(1L, 6L);
   }
 
   @Test
@@ -420,9 +352,7 @@ class StationServiceTest {
     List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 1);
 
     // Then - Should only include station1 (exact location)
-    assertThat(result)
-        .hasSize(1)
-        .containsExactly(station1);
+    assertThat(result).hasSize(1).containsExactly(station1);
   }
 
   @Test
@@ -436,30 +366,9 @@ class StationServiceTest {
     // When - Search within 100km from Aveiro
     List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 100);
 
-    // Then - Should include station1, station2 (Porto, ~68km), station5 (Coimbra, ~62km)
-    // Lisbon (station3) is ~255km away, so should be excluded
-    assertThat(result)
-        .hasSize(3)
-        .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 2L, 5L);
-  }
-
-  @Test
-  @XrayTest(key = "STATION-SVC-47")
-  @Requirement("STATION-SVC-47")
-  void whenGettingNearbyStationsWithMediumRadius_thenIncludesPortoAndCoimbra() {
-    // Given
-    List<Station> allStations = Arrays.asList(station1, station2, station3, station5);
-    when(stationRepository.findAll()).thenReturn(allStations);
-
-    // When - Search within 70km from Aveiro (includes both Porto ~68km and Coimbra ~62km)
-    List<Station> result = stationService.getNearbyStations(40.623361, -8.650256, 70);
-
-    // Then - Should include all 3 nearby stations
-    assertThat(result)
-        .hasSize(3)
-        .extracting(Station::getId)
-        .containsExactlyInAnyOrder(1L, 2L, 5L);
+    // Then - Should include station1, station2 (Porto, ~68km), station5 (Braga, ~62km)
+    // Madrid (station3) is ~255km away, so should be excluded
+    assertThat(result).hasSize(2).extracting(Station::getId).containsExactlyInAnyOrder(1L, 2L);
   }
 
   @Test
@@ -521,10 +430,8 @@ class StationServiceTest {
     List<Station> result = stationService.getNearbyStations(centerLat, centerLon, radius);
 
     // Then
-    assertThat(result)
-        .hasSize(1)
-        .containsOnly(nearbyStation)
-        .doesNotContain(farStation, nullCoordsStation);
+    assertThat(result).hasSize(1).containsOnly(nearbyStation).doesNotContain(farStation,
+        nullCoordsStation);
     verify(stationRepository).findAll();
   }
 
@@ -596,10 +503,10 @@ class StationServiceTest {
   void whenGettingStationsByQuantityOfChargers_thenReturnsMatchingStations() {
     // Given
     int quantityOfChargers = 1;
-    List<Station> expectedStations =
-        Arrays.asList(
-            createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
-    when(stationRepository.findByQuantityOfChargersGreaterThanEqual(quantityOfChargers)).thenReturn(expectedStations);
+    List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Type2 Station 1"),
+        createTestStation(2L, "Type2 Station 2"));
+    when(stationRepository.findByQuantityOfChargersGreaterThanEqual(quantityOfChargers))
+        .thenReturn(expectedStations);
 
     // When
     List<Station> result = stationService.getStationsByMinChargers(quantityOfChargers);
@@ -710,8 +617,7 @@ class StationServiceTest {
   void whenCreatingNullStation_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.createStation(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Station cannot be null");
+        .isInstanceOf(NullPointerException.class).hasMessageContaining("Station cannot be null");
   }
 
   @Test
@@ -751,8 +657,7 @@ class StationServiceTest {
   void whenDeletingStationWithNullId_thenThrowsException() {
     // When/Then
     assertThatThrownBy(() -> stationService.deleteStation(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Station ID cannot be null");
+        .isInstanceOf(NullPointerException.class).hasMessageContaining("Station ID cannot be null");
   }
 
   @Test
@@ -797,9 +702,344 @@ class StationServiceTest {
     verify(stationRepository).findAll();
   }
 
+  @Test
+  @XrayTest(key = "STATION-SVC-48")
+  @Requirement("STATION-SVC-48")
+  void whenGettingStationsByFiltersWithLocation_thenReturnsMatchingStations() {
+    // Given
+    StationFilterDTO filter = new StationFilterDTO();
+    filter.setLatitude(40.623361);
+    filter.setLongitude(-8.650256);
+    filter.setRadius(10);
+    filter.setMinPower(50);
+    filter.setMaxPower(150);
+    filter.setIsOperational(true);
+    filter.setStatus("Available");
+    filter.setCity("Aveiro");
+    filter.setCountry("Portugal");
+    filter.setMinPrice(0.3);
+    filter.setMaxPrice(0.4);
+
+    List<Station> expectedStations = Arrays.asList(station1);
+    when(stationRepository.findStationsByFiltersWithLocation(filter.getMinPower(),
+        filter.getMaxPower(), filter.getIsOperational(), filter.getStatus(), filter.getCity(),
+        filter.getCountry(), filter.getMinPrice(), filter.getMaxPrice(), filter.getLatitude(),
+        filter.getLongitude(), filter.getRadius())).thenReturn(expectedStations);
+
+    // When
+    List<Station> result = stationService.getStationsByFilters(filter);
+
+    // Then
+    assertThat(result).isEqualTo(expectedStations);
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-49")
+  @Requirement("STATION-SVC-49")
+  void whenGettingStationsByFiltersWithoutLocation_thenReturnsMatchingStations() {
+    // Given
+    StationFilterDTO filter = new StationFilterDTO();
+    filter.setMinPower(50);
+    filter.setMaxPower(150);
+    filter.setIsOperational(true);
+    filter.setStatus("Available");
+    filter.setCity("Aveiro");
+    filter.setCountry("Portugal");
+    filter.setMinPrice(0.3);
+    filter.setMaxPrice(0.4);
+
+    List<Station> expectedStations = Arrays.asList(station1);
+    when(stationRepository.findStationsByFilters(filter.getMinPower(), filter.getMaxPower(),
+        filter.getIsOperational(), filter.getStatus(), filter.getCity(), filter.getCountry(),
+        filter.getMinPrice(), filter.getMaxPrice())).thenReturn(expectedStations);
+
+    // When
+    List<Station> result = stationService.getStationsByFilters(filter);
+
+    // Then
+    assertThat(result).isEqualTo(expectedStations);
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-50")
+  @Requirement("STATION-SVC-50")
+  void whenGettingAvailableChargers_thenReturnsCorrectCount() {
+    // Given
+    Long stationId = 1L;
+    LocalDateTime currentTime = LocalDateTime.now();
+    Station station = station1;
+    List<Booking> activeBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 1L, currentTime, currentTime.plusHours(1)),
+            createTestBooking(2L, stationId, 2L, currentTime, currentTime.plusHours(1)));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, currentTime));
+
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(bookingRepository.findActiveBookingsForStationAtTime(stationId, currentTime))
+        .thenReturn(activeBookings);
+    when(chargingSessionRepository.findUnfinishedSessionsByStation(stationId))
+        .thenReturn(unfinishedSessions);
+
+    // When
+    int availableChargers = stationService.getAvailableChargers(stationId, currentTime);
+
+    // Then
+    assertThat(availableChargers).isEqualTo(
+        station.getQuantityOfChargers() - activeBookings.size() - unfinishedSessions.size());
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-51")
+  @Requirement("STATION-SVC-51")
+  void whenUserHasBooking_thenCanUseStation() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    List<Booking> overlappingBookings =
+        Arrays.asList(createTestBooking(1L, stationId, userId, startTime, endTime));
+
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(overlappingBookings);
+
+    // When
+    boolean canUse = stationService.canUseStation(stationId, userId, startTime, endTime);
+
+    // Then
+    assertThat(canUse).isTrue();
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-52")
+  @Requirement("STATION-SVC-52")
+  void whenNoUserBookingAndEnoughChargers_thenCanUseStation() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    Station station = station1;
+    List<Booking> overlappingBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 2L, startTime, endTime));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, startTime));
+
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(overlappingBookings);
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime,
+        endTime)).thenReturn(unfinishedSessions);
+
+    // When
+    boolean canUse = stationService.canUseStation(stationId, userId, startTime, endTime);
+
+    // Then
+    assertThat(canUse).isTrue();
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-53")
+  @Requirement("STATION-SVC-53")
+  void whenNoUserBookingAndNoChargers_thenCannotUseStation() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    Station station = station1;
+    List<Booking> overlappingBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 2L, startTime, endTime),
+            createTestBooking(2L, stationId, 3L, startTime, endTime),
+            createTestBooking(3L, stationId, 4L, startTime, endTime),
+            createTestBooking(4L, stationId, 5L, startTime, endTime));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, startTime));
+
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(overlappingBookings);
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime,
+        endTime)).thenReturn(unfinishedSessions);
+
+    // When
+    boolean canUse = stationService.canUseStation(stationId, userId, startTime, endTime);
+
+    // Then
+    assertThat(canUse).isFalse();
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-54")
+  @Requirement("STATION-SVC-54")
+  void whenValidatingBookingWithNoChargers_thenThrowsException() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime startTime = LocalDateTime.now();
+    LocalDateTime endTime = startTime.plusHours(1);
+    Station station = station1;
+    List<Booking> overlappingBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 2L, startTime, endTime),
+            createTestBooking(2L, stationId, 3L, startTime, endTime),
+            createTestBooking(3L, stationId, 4L, startTime, endTime),
+            createTestBooking(4L, stationId, 5L, startTime, endTime));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, startTime));
+
+    when(bookingRepository.findOverlappingBookings(stationId, startTime, endTime))
+        .thenReturn(overlappingBookings);
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(chargingSessionRepository.findUnfinishedSessionsByStationInTimeRange(stationId, startTime,
+        endTime)).thenReturn(unfinishedSessions);
+
+    // When/Then
+    assertThatThrownBy(() -> stationService.validateBooking(stationId, userId, startTime, endTime))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("No chargers available for the requested time slot");
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-55")
+  @Requirement("STATION-SVC-55")
+  void whenUserHasActiveBooking_thenCanStartSession() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime now = LocalDateTime.now();
+    List<Booking> activeBookings =
+        Arrays.asList(createTestBooking(1L, stationId, userId, now, now.plusHours(1)));
+
+    when(bookingRepository.findActiveBookingsForStationAtTime(eq(stationId),
+        any(LocalDateTime.class))).thenReturn(activeBookings);
+
+    // When
+    boolean canStart = stationService.canStartSession(stationId, userId);
+
+    // Then
+    assertThat(canStart).isTrue();
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-56")
+  @Requirement("STATION-SVC-56")
+  void whenNoUserBookingAndEnoughChargers_thenCanStartSession() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime now = LocalDateTime.now();
+    Station station = station1;
+    List<Booking> activeBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 2L, now, now.plusHours(1)));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, now));
+
+    when(bookingRepository.findActiveBookingsForStationAtTime(eq(stationId),
+        any(LocalDateTime.class))).thenReturn(activeBookings);
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(chargingSessionRepository.findUnfinishedSessionsByStation(stationId))
+        .thenReturn(unfinishedSessions);
+
+    // When
+    boolean canStart = stationService.canStartSession(stationId, userId);
+
+    // Then
+    assertThat(canStart).isTrue();
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-57")
+  @Requirement("STATION-SVC-57")
+  void whenNoUserBookingAndNoChargers_thenCannotStartSession() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime now = LocalDateTime.now();
+    Station station = station1;
+    List<Booking> activeBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 2L, now, now.plusHours(1)),
+            createTestBooking(2L, stationId, 3L, now, now.plusHours(1)),
+            createTestBooking(3L, stationId, 4L, now, now.plusHours(1)),
+            createTestBooking(4L, stationId, 5L, now, now.plusHours(1)));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, now));
+
+    when(bookingRepository.findActiveBookingsForStationAtTime(eq(stationId),
+        any(LocalDateTime.class))).thenReturn(activeBookings);
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(chargingSessionRepository.findUnfinishedSessionsByStation(stationId))
+        .thenReturn(unfinishedSessions);
+
+    // When
+    boolean canStart = stationService.canStartSession(stationId, userId);
+
+    // Then
+    assertThat(canStart).isFalse();
+  }
+
+  @Test
+  @XrayTest(key = "STATION-SVC-58")
+  @Requirement("STATION-SVC-58")
+  void whenValidatingSessionStartWithNoChargers_thenThrowsException() {
+    // Given
+    Long stationId = 1L;
+    Long userId = 1L;
+    LocalDateTime now = LocalDateTime.now();
+    Station station = station1;
+    List<Booking> activeBookings =
+        Arrays.asList(createTestBooking(1L, stationId, 2L, now, now.plusHours(1)),
+            createTestBooking(2L, stationId, 3L, now, now.plusHours(1)),
+            createTestBooking(3L, stationId, 4L, now, now.plusHours(1)),
+            createTestBooking(4L, stationId, 5L, now, now.plusHours(1)));
+    List<ChargingSession> unfinishedSessions =
+        Arrays.asList(createTestChargingSession(1L, stationId, 1L, now));
+
+    when(bookingRepository.findActiveBookingsForStationAtTime(eq(stationId),
+        any(LocalDateTime.class))).thenReturn(activeBookings);
+    when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+    when(chargingSessionRepository.findUnfinishedSessionsByStation(stationId))
+        .thenReturn(unfinishedSessions);
+
+    // When/Then
+    assertThatThrownBy(() -> stationService.validateSessionStart(stationId, userId))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot start session: no booking or free chargers available");
+  }
+
+  private static Stream<Arguments> provideStationNameSearchTestCases() {
+    return Stream
+        .of(Arguments.of("EV", Arrays.asList("EV Charge Coimbra")),
+            Arguments.of("Charge",
+                Arrays.asList("Tesla Supercharger Aveiro", "FastCharge Madrid", "EV Charge Coimbra",
+                    "EDP Charge Station")),
+            Arguments.of("Fast", Arrays.asList("FastCharge Madrid")));
+  }
+
+  private Booking createTestBooking(Long id, Long stationId, Long userId, LocalDateTime startTime,
+      LocalDateTime endTime) {
+    Booking booking = new Booking();
+    booking.setId(id);
+    booking.setStationId(stationId);
+    booking.setUserId(userId);
+    booking.setStartTime(startTime);
+    booking.setEndTime(endTime);
+    return booking;
+  }
+
+  private ChargingSession createTestChargingSession(Long id, Long stationId, Long userId,
+      LocalDateTime startTime) {
+    ChargingSession session = new ChargingSession();
+    session.setId(id);
+    session.setStationId(String.valueOf(stationId));
+    session.setUserId(String.valueOf(userId));
+    session.setStartTime(startTime);
+    return session;
+  }
+
   private Station createTestStation(Long id, String name) {
-    Station station =
-        new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 2, "Available");
+    Station station = new Station.Builder().name(name).address("Test Address").city("Lisbon")
+        .country("Portugal").latitude(38.7223).longitude(-9.1393).quantityOfChargers(2)
+        .status("Available").isOperational(true).build();
     station.setId(id);
     return station;
   }

@@ -41,8 +41,8 @@ class StationControllerTest {
     @Requirement("STATION-1")
     void whenGettingAllStations_thenReturnsListOfStations() {
         // Given
-        List<Station> expectedStations =
-            Arrays.asList(createTestStation(1L, "Station 1"), createTestStation(2L, "Station 2"));
+        List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Station 1"),
+                createTestStation(2L, "Station 2"));
         when(stationService.getAllStations()).thenReturn(expectedStations);
 
         // When
@@ -80,22 +80,18 @@ class StationControllerTest {
         double latitude = 38.7223;
         double longitude = -9.1393;
         int radius = 10;
-        List<Station> expectedStations =
-            Arrays.asList(
-                new Station(
-                    "1234567890", "Station 1", "Address 1", "Lisbon", "Portugal", latitude, longitude, 1, "Available"),
-                new Station(
-                    "1234567891", "Station 2", "Address 2", "Lisbon", "Portugal", latitude + 0.01,
-                    longitude + 0.01,
-                    1,
-                    "Available"));
+        List<Station> expectedStations = Arrays.asList(
+                new Station("1234567890", "Station 1", "Address 1", "Lisbon", "Portugal", latitude,
+                        longitude, 1, "Available"),
+                new Station("1234567891", "Station 2", "Address 2", "Lisbon", "Portugal",
+                        latitude + 0.01, longitude + 0.01, 1, "Available"));
 
         when(stationService.getNearbyStations(latitude, longitude, radius))
-            .thenReturn(expectedStations);
+                .thenReturn(expectedStations);
 
         // When
         ResponseEntity<List<Station>> response =
-            stationController.getNearbyStations(latitude, longitude, radius);
+                stationController.getNearbyStations(latitude, longitude, radius);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -109,14 +105,14 @@ class StationControllerTest {
     void whenGettingStationsByQuantityOfChargers_thenReturnsListOfStations() {
         // Given
         int quantityOfChargers = 1;
-        List<Station> expectedStations =
-            Arrays.asList(
-                createTestStation(1L, "Type2 Station 1"), createTestStation(2L, "Type2 Station 2"));
-        when(stationService.getStationsByMinChargers(quantityOfChargers)).thenReturn(expectedStations);
+        List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Type2 Station 1"),
+                createTestStation(2L, "Type2 Station 2"));
+        when(stationService.getStationsByMinChargers(quantityOfChargers))
+                .thenReturn(expectedStations);
 
         // When
         ResponseEntity<List<Station>> response =
-            stationController.getStationsByQuantityOfChargers(quantityOfChargers);
+                stationController.getStationsByQuantityOfChargers(quantityOfChargers);
 
         // Then
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -129,9 +125,8 @@ class StationControllerTest {
     @Requirement("STATION-5")
     void whenCreateStation_thenReturnCreatedStation() {
         // Given
-        Station station =
-            new Station(
-                "1234567890", "Test Station", "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
+        Station station = new Station("1234567890", "Test Station", "Test Address", "Lisbon",
+                "Portugal", 38.7223, -9.1393, 1, "Available");
         station.setId(1L);
 
         when(stationService.createStation(any(Station.class))).thenReturn(station);
@@ -189,7 +184,8 @@ class StationControllerTest {
     @Requirement("STATION-9")
     void whenGettingStationByExternalIdNotFound_thenReturnsNotFound() {
         String externalId = "not-found";
-        when(stationService.getStationByExternalId(externalId)).thenThrow(new IllegalArgumentException());
+        when(stationService.getStationByExternalId(externalId))
+                .thenThrow(new IllegalArgumentException());
         ResponseEntity<Station> response = stationController.getStationByExternalId(externalId);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         verify(stationService).getStationByExternalId(externalId);
@@ -202,7 +198,8 @@ class StationControllerTest {
         Long stationId = 1L;
         Station station = createTestStation(stationId, "Old Name");
         Station updatedStation = createTestStation(stationId, "New Name");
-        when(stationService.updateStation(eq(stationId), any(Station.class))).thenReturn(updatedStation);
+        when(stationService.updateStation(eq(stationId), any(Station.class)))
+                .thenReturn(updatedStation);
         ResponseEntity<Station> response = stationController.updateStation(stationId, station);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo(updatedStation);
@@ -215,7 +212,8 @@ class StationControllerTest {
     void whenUpdatingStationNotFound_thenReturnsNotFound() {
         Long stationId = 99L;
         Station station = createTestStation(stationId, "Doesn't Matter");
-        when(stationService.updateStation(eq(stationId), any(Station.class))).thenThrow(new IllegalArgumentException());
+        when(stationService.updateStation(eq(stationId), any(Station.class)))
+                .thenThrow(new IllegalArgumentException());
         ResponseEntity<Station> response = stationController.updateStation(stationId, station);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         verify(stationService).updateStation(eq(stationId), any(Station.class));
@@ -237,14 +235,20 @@ class StationControllerTest {
     @Requirement("STATION-13")
     void whenSearchingStations_thenReturnsList() {
         List<Station> expectedStations = Arrays.asList(createTestStation(1L, "Search 1"));
-        when(stationService.searchStations("name", "city", "country", 1)).thenReturn(expectedStations);
-        ResponseEntity<List<Station>> response = stationController.searchStations("name", "city", "country", 1);
+        when(stationService.searchStations("name", "city", "country", 1))
+                .thenReturn(expectedStations);
+        ResponseEntity<List<Station>> response =
+                stationController.searchStations("name", "city", "country", 1);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo(expectedStations);
         verify(stationService).searchStations("name", "city", "country", 1);
     }
 
     private Station createTestStation(Long id, String name) {
-        return new Station("1234567890", name, "Test Address", "Lisbon", "Portugal", 38.7223, -9.1393, 1, "Available");
+        Station station = new Station.Builder().name(name).address("Test Address").city("Lisbon")
+                .country("Portugal").latitude(38.7223).longitude(-9.1393).quantityOfChargers(2)
+                .power(22).status("Available").isOperational(true).price(0.30).build();
+        station.setId(id);
+        return station;
     }
 }

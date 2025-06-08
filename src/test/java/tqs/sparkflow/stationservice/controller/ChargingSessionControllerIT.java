@@ -17,17 +17,15 @@ import org.springframework.test.context.ActiveProfiles;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import tqs.sparkflow.stationservice.StationServiceApplication;
-import tqs.sparkflow.stationservice.TestcontainersConfiguration;
 import tqs.sparkflow.stationservice.config.TestConfig;
 import tqs.sparkflow.stationservice.model.ChargingSession;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.ChargingSessionRepository;
 import tqs.sparkflow.stationservice.repository.StationRepository;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = {StationServiceApplication.class, TestConfig.class, TestcontainersConfiguration.class},
-    properties = {"spring.main.allow-bean-definition-overriding=true"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {StationServiceApplication.class, TestConfig.class},
+        properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ActiveProfiles("test")
 class ChargingSessionControllerIT {
 
@@ -55,17 +53,10 @@ class ChargingSessionControllerIT {
         Station station = createTestStation("Test Station");
         station = stationRepository.save(station);
 
-        given()
-            .contentType(ContentType.JSON)
-            .queryParam("stationId", station.getId().toString())
-            .queryParam("userId", "1")
-        .when()
-            .post("/api/v1/charging-sessions/start")
-        .then()
-            .statusCode(200)
-            .body("stationId", equalTo(station.getId().toString()))
-            .body("userId", equalTo("1"))
-            .body("finished", equalTo(false));
+        given().contentType(ContentType.JSON).queryParam("stationId", station.getId().toString())
+                .queryParam("userId", "1").when().post("/api/v1/charging-sessions/start").then()
+                .statusCode(200).body("stationId", equalTo(station.getId().toString()))
+                .body("userId", equalTo("1")).body("finished", equalTo(false));
     }
 
     @Test
@@ -76,25 +67,15 @@ class ChargingSessionControllerIT {
         station = stationRepository.save(station);
 
         // First create a session
-        ChargingSession session = given()
-            .contentType(ContentType.JSON)
-            .queryParam("stationId", station.getId().toString())
-            .queryParam("userId", "1")
-        .when()
-            .post("/api/v1/charging-sessions/start")
-        .then()
-            .statusCode(200)
-            .extract()
-            .as(ChargingSession.class);
+        ChargingSession session = given().contentType(ContentType.JSON)
+                .queryParam("stationId", station.getId().toString()).queryParam("userId", "1")
+                .when().post("/api/v1/charging-sessions/start").then().statusCode(200).extract()
+                .as(ChargingSession.class);
 
         // Then end it
-        given()
-            .contentType(ContentType.JSON)
-        .when()
-            .post("/api/v1/charging-sessions/{sessionId}/end", session.getId())
-        .then()
-            .statusCode(200)
-            .body("finished", equalTo(true));
+        given().contentType(ContentType.JSON).when()
+                .post("/api/v1/charging-sessions/{sessionId}/end", session.getId()).then()
+                .statusCode(200).body("finished", equalTo(true));
     }
 
     @Test
@@ -105,27 +86,17 @@ class ChargingSessionControllerIT {
         station = stationRepository.save(station);
 
         // First create a session
-        ChargingSession session = given()
-            .contentType(ContentType.JSON)
-            .queryParam("stationId", station.getId().toString())
-            .queryParam("userId", "1")
-        .when()
-            .post("/api/v1/charging-sessions/start")
-        .then()
-            .statusCode(200)
-            .extract()
-            .as(ChargingSession.class);
+        ChargingSession session = given().contentType(ContentType.JSON)
+                .queryParam("stationId", station.getId().toString()).queryParam("userId", "1")
+                .when().post("/api/v1/charging-sessions/start").then().statusCode(200).extract()
+                .as(ChargingSession.class);
 
         // Then retrieve it
-        given()
-            .contentType(ContentType.JSON)
-        .when()
-            .get("/api/v1/charging-sessions/{sessionId}", session.getId())
-        .then()
-            .statusCode(200)
-            .body("id", equalTo(session.getId().intValue()))
-            .body("stationId", equalTo(station.getId().toString()))
-            .body("userId", equalTo("1"));
+        given().contentType(ContentType.JSON).when()
+                .get("/api/v1/charging-sessions/{sessionId}", session.getId()).then()
+                .statusCode(200).body("id", equalTo(session.getId().intValue()))
+                .body("stationId", equalTo(station.getId().toString()))
+                .body("userId", equalTo("1"));
     }
 
     @Test
@@ -142,37 +113,24 @@ class ChargingSessionControllerIT {
         chargingSessionRepository.save(existingSession);
 
         // Try to start another session - should fail because no chargers are free
-        given()
-            .contentType(ContentType.JSON)
-            .queryParam("stationId", station.getId().toString())
-            .queryParam("userId", "1")
-        .when()
-            .post("/api/v1/charging-sessions/start")
-        .then()
-            .statusCode(400)
-            .body("message", containsString("Cannot start session: no booking or free chargers available"));
+        given().contentType(ContentType.JSON).queryParam("stationId", station.getId().toString())
+                .queryParam("userId", "1").when().post("/api/v1/charging-sessions/start").then()
+                .statusCode(400).body("message", containsString(
+                        "Cannot start session: no booking or free chargers available"));
     }
 
     @Test
     @WithMockUser(username = "1")
     void whenEndSession_withNonExistentSession_thenReturnNotFound() {
-        given()
-            .contentType(ContentType.JSON)
-        .when()
-            .post("/api/v1/charging-sessions/{sessionId}/end", "999")
-        .then()
-            .statusCode(404);
+        given().contentType(ContentType.JSON).when()
+                .post("/api/v1/charging-sessions/{sessionId}/end", "999").then().statusCode(404);
     }
 
     @Test
     @WithMockUser(username = "1")
     void whenGetSession_withNonExistentSession_thenReturnNotFound() {
-        given()
-            .contentType(ContentType.JSON)
-        .when()
-            .get("/api/v1/charging-sessions/{sessionId}", "999")
-        .then()
-            .statusCode(404);
+        given().contentType(ContentType.JSON).when()
+                .get("/api/v1/charging-sessions/{sessionId}", "999").then().statusCode(404);
     }
 
     private ChargingSession createTestSession(String stationId, String userId) {
@@ -196,4 +154,4 @@ class ChargingSessionControllerIT {
         station.setStatus("Available");
         return station;
     }
-} 
+}

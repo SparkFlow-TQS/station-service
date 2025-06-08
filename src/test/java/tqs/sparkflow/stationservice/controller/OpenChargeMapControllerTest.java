@@ -29,7 +29,7 @@ class OpenChargeMapControllerTest {
     @Requirement("OPEN-CHARGE-MAP-1")
     void testPopulateStationsEndpoint() {
         when(openChargeMapService.populateStations(40.0, -8.0, 10))
-            .thenReturn(Collections.emptyList());
+                .thenReturn(Collections.emptyList());
 
         var response = openChargeMapController.populateStations(40.0, -8.0, 10);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -38,8 +38,8 @@ class OpenChargeMapControllerTest {
 
     @Test
     void testPopulateStationsEndpoint_withInvalidLatitude() {
-        when(openChargeMapService.populateStations(100.0, -8.0, 10))
-            .thenThrow(new IllegalArgumentException("Latitude must be between -90 and 90 degrees"));
+        when(openChargeMapService.populateStations(100.0, -8.0, 10)).thenThrow(
+                new IllegalArgumentException("Latitude must be between -90 and 90 degrees"));
 
         var response = openChargeMapController.populateStations(100.0, -8.0, 10);
         assertThat(response.getStatusCode().is4xxClientError()).isTrue();
@@ -48,8 +48,8 @@ class OpenChargeMapControllerTest {
 
     @Test
     void testPopulateStationsEndpoint_withInvalidLongitude() {
-        when(openChargeMapService.populateStations(40.0, -200.0, 10))
-            .thenThrow(new IllegalArgumentException("Longitude must be between -180 and 180 degrees"));
+        when(openChargeMapService.populateStations(40.0, -200.0, 10)).thenThrow(
+                new IllegalArgumentException("Longitude must be between -180 and 180 degrees"));
 
         var response = openChargeMapController.populateStations(40.0, -200.0, 10);
         assertThat(response.getStatusCode().is4xxClientError()).isTrue();
@@ -59,7 +59,7 @@ class OpenChargeMapControllerTest {
     @Test
     void testPopulateStationsEndpoint_withInvalidRadius() {
         when(openChargeMapService.populateStations(40.0, -8.0, -1))
-            .thenThrow(new IllegalArgumentException("Radius must be positive"));
+                .thenThrow(new IllegalArgumentException("Radius must be positive"));
 
         var response = openChargeMapController.populateStations(40.0, -8.0, -1);
         assertThat(response.getStatusCode().is4xxClientError()).isTrue();
@@ -69,7 +69,7 @@ class OpenChargeMapControllerTest {
     @Test
     void testPopulateStationsEndpoint_withApiError() {
         when(openChargeMapService.populateStations(40.0, -8.0, 10))
-            .thenThrow(new IllegalStateException("Invalid Open Charge Map API key"));
+                .thenThrow(new IllegalStateException("Invalid Open Charge Map API key"));
 
         var response = openChargeMapController.populateStations(40.0, -8.0, 10);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
@@ -79,10 +79,10 @@ class OpenChargeMapControllerTest {
     @Test
     void testPopulateStationsEndpoint_withNoStationsFound() {
         when(openChargeMapService.populateStations(40.0, -8.0, 10))
-            .thenThrow(new IllegalStateException("No stations found"));
+                .thenThrow(new IllegalStateException("No stations found"));
 
         var response = openChargeMapController.populateStations(40.0, -8.0, 10);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).isEqualTo("No stations found");
     }
-} 
+}

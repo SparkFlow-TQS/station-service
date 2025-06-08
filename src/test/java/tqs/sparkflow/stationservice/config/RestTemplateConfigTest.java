@@ -18,4 +18,4 @@ class RestTemplateConfigTest {
         RestTemplate restTemplate = restTemplateConfig.restTemplate();
         assertThat(restTemplate).isNotNull();
     }
-} 
+}

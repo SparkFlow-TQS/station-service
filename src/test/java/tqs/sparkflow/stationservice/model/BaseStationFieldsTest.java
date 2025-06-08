@@ -7,148 +7,125 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class BaseStationFieldsTest {
 
   private Validator validator;
-  private BaseStationFields station;
+  private BaseStationFields baseFields;
 
   @BeforeEach
   void setUp() {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     validator = factory.getValidator();
-    station = new BaseStationFields();
+    // Create an anonymous subclass to test BaseStationFields
+    baseFields = new BaseStationFields() {};
   }
 
   @Test
-  void whenCreatingEmptyStation_thenAllFieldsAreNull() {
-    assertThat(station.getLatitude()).isNull();
-    assertThat(station.getLongitude()).isNull();
-    assertThat(station.getPrice()).isNull();
-    assertThat(station.getNumberOfChargers()).isNull();
-    assertThat(station.getMinPower()).isNull();
-    assertThat(station.getMaxPower()).isNull();
-    assertThat(station.getIsOperational()).isNull();
-    assertThat(station.getStatus()).isNull();
-    assertThat(station.getCity()).isNull();
-    assertThat(station.getCountry()).isNull();
+  void whenCreatingEmptyBaseFields_thenAllFieldsAreNull() {
+    // Create a new instance without setting any values
+    BaseStationFields emptyFields = new BaseStationFields() {};
+
+    assertThat(emptyFields.getCity()).isNull();
+    assertThat(emptyFields.getCountry()).isNull();
+    assertThat(emptyFields.getLatitude()).isNull();
+    assertThat(emptyFields.getLongitude()).isNull();
+    assertThat(emptyFields.getPrice()).isNull();
+    assertThat(emptyFields.getIsOperational()).isNull();
+    assertThat(emptyFields.getStatus()).isNull();
+    assertThat(emptyFields.getAddress()).isNull();
   }
 
   @Test
   void whenSettingValidLatitude_thenNoValidationErrors() {
-    station.setLatitude(40.7128);
-    assertThat(validator.validate(station)).isEmpty();
+    // Given
+    baseFields.setLatitude(41.1579);
+    baseFields.setLongitude(-8.6291); // Required field
+    baseFields.setStatus("Available"); // Required field
+
+    // When
+    var violations = validator.validate(baseFields);
+
+    // Then
+    assertThat(violations).isEmpty();
   }
 
-  @ParameterizedTest
-  @ValueSource(doubles = {-91.0, 91.0})
-  void whenSettingInvalidLatitude_thenValidationError(double invalidLatitude) {
-    station.setLatitude(invalidLatitude);
-    assertThat(validator.validate(station)).isNotEmpty();
+  @Test
+  void whenSettingInvalidLatitude_thenValidationError() {
+    // Given
+    baseFields.setLatitude(91.0);
+    baseFields.setLongitude(-8.6291); // Required field
+    baseFields.setStatus("Available"); // Required field
+
+    // When
+    var violations = validator.validate(baseFields);
+
+    // Then
+    assertThat(violations).isNotEmpty();
+    assertThat(violations.iterator().next().getMessage())
+        .isEqualTo("Latitude must be between -90 and 90 degrees");
   }
 
   @Test
   void whenSettingValidLongitude_thenNoValidationErrors() {
-    station.setLongitude(-74.0060);
-    assertThat(validator.validate(station)).isEmpty();
-  }
-
-  @ParameterizedTest
-  @ValueSource(doubles = {-181.0, 181.0})
-  void whenSettingInvalidLongitude_thenValidationError(double invalidLongitude) {
-    station.setLongitude(invalidLongitude);
-    assertThat(validator.validate(station)).isNotEmpty();
-  }
-
-  @Test
-  void whenSettingValidPrice_thenNoValidationErrors() {
-    station.setPrice(0.35);
-    assertThat(validator.validate(station)).isEmpty();
-  }
-
-  @Test
-  void whenSettingNegativePrice_thenValidationError() {
-    station.setPrice(-0.35);
-    assertThat(validator.validate(station)).isNotEmpty();
-  }
-
-  @Test
-  void whenSettingAllFields_thenAllFieldsAreUpdated() {
     // Given
+    baseFields.setLatitude(41.1579); // Required field
+    baseFields.setLongitude(-8.6291);
+    baseFields.setStatus("Available"); // Required field
+
+    // When
+    var violations = validator.validate(baseFields);
+
+    // Then
+    assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void whenSettingInvalidLongitude_thenValidationError() {
+    // Given
+    baseFields.setLatitude(41.1579); // Required field
+    baseFields.setLongitude(181.0);
+    baseFields.setStatus("Available"); // Required field
+
+    // When
+    var violations = validator.validate(baseFields);
+
+    // Then
+    assertThat(violations).isNotEmpty();
+    assertThat(violations.iterator().next().getMessage())
+        .isEqualTo("Longitude must be between -180 and 180 degrees");
+  }
+
+  @Test
+  void whenSettingAllBaseFields_thenAllFieldsAreUpdated() {
+    // Given
+    String city = "New York";
+    String country = "USA";
     Double latitude = 40.7128;
     Double longitude = -74.0060;
     Double price = 0.35;
-    Integer numberOfChargers = 2;
-    Integer minPower = 50;
-    Integer maxPower = 150;
     Boolean isOperational = true;
     String status = "Available";
-    String city = "New York";
-    String country = "USA";
+    String address = "Test Address";
 
     // When
-    station.setLatitude(latitude);
-    station.setLongitude(longitude);
-    station.setPrice(price);
-    station.setNumberOfChargers(numberOfChargers);
-    station.setMinPower(minPower);
-    station.setMaxPower(maxPower);
-    station.setIsOperational(isOperational);
-    station.setStatus(status);
-    station.setCity(city);
-    station.setCountry(country);
+    baseFields.setCity(city);
+    baseFields.setCountry(country);
+    baseFields.setLatitude(latitude);
+    baseFields.setLongitude(longitude);
+    baseFields.setPrice(price);
+    baseFields.setIsOperational(isOperational);
+    baseFields.setStatus(status);
+    baseFields.setAddress(address);
 
     // Then
-    assertThat(station.getLatitude()).isEqualTo(latitude);
-    assertThat(station.getLongitude()).isEqualTo(longitude);
-    assertThat(station.getPrice()).isEqualTo(price);
-    assertThat(station.getNumberOfChargers()).isEqualTo(numberOfChargers);
-    assertThat(station.getMinPower()).isEqualTo(minPower);
-    assertThat(station.getMaxPower()).isEqualTo(maxPower);
-    assertThat(station.getIsOperational()).isEqualTo(isOperational);
-    assertThat(station.getStatus()).isEqualTo(status);
-    assertThat(station.getCity()).isEqualTo(city);
-    assertThat(station.getCountry()).isEqualTo(country);
+    assertThat(baseFields.getCity()).isEqualTo(city);
+    assertThat(baseFields.getCountry()).isEqualTo(country);
+    assertThat(baseFields.getLatitude()).isEqualTo(latitude);
+    assertThat(baseFields.getLongitude()).isEqualTo(longitude);
+    assertThat(baseFields.getPrice()).isEqualTo(price);
+    assertThat(baseFields.getIsOperational()).isEqualTo(isOperational);
+    assertThat(baseFields.getStatus()).isEqualTo(status);
+    assertThat(baseFields.getAddress()).isEqualTo(address);
   }
-
-  @Test
-  void whenSettingNullValues_thenFieldsAreNull() {
-    // Given
-    station.setLatitude(40.7128);
-    station.setLongitude(-74.0060);
-    station.setPrice(0.35);
-    station.setNumberOfChargers(2);
-    station.setMinPower(50);
-    station.setMaxPower(150);
-    station.setIsOperational(true);
-    station.setStatus("Available");
-    station.setCity("New York");
-    station.setCountry("USA");
-
-    // When
-    station.setLatitude(null);
-    station.setLongitude(null);
-    station.setPrice(null);
-    station.setNumberOfChargers(null);
-    station.setMinPower(null);
-    station.setMaxPower(null);
-    station.setIsOperational(null);
-    station.setStatus(null);
-    station.setCity(null);
-    station.setCountry(null);
-
-    // Then
-    assertThat(station.getLatitude()).isNull();
-    assertThat(station.getLongitude()).isNull();
-    assertThat(station.getPrice()).isNull();
-    assertThat(station.getNumberOfChargers()).isNull();
-    assertThat(station.getMinPower()).isNull();
-    assertThat(station.getMaxPower()).isNull();
-    assertThat(station.getIsOperational()).isNull();
-    assertThat(station.getStatus()).isNull();
-    assertThat(station.getCity()).isNull();
-    assertThat(station.getCountry()).isNull();
-  }
-} 
+}

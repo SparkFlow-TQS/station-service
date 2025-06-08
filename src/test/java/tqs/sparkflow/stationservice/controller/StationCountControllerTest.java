@@ -58,12 +58,11 @@ class StationCountControllerTest {
     void whenSearchingStations_thenReturnsMaximum500Results() {
         // Given
         List<Station> limitedStations = createStationList(500);
-        when(stationService.searchStations("test", null, null, null))
-            .thenReturn(limitedStations);
+        when(stationService.searchStations("test", null, null, null)).thenReturn(limitedStations);
 
         // When
-        ResponseEntity<List<Station>> response = 
-            stationController.searchStations("test", null, null, null);
+        ResponseEntity<List<Station>> response =
+                stationController.searchStations("test", null, null, null);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -81,11 +80,11 @@ class StationCountControllerTest {
         int radius = 25;
         List<Station> limitedStations = createStationList(500);
         when(stationService.getNearbyStations(latitude, longitude, radius))
-            .thenReturn(limitedStations);
+                .thenReturn(limitedStations);
 
         // When
-        ResponseEntity<List<Station>> response = 
-            stationController.getNearbyStations(latitude, longitude, radius);
+        ResponseEntity<List<Station>> response =
+                stationController.getNearbyStations(latitude, longitude, radius);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -96,20 +95,19 @@ class StationCountControllerTest {
     private List<Station> createStationList(int count) {
         List<Station> stations = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            Station station = new Station(
-                "ext-" + i,  // externalId
-                "Station " + i,  // name
-                "Address " + i,  // address
-                "City",  // city
-                "Country",  // country
-                38.7223 + (i * 0.001),  // latitude
-                -9.1393 + (i * 0.001),  // longitude
-                2,  // quantityOfChargers
-                "Available"  // status
+            Station station = new Station("ext-" + i, // externalId
+                    "Station " + i, // name
+                    "Address " + i, // address
+                    "City", // city
+                    "Country", // country
+                    38.7223 + (i * 0.001), // latitude
+                    -9.1393 + (i * 0.001), // longitude
+                    2, // quantityOfChargers
+                    "Available" // status
             );
             station.setId((long) i);
             stations.add(station);
         }
         return stations;
     }
-} 
+}

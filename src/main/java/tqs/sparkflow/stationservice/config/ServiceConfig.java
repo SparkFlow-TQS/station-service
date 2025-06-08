@@ -14,4 +14,4 @@ public class ServiceConfig {
   public String userServiceUrl() {
     return userServiceUrl;
   }
-} 
+}

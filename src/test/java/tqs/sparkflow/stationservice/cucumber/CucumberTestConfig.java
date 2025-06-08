@@ -38,28 +38,23 @@ public class CucumberTestConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .headers(headers -> headers.disable())
+    http.csrf(csrf -> csrf.disable()).headers(headers -> headers.disable())
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
     return http.build();
   }
 
   @Bean
   @Primary
-  public StationService stationService(StationRepository stationRepository, BookingRepository bookingRepository, ChargingSessionRepository chargingSessionRepository) {
+  public StationService stationService(StationRepository stationRepository,
+      BookingRepository bookingRepository, ChargingSessionRepository chargingSessionRepository) {
     return new StationService(stationRepository, bookingRepository, chargingSessionRepository);
   }
 
   @Bean
   @Primary
-  public OpenChargeMapService openChargeMapService(
-      RestTemplate restTemplate,
+  public OpenChargeMapService openChargeMapService(RestTemplate restTemplate,
       StationRepository stationRepository) {
-    return new OpenChargeMapService(
-        restTemplate,
-        stationRepository,
-        "test-api-key",
+    return new OpenChargeMapService(restTemplate, stationRepository, "test-api-key",
         "https://api.openchargemap.io/v3/poi");
   }
 }
