@@ -18,6 +18,7 @@ import tqs.sparkflow.stationservice.controller.StationController;
 import tqs.sparkflow.stationservice.service.ChargingSessionService;
 import tqs.sparkflow.stationservice.service.StationService;
 import tqs.sparkflow.stationservice.model.ChargingSession;
+import tqs.sparkflow.stationservice.util.JwtUtil;
 
 @WebMvcTest(controllers = {StationController.class, ChargingSessionController.class})
 @Import({SecurityConfig.class, WebConfig.class})
@@ -28,7 +29,8 @@ import tqs.sparkflow.stationservice.model.ChargingSession;
         "spring.jpa.properties.hibernate.jdbc.time_zone=UTC",
         "spring.jpa.properties.hibernate.query.fail_on_pagination_over_collection_fetch=false",
         "spring.jpa.properties.hibernate.id.new_generator_mappings=false",
-        "spring.flyway.enabled=false", "spring.flyway.baseline-on-migrate=false"})
+        "spring.flyway.enabled=false", "spring.flyway.baseline-on-migrate=false",
+        "jwt.secret=test-secret-key-for-tests-that-should-be-at-least-32-characters-long"})
 class SecurityConfigTest {
 
     @Autowired
@@ -39,6 +41,9 @@ class SecurityConfigTest {
 
     @MockBean
     private ChargingSessionService chargingSessionService;
+
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Test
     void whenAccessingPublicEndpoint_thenSuccess() throws Exception {
@@ -62,7 +67,7 @@ class SecurityConfigTest {
     }
 
     @Test
-    void whenAccessingProtectedEndpointWithoutAuth_thenForbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/charging-sessions/1")).andExpect(status().isForbidden());
+    void whenAccessingProtectedEndpointWithoutAuth_thenUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/charging-sessions/1")).andExpect(status().isUnauthorized());
     }
 }
