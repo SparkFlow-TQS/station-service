@@ -1,12 +1,14 @@
 package tqs.sparkflow.stationservice.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 
 class StationTest {
 
@@ -291,5 +293,135 @@ class StationTest {
     assertThat(testStation.getPrice()).isNull();
     assertThat(testStation.getQuantityOfChargers()).isNull();
     assertThat(testStation.getStatus()).isNull();
+  }
+
+  @Test
+  @DisplayName("equals should return false when comparing with null")
+  void whenComparingWithNull_thenReturnFalse() {
+    // Given
+    Station testStation = new Station();
+    station.setId(1L);
+    station.setName("Test Station");
+
+    // When
+    boolean result = testStation.equals(null);
+
+    // Then
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  @DisplayName("equals should return false when comparing with different class")
+  void whenComparingWithDifferentClass_thenReturnFalse() {
+    // Given
+    Station testStation = new Station();
+    testStation.setId(1L);
+    testStation.setName("Test Station");
+
+    Object otherObject = new Object();
+
+    // When
+    boolean result = testStation.equals(otherObject);
+
+    // Then
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  @DisplayName("equals should return true when comparing with same instance")
+  void whenComparingWithSameInstance_thenReturnTrue() {
+    // Given
+    Station testStation = new Station();
+    testStation.setId(1L);
+    testStation.setName("Test Station");
+
+    // When
+    boolean result = testStation.equals(testStation);
+
+    // Then
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @DisplayName("equals should return true when comparing with equal station")
+  void whenComparingWithEqualStation_thenReturnTrue() {
+    // Given
+    Station station1 = new Station();
+    station1.setId(1L);
+    station1.setName("Test Station");
+    station1.setExternalId("ext1");
+    station1.setPower(50);
+    station1.setQuantityOfChargers(2);
+
+    Station station2 = new Station();
+    station2.setId(1L);
+    station2.setName("Test Station");
+    station2.setExternalId("ext1");
+    station2.setPower(50);
+    station2.setQuantityOfChargers(2);
+
+    // When
+    boolean result = station1.equals(station2);
+
+    // Then
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @DisplayName("equals should return false when comparing with different station")
+  void whenComparingWithDifferentStation_thenReturnFalse() {
+    // Given
+    Station station1 = new Station();
+    station1.setId(1L);
+    station1.setName("Test Station 1");
+    station1.setExternalId("ext1");
+    station1.setPower(50);
+    station1.setQuantityOfChargers(2);
+
+    Station station2 = new Station();
+    station2.setId(2L);
+    station2.setName("Test Station 2");
+    station2.setExternalId("ext2");
+    station2.setPower(100);
+    station2.setQuantityOfChargers(4);
+
+    // When
+    boolean result = station1.equals(station2);
+
+    // Then
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  void testHashCode() {
+    Station station1 = new Station();
+    station1.setId(1L);
+    station1.setExternalId("ext1");
+    station1.setPower(50);
+    station1.setQuantityOfChargers(2);
+
+    Station station2 = new Station();
+    station2.setId(1L);
+    station2.setExternalId("ext1");
+    station2.setPower(50);
+    station2.setQuantityOfChargers(2);
+
+    // Equal objects should have equal hash codes
+    assertEquals(station1.hashCode(), station2.hashCode());
+
+    // Test with null fields
+    Station station3 = new Station();
+    station3.setId(1L);
+    station3.setExternalId(null);
+    station3.setPower(null);
+    station3.setQuantityOfChargers(null);
+
+    Station station4 = new Station();
+    station4.setId(1L);
+    station4.setExternalId(null);
+    station4.setPower(null);
+    station4.setQuantityOfChargers(null);
+
+    assertEquals(station3.hashCode(), station4.hashCode());
   }
 }

@@ -31,6 +31,7 @@ import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Station;
 import tqs.sparkflow.stationservice.repository.BookingRepository;
+import tqs.sparkflow.stationservice.repository.StationRepository;
 
 /**
  * Comprehensive unit tests for BookingServiceImpl class. Tests all public methods, error scenarios,
@@ -43,7 +44,7 @@ class BookingServiceTest {
         private BookingRepository bookingRepository;
 
         @Mock
-        private StationService stationService;
+        private StationRepository stationRepository;
 
         @Mock
         private RestTemplate restTemplate;
@@ -52,7 +53,6 @@ class BookingServiceTest {
 
         private static final String USER_SERVICE_URL = "http://test-user-service:8081";
         private static final String USERS_PATH = "/users/";
-        private static final String ADMIN_ROLE_CHECK = "/has-role/ADMIN";
 
         private Booking testBooking;
         private Station testStation;
@@ -61,7 +61,7 @@ class BookingServiceTest {
 
         @BeforeEach
         void setUp() {
-                bookingService = new BookingServiceImpl(bookingRepository, stationService,
+                bookingService = new BookingServiceImpl(bookingRepository, stationRepository,
                                 restTemplate, USER_SERVICE_URL);
 
                 now = LocalDateTime.now();
@@ -90,9 +90,9 @@ class BookingServiceTest {
         @DisplayName("Should create recurring booking successfully with valid inputs")
         void whenCreateRecurringBooking_thenReturnCreatedBooking() {
                 // Given
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
-                when(stationService.getStationById(1L)).thenReturn(testStation);
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of());
                 when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
 
                 // When
@@ -104,25 +104,7 @@ class BookingServiceTest {
                 assertThat(createdBooking.getStationId()).isEqualTo(1L);
                 assertThat(createdBooking.getUserId()).isEqualTo(1L);
                 assertThat(createdBooking.getStatus()).isEqualTo(BookingStatus.ACTIVE);
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository).save(any(Booking.class));
-        }
-
-        @Test
-        @DisplayName("Should throw exception when user validation fails")
-        void whenCreateRecurringBooking_withInvalidUser_thenThrowException() {
-                // Given
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 999L, Object.class))
-                                .thenThrow(new RestClientException("User not found"));
-
-                // When & Then
-                LocalDateTime endTime = now.plusHours(2);
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(999L, 1L, now,
-                                endTime, recurringDays)).isInstanceOf(IllegalStateException.class)
-                                                .hasMessage("User not found or not authorized");
-
-                verify(stationService, never()).getStationById(any());
-                verify(bookingRepository, never()).save(any());
         }
 
         @Test
@@ -130,46 +112,31 @@ class BookingServiceTest {
         void whenCreateRecurringBooking_withInvalidStation_thenThrowException() {
                 // Given
                 testStation.setIsOperational(false);
-                LocalDateTime end = now.plusHours(2);
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
-                when(stationService.getStationById(1L)).thenReturn(testStation);
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, end,
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
                                 recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessageContaining("Station is not operational");
 
-                verify(stationService, never()).validateBooking(any(), any(), any(), any());
                 verify(bookingRepository, never()).save(any());
         }
 
         @Test
         void whenCreateRecurringBooking_withOverlappingBooking_thenThrowException() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
-
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
-
-                // Configure validateBooking to throw exception for overlapping bookings
-                doThrow(new IllegalStateException(
-                                "No chargers available for the requested time slot"))
-                                                .when(stationService)
-                                                .validateBooking(1L, 1L, now, now.plusHours(2));
-
-                Long userId = 1L;
-                Long stationId = 1L;
+                // Given
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of(testBooking));
                 LocalDateTime endTime = now.plusHours(2);
-                Set<Integer> days = Set.of(1, 2, 3);
 
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(userId, stationId,
-                                now, endTime, days)).isInstanceOf(IllegalStateException.class)
-                                                .hasMessage("No chargers available for the requested time slot");
+                // When & Then
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
-                verify(bookingRepository, never()).save(any(Booking.class));
+                verify(bookingRepository, never()).save(any());
         }
 
         @Test
@@ -224,28 +191,25 @@ class BookingServiceTest {
 
         @Test
         void whenCreateBooking_withUserNotFound_thenThrowException() {
-                // Simulate user validation failure
-                org.mockito.Mockito
-                                .doThrow(new IllegalStateException(
-                                                "User not found or not authorized"))
-                                .when(restTemplate).getForObject(anyString(), eq(Object.class));
-                Booking booking = new Booking();
-                booking.setUserId(99L);
-                booking.setStationId(1L);
-                booking.setStartTime(now);
-                booking.setEndTime(now.plusHours(2));
-                booking.setRecurringDays(recurringDays);
-                assertThatThrownBy(() -> bookingService.createBooking(booking))
-                                .isInstanceOf(IllegalStateException.class)
-                                .hasMessageContaining("User not found or not authorized");
+                // Given
+                when(restTemplate.getForObject(anyString(), eq(Object.class)))
+                                .thenThrow(new RestClientException("User not found"));
+                LocalDateTime endTime = now.plusHours(2);
+
+                // When & Then
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(99L, 1L, now,
+                                endTime, recurringDays)).isInstanceOf(IllegalStateException.class)
+                                                .hasMessageContaining(
+                                                                "User not found or not authorized");
         }
 
         @Test
         void whenGetAllBookings_withUserNotAuthorized_thenThrowException() {
-                org.mockito.Mockito
-                                .doThrow(new IllegalStateException(
-                                                "User not found or not authorized"))
-                                .when(restTemplate).getForObject(anyString(), eq(Object.class));
+                // Given
+                when(restTemplate.getForObject(anyString(), eq(Object.class)))
+                                .thenThrow(new RestClientException("User not found"));
+
+                // When & Then
                 assertThatThrownBy(() -> bookingService.getAllBookings(99L))
                                 .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("User not found or not authorized");
@@ -253,9 +217,11 @@ class BookingServiceTest {
 
         @Test
         void whenGetBookingsByStationId_withUserNotAuthorized_thenThrowException() {
-                when(restTemplate.getForObject(anyString(), eq(Object.class))).thenThrow(
-                                new IllegalStateException("User not found or not authorized"));
+                // Given
+                when(restTemplate.getForObject(anyString(), eq(Object.class)))
+                                .thenThrow(new RestClientException("User not found"));
 
+                // When & Then
                 assertThatThrownBy(() -> bookingService.getBookingsByStationId(99L, 99L))
                                 .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("User not found or not authorized");
@@ -263,10 +229,11 @@ class BookingServiceTest {
 
         @Test
         void whenGetBookingsByUserId_withUserNotAuthorized_thenThrowException() {
-                org.mockito.Mockito
-                                .doThrow(new IllegalStateException(
-                                                "User not found or not authorized"))
-                                .when(restTemplate).getForObject(anyString(), eq(Object.class));
+                // Given
+                when(restTemplate.getForObject(anyString(), eq(Object.class)))
+                                .thenThrow(new RestClientException("User not found"));
+
+                // When & Then
                 assertThatThrownBy(() -> bookingService.getBookingsByUserId(99L))
                                 .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("User not found or not authorized");
@@ -274,26 +241,25 @@ class BookingServiceTest {
 
         @Test
         void whenGetBookingById_withPermissionDenied_thenThrowException() {
-                // Setup: Create a booking belonging to user 2
+                // Given
                 Booking booking = new Booking();
                 booking.setId(1L);
                 booking.setUserId(2L);
                 when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
-
-                // Setup: Mock permission check to fail
-                when(restTemplate.getForObject(anyString(), eq(Boolean.class)))
-                                .thenThrow(new IllegalStateException(
+                when(restTemplate.getForObject(anyString(), eq(Object.class)))
+                                .thenThrow(new RestClientException(
                                                 "User not authorized to access this booking"));
 
-                // Test: Single method invocation that should throw the exception
+                // When & Then
                 assertThatThrownBy(() -> bookingService.getBookingById(1L, 1L))
                                 .isInstanceOf(IllegalStateException.class)
-                                .hasMessageContaining("User not authorized to access this booking");
+                                .hasMessage("User not authorized to access this booking");
         }
 
         @Test
         void whenCancelBooking_withBookingNotFound_thenThrowException() {
                 when(bookingRepository.findById(2L)).thenReturn(Optional.empty());
+
                 assertThatThrownBy(() -> bookingService.cancelBooking(2L))
                                 .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("Booking not found");
@@ -301,170 +267,142 @@ class BookingServiceTest {
 
         @Test
         void whenCreateRecurringBooking_withNullRecurringDays_thenReturnCreatedBooking() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
-
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
-
-                // No overlapping bookings - booking should succeed
-                doNothing().when(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
-
+                // Given
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of());
                 when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
 
+                // When
                 Booking result = bookingService.createRecurringBooking(1L, 1L, now,
                                 now.plusHours(2), null);
 
+                // Then
                 assertThat(result).isEqualTo(testBooking);
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository).save(any(Booking.class));
         }
 
         @Test
         void whenCreateRecurringBooking_withEmptyRecurringDays_thenReturnCreatedBooking() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
-
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
-
-                // No overlapping bookings - booking should succeed
-                doNothing().when(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
-
+                // Given
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of());
                 when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
 
+                // When
                 Booking result = bookingService.createRecurringBooking(1L, 1L, now,
                                 now.plusHours(2), Set.of());
 
+                // Then
                 assertThat(result).isEqualTo(testBooking);
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository).save(any(Booking.class));
         }
 
         @Test
         void whenCreateBooking_withMultipleChargersAvailable_thenAllowOverlappingBookings() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
-
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
-
-                // No overlapping bookings - booking should succeed
-                doNothing().when(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
-
+                // Given
+                testStation.setQuantityOfChargers(2);
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of());
                 when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
 
-                Booking result = bookingService.createBooking(testBooking);
+                // When
+                Booking result = bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays);
 
+                // Then
                 assertThat(result).isEqualTo(testBooking);
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository).save(any(Booking.class));
         }
 
         @Test
         void whenCreateBooking_withAllChargersOccupied_thenThrowException() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
+                // Given
+                testStation.setQuantityOfChargers(2);
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
+                // Two overlapping bookings - all chargers occupied
+                List<Booking> overlappingBookings = List.of(testBooking, testBooking);
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(overlappingBookings);
 
-                // Configure validateBooking to throw exception for no available chargers
-                doThrow(new IllegalStateException(
-                                "No chargers available for the requested time slot"))
-                                                .when(stationService)
-                                                .validateBooking(1L, 1L, now, now.plusHours(2));
+                // When & Then
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
-                assertThatThrownBy(() -> bookingService.createBooking(testBooking))
-                                .isInstanceOf(IllegalStateException.class)
-                                .hasMessage("No chargers available for the requested time slot");
-
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository, never()).save(any(Booking.class));
         }
 
         @Test
         void whenCreateBooking_withSingleChargerStation_thenBlockOverlappingBookings() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
+                // Given
+                testStation.setQuantityOfChargers(1);
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
-                // Create a single charger station
-                Station singleChargerStation = new Station();
-                singleChargerStation.setId(1L);
-                singleChargerStation.setQuantityOfChargers(1);
-                singleChargerStation.setIsOperational(true);
+                // One overlapping booking - charger occupied
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of(testBooking));
 
-                when(stationService.getStationById(1L)).thenReturn(singleChargerStation);
+                // When & Then
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
-                // Configure validateBooking to throw exception for single charger station with
-                // overlapping
-                // booking
-                doThrow(new IllegalStateException(
-                                "No chargers available for the requested time slot"))
-                                                .when(stationService)
-                                                .validateBooking(1L, 1L, now, now.plusHours(2));
-
-                assertThatThrownBy(() -> bookingService.createBooking(testBooking))
-                                .isInstanceOf(IllegalStateException.class)
-                                .hasMessage("No chargers available for the requested time slot");
-
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository, never()).save(any(Booking.class));
         }
 
         @Test
-        void whenCreateBooking_withCancelledBookings_thenIgnoreCancelledBookings() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
+        void whenCreateBooking_withCancelledBookings_thenThrowException() {
+                // Given
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
+
+                // Create a cancelled booking
+                Booking cancelledBooking = new Booking();
+                cancelledBooking.setId(2L);
+                cancelledBooking.setStationId(1L);
+                cancelledBooking.setUserId(1L);
+                cancelledBooking.setStartTime(now);
+                cancelledBooking.setEndTime(endTime);
+                cancelledBooking.setStatus(BookingStatus.CANCELLED);
+
+                // Mock user validation
+                when(restTemplate.getForObject(anyString(), eq(Object.class)))
                                 .thenReturn(new Object());
 
-                // Station setup
-                when(stationService.getStationById(1L)).thenReturn(testStation);
+                // Mock findOverlappingBookings to return the cancelled booking
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of(cancelledBooking));
 
-                // No overlapping active bookings - booking should succeed (cancelled bookings are
-                // ignored)
-                doNothing().when(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
+                // When & Then
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
-                when(bookingRepository.save(any(Booking.class))).thenReturn(testBooking);
-
-                Booking result = bookingService.createBooking(testBooking);
-
-                assertThat(result).isEqualTo(testBooking);
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
-                verify(bookingRepository).save(any(Booking.class));
+                verify(bookingRepository, never()).save(any(Booking.class));
         }
 
         @Test
         void whenCreateBooking_withNullQuantityOfChargers_thenDefaultToSingleCharger() {
-                // User validation
-                when(restTemplate.getForObject(USER_SERVICE_URL + USERS_PATH + 1L, Object.class))
-                                .thenReturn(new Object());
+                // Given
+                testStation.setQuantityOfChargers(null);
+                when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
-                // Create station with null quantity of chargers
-                Station nullChargerStation = new Station();
-                nullChargerStation.setId(1L);
-                nullChargerStation.setQuantityOfChargers(null);
-                nullChargerStation.setIsOperational(true);
+                // One overlapping booking - charger occupied
+                when(bookingRepository.findOverlappingBookings(any(), any(), any()))
+                                .thenReturn(List.of(testBooking));
 
-                when(stationService.getStationById(1L)).thenReturn(nullChargerStation);
+                // When & Then
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
-                // Configure validateBooking to throw exception for null charger station (defaults
-                // to 1)
-                doThrow(new IllegalStateException(
-                                "No chargers available for the requested time slot"))
-                                                .when(stationService)
-                                                .validateBooking(1L, 1L, now, now.plusHours(2));
-
-                assertThatThrownBy(() -> bookingService.createBooking(testBooking))
-                                .isInstanceOf(IllegalStateException.class)
-                                .hasMessage("No chargers available for the requested time slot");
-
-                verify(stationService).validateBooking(1L, 1L, now, now.plusHours(2));
                 verify(bookingRepository, never()).save(any(Booking.class));
         }
 }

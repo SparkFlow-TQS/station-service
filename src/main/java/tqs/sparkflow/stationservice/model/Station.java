@@ -8,9 +8,9 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
+import java.util.Objects;
 
 /** Represents a charging station. */
 @Entity
@@ -166,6 +166,25 @@ public class Station extends BaseStationFields {
   @Override
   public String toString() {
     return "Station{id=" + id + ", name='" + name + "'}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
+    Station station = (Station) o;
+    return Objects.equals(id, station.id) && Objects.equals(externalId, station.externalId)
+        && Objects.equals(power, station.power)
+        && Objects.equals(quantityOfChargers, station.quantityOfChargers);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), id, externalId, power, quantityOfChargers);
   }
 
   /**

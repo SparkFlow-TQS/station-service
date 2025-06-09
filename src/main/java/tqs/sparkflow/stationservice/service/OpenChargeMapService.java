@@ -187,11 +187,33 @@ public class OpenChargeMapService {
 
   private void setStationId(Map<String, Object> data, Station station) {
     Object id = data.get("ID");
-    if (id instanceof Number) {
-      station.setId(((Number) id).longValue());
+    if (isNumber(id)) {
+      station.setId(getNumber(id).longValue());
     } else if (id != null) {
       station.setId(Long.parseLong(id.toString()));
     }
+  }
+
+  private boolean isNumber(Object obj) {
+    return obj instanceof Number;
+  }
+
+  private Number getNumber(Object obj) {
+    if (obj == null) {
+      return 0;
+    }
+    return (Number) obj;
+  }
+
+  private boolean isString(Object obj) {
+    return obj instanceof String;
+  }
+
+  private String getString(Object obj) {
+    if (obj == null) {
+      return "";
+    }
+    return (String) obj;
   }
 
   private void setStationName(Map<String, Object> addressInfo, Station station) {
@@ -207,8 +229,16 @@ public class OpenChargeMapService {
   private void setStationCoordinates(Map<String, Object> addressInfo, Station station) {
     Object lat = addressInfo != null ? addressInfo.get("Latitude") : null;
     Object lon = addressInfo != null ? addressInfo.get("Longitude") : null;
-    station.setLatitude(lat != null ? ((Number) lat).doubleValue() : 0.0);
-    station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
+    if (isNumber(lat)) {
+      station.setLatitude(getNumber(lat).doubleValue());
+    } else {
+      station.setLatitude(0.0);
+    }
+    if (isNumber(lon)) {
+      station.setLongitude(getNumber(lon).doubleValue());
+    } else {
+      station.setLongitude(0.0);
+    }
   }
 
   private void setStationCity(Map<String, Object> addressInfo, Station station) {
@@ -233,11 +263,11 @@ public class OpenChargeMapService {
       // Get quantity from connection
       Object quantity = connection.get("Quantity");
       if (quantity != null) {
-        if (quantity instanceof Number) {
-          totalChargers += ((Number) quantity).intValue();
-        } else if (quantity instanceof String) {
+        if (isNumber(quantity)) {
+          totalChargers += getNumber(quantity).intValue();
+        } else if (isString(quantity)) {
           try {
-            totalChargers += Integer.parseInt((String) quantity);
+            totalChargers += Integer.parseInt(getString(quantity));
           } catch (NumberFormatException e) {
             // If parsing fails, count as 1
             totalChargers += 1;
