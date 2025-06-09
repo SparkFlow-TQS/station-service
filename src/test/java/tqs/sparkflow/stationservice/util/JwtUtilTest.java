@@ -18,22 +18,11 @@ import javax.crypto.SecretKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest
-@ActiveProfiles("securitytest")
-@TestPropertySource(properties = {
-    "jwt.secret=test-secret-key-for-tests-that-should-be-at-least-32-characters-long"
-})
 class JwtUtilTest {
 
     private JwtUtil jwtUtil;
-    
-    @Value("${jwt.secret}")
-    private String secret;
+    private String secret = "test-secret-key-for-tests-that-should-be-at-least-32-characters-long";
     
     private String validToken;
     private String expiredToken;
