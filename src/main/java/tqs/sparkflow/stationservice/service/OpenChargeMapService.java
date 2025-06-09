@@ -309,7 +309,8 @@ public class OpenChargeMapService {
       for (Map<String, Object> connection : connections) {
         Object powerKW = connection.get("PowerKW");
         if (powerKW instanceof Number) {
-          double power = ((Number) powerKW).doubleValue();
+          Number number = (Number) powerKW;
+          double power = number.doubleValue();
           maxPower = Math.max(maxPower, power);
           hasValidPower = true;
         }
