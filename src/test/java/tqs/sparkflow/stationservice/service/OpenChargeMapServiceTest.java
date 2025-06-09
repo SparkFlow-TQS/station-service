@@ -404,4 +404,141 @@ class OpenChargeMapServiceTest {
                 // Then
                 assertThat(result.getQuantityOfChargers()).isEqualTo(5);
         }
+
+        @Test
+        @XrayTest(key = "OCM-3")
+        @Requirement("OCM-3")
+        void getStationsByCity_whenHttpClientError_thenThrowsException() {
+                // Given
+                when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+                                .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+                // When & Then
+                assertThatThrownBy(() -> service.getStationsByCity("City"))
+                                .isInstanceOf(IllegalStateException.class)
+                                .hasMessageContaining("Error accessing Open Charge Map API");
+        }
+
+        @Test
+        @XrayTest(key = "OCM-5")
+        @Requirement("OCM-5")
+        void getStationsByCity_whenGenericError_thenThrowsException() {
+                // Given
+                when(restTemplate.getForObject(anyString(), eq(OpenChargeMapResponse.class)))
+                                .thenThrow(new RuntimeException("Network error"));
+
+                // When & Then
+                assertThatThrownBy(() -> service.getStationsByCity("City"))
+                                .isInstanceOf(IllegalStateException.class)
+                                .hasMessageContaining("Error fetching stations");
+        }
+
+        @Test
+        void whenConvertingStationDataWithNullValues_thenUsesDefaultValues() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                Map<String, Object> addressInfo = new HashMap<>();
+                List<Map<String, Object>> connections = new ArrayList<>();
+
+                stationData.put("ID", null);
+                stationData.put("AddressInfo", addressInfo);
+                stationData.put("Connections", connections);
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getId()).isNull();
+                assertThat(result.getName()).isEqualTo("Unknown");
+                assertThat(result.getAddress()).isEqualTo("Unknown");
+                assertThat(result.getLatitude()).isEqualTo(0.0);
+                assertThat(result.getLongitude()).isEqualTo(0.0);
+                assertThat(result.getCity()).isEqualTo("Unknown");
+                assertThat(result.getCountry()).isEqualTo("Unknown");
+                assertThat(result.getQuantityOfChargers()).isEqualTo(1);
+        }
+
+        @Test
+        void whenConvertingStationDataWithInvalidNumberFormat_thenThrowsException() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                Map<String, Object> addressInfo = new HashMap<>();
+                addressInfo.put("Latitude", "invalid");
+                addressInfo.put("Longitude", "invalid");
+
+                stationData.put("ID", "invalid");
+                stationData.put("AddressInfo", addressInfo);
+                stationData.put("Connections", new ArrayList<>());
+
+                // When & Then
+                assertThatThrownBy(() -> service.convertMapToStation(stationData))
+                                .isInstanceOf(IllegalStateException.class)
+                                .hasMessageContaining("Error converting station data");
+        }
+
+        @Test
+        void whenConvertingStationDataWithInvalidConnectionQuantity_thenUsesDefaultValues() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                Map<String, Object> addressInfo = new HashMap<>();
+                List<Map<String, Object>> connections = new ArrayList<>();
+
+                Map<String, Object> connection = new HashMap<>();
+                connection.put("Quantity", "invalid");
+                connections.add(connection);
+
+                stationData.put("ID", 1);
+                stationData.put("AddressInfo", addressInfo);
+                stationData.put("Connections", connections);
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getQuantityOfChargers()).isEqualTo(1);
+        }
+
+        @Test
+        void whenConvertingStationDataWithNullConnectionQuantity_thenUsesDefaultValues() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                Map<String, Object> addressInfo = new HashMap<>();
+                List<Map<String, Object>> connections = new ArrayList<>();
+
+                Map<String, Object> connection = new HashMap<>();
+                connection.put("Quantity", null);
+                connections.add(connection);
+
+                stationData.put("ID", 1);
+                stationData.put("AddressInfo", addressInfo);
+                stationData.put("Connections", connections);
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getQuantityOfChargers()).isEqualTo(1);
+        }
+
+        @Test
+        void whenConvertingStationDataWithEmptyConnections_thenUsesDefaultValues() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                Map<String, Object> addressInfo = new HashMap<>();
+                List<Map<String, Object>> connections = new ArrayList<>();
+
+                stationData.put("ID", 1);
+                stationData.put("AddressInfo", addressInfo);
+                stationData.put("Connections", connections);
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getQuantityOfChargers()).isEqualTo(1);
+        }
 }
