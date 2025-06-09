@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * This service validates tokens issued by the user-service.
  */
 @Component
-@Profile("!test")
+@Profile({"!test", "securitytest"})
 public class JwtUtil {
 
   @Value("${jwt.secret}")

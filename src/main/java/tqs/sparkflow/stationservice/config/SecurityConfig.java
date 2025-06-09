@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-@Profile("!test")
+@Profile({"!test", "securitytest"})
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;

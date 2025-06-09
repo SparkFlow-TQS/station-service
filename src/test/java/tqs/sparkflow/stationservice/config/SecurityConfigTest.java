@@ -30,7 +30,8 @@ import tqs.sparkflow.stationservice.util.JwtUtil;
         "spring.jpa.properties.hibernate.query.fail_on_pagination_over_collection_fetch=false",
         "spring.jpa.properties.hibernate.id.new_generator_mappings=false",
         "spring.flyway.enabled=false", "spring.flyway.baseline-on-migrate=false",
-        "jwt.secret=test-secret-key-for-tests-that-should-be-at-least-32-characters-long"})
+        "jwt.secret=test-secret-key-for-tests-that-should-be-at-least-32-characters-long",
+        "spring.profiles.active=securitytest"})
 class SecurityConfigTest {
 
     @Autowired

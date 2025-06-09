@@ -21,7 +21,7 @@ import tqs.sparkflow.stationservice.util.JwtUtil;
  * This filter intercepts incoming requests and validates JWT tokens in the Authorization header.
  */
 @Component
-@Profile("!test")
+@Profile({"!test", "securitytest"})
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtUtil jwtUtil;

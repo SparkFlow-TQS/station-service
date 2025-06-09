@@ -32,7 +32,7 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @TestConfiguration
 @EnableWebSecurity
-@Profile("test")
+@Profile({"test", "!securitytest"})
 public class TestConfig {
 
     @Bean
