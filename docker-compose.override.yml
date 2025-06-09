@@ -9,7 +9,7 @@ services:
 
   station-db:
     ports:
-      - "3307:3306"
+      - "${DB_PORT}"
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=sparkflow_station 

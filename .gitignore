@@ -32,5 +32,38 @@ build/
 ### VS Code ###
 .vscode/
 
+### Cucumber ###
+target/
+
+### SonarQube ###
+.sonar/
+
+### JaCoCo ###
+.jacoco/
+
+### Maven ###
+.mvn/
+
+### Eclipse ###
+.metadata/
+.project
+.settings/
+
+### IntelliJ ###
+.idea/
+*.iml
+*.ipr
+*.iws
+*.xml
+!**/src/test/resources/logback-test.xml
+
+### Environment ###
 .env
-.env.*
+
+### Logs ###
+nohup.out
+*.logstation-mysql-data/
+*.log
+
+station-mysql-data/
+*.backup

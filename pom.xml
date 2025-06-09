@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.12</version>
+		<version>3.5.0</version>
 		<relativePath/>
 	</parent>
 	<groupId>tqs.sparkflow</groupId>
 	<artifactId>station-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.5.0</version>
 	<name>station-service</name>
 	<description>Station service of Sparkflow</description>
 	<url/>
@@ -36,10 +36,46 @@
 		<sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 		<junit-platform.version>1.12.1</junit-platform.version>
 		<junit-jupiter.version>5.12.1</junit-jupiter.version>
-		<springdoc.version>2.4.0</springdoc.version>
+		<springdoc.version>2.7.0</springdoc.version>
 		<jackson.version>2.16.1</jackson.version>
-		<logback.version>1.4.14</logback.version>
+		<cucumber.version>7.22.2</cucumber.version>
+		<spotless.version>2.43.0</spotless.version>
+		<flyway.version>11.8.2</flyway.version>
+		<mockito.version>5.16.0</mockito.version>
+		<rest-assured.version>5.5.0</rest-assured.version>
+		<testcontainers.version>1.20.0</testcontainers.version>
+		<hibernate.version>6.4.4.Final</hibernate.version>
+		<guava.version>32.1.3-jre</guava.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>spotless</id>
+			<name>Spotless Maven Plugin Repository</name>
+			<url>https://plugins.gradle.org/m2/</url>
+		</repository>
+		<repository>
+			<id>xray</id>
+			<name>Xray Repository</name>
+			<url>https://packages.atlassian.com/maven/repository/public</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -62,9 +98,9 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>${logback.version}</version>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -84,63 +120,70 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainers.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mysql</artifactId>
+			<version>${testcontainers.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Cucumber Dependencies -->
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-java</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-spring</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-junit-platform-engine</artifactId>
-			<version>7.22.2</version>
+			<version>${cucumber.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- REST Assured -->
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
-			<version>5.5.0</version>
+			<version>${rest-assured.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Mockito -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.16.0</version>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Flyway -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>9.22.3</version>
+			<version>${flyway.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+			<version>${flyway.version}</version>
 		</dependency>
 		<!-- JUnit Platform Suite -->
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-suite</artifactId>
-			<version>1.12.1</version>
+			<version>${junit-platform.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-suite-api</artifactId>
-			<version>1.12.1</version>
+			<version>${junit-platform.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -199,9 +242,68 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+		<!-- JWT Dependencies -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-junit</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Xray Dependencies -->
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-junit-extensions</artifactId>
+			<version>0.9.0</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Google Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>3.1.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -241,10 +343,29 @@
 				<configuration>
 					<includes>
 						<include>**/*Test.java</include>
-						<include>**/*Tests.java</include>
-						<include>**/*Suite.java</include>
 					</includes>
-					<useModulePath>false</useModulePath>
+					<reportsDirectories>
+						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+					</reportsDirectories>
+					<reportFormat>xml</reportFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.5.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -257,8 +378,11 @@
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>true</failsOnError>
 					<linkXRef>false</linkXRef>
-					<maxAllowedViolations>10</maxAllowedViolations>
-					<violationSeverity>warning</violationSeverity>
+					<maxAllowedViolations>0</maxAllowedViolations>
+					<violationSeverity>error</violationSeverity>
+					<sourceDirectories>
+						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+					</sourceDirectories>
 				</configuration>
 				<executions>
 					<execution>
@@ -269,6 +393,30 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>12.1.1</version>
+				<configuration>
+					<nvdApiKey>${NVD_API_KEY}</nvdApiKey>
+				</configuration>
+			</plugin>
+			<!-- Xray Maven Plugin -->
+			<plugin>
+				<groupId>app.getxray</groupId>
+				<artifactId>xray-maven-plugin</artifactId>
+				<version>0.9.0</version>
+				<configuration>
+					<clientId>${XRAY_CLIENT_ID}</clientId>
+					<clientSecret>${XRAY_CLIENT_SECRET}</clientSecret>
+					<cloud>true</cloud>
+					<projectKey>${XRAY_PROJECT_KEY}</projectKey>
+					<reportFormat>junit</reportFormat>
+					<reportFile>${project.build.directory}/surefire-reports</reportFile>
+					<autoCreateTests>true</autoCreateTests>
+					<autoCreateTestsLabels>automated</autoCreateTestsLabels>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

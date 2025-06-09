@@ -3,24 +3,34 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      OPENCHARGEMAP_API_KEY: ${OPENCHARGEMAP_API_KEY}
+      OPENCHARGEMAP_API_URL: ${OPENCHARGEMAP_API_URL}
+      SPRING_DATASOURCE_URL: jdbc:mysql://station-db:3306/sparkflow_station?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
-      - station-db
-    networks:
-      - sparkflow-network
+      station-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 4s
 
   station-db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: sparkflow_station
-    volumes:
-      - station-mysql-data:/var/lib/mysql
-    networks:
-      - sparkflow-network
-
-networks:
-  sparkflow-network:
-    name: sparkflow-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
 volumes:
-  station-mysql-data: 
+  station-mysql-data:

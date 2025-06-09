@@ -1,0 +1,102 @@
+name: Security and Quality Scan
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+        cache: 'maven'
+    
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Start MySQL Container
+      run: |
+        docker run -d \
+          --name mysql \
+          -e MYSQL_DATABASE=test \
+          -e MYSQL_USER=test \
+          -e MYSQL_PASSWORD=test \
+          -e MYSQL_ROOT_PASSWORD=test \
+          -p 3306:3306 \
+          mysql:8.0
+        sleep 10  # Wait for MySQL to start
+        
+    - name: Start Spring Boot Application
+      env:
+        OPENCHARGEMAP_API_KEY: test-api-key
+        OPENCHARGEMAP_API_URL: https://api.openchargemap.io/v3/poi
+      run: |
+        ./mvnw clean package -DskipTests
+        nohup java -jar target/station-service-*.jar \
+          --spring.profiles.active=test \
+          --spring.datasource.url=jdbc:mysql://localhost:3306/test \
+          --spring.datasource.username=test \
+          --spring.datasource.password=test \
+          --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+          --openchargemap.api.key=test-api-key \
+          --openchargemap.api.url=https://api.openchargemap.io/v3/poi &
+        # Wait for application to be ready
+        for i in {1..30}; do
+          if curl -s http://localhost:8082/actuator/health > /dev/null; then
+            echo "Application is ready!"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "Application failed to start within 30 seconds"
+            exit 1
+          fi
+          echo "Waiting for application to start... ($i/30)"
+          sleep 1
+        done
+        
+    - name: OWASP ZAP Scan
+      run: |
+        docker pull ghcr.io/zaproxy/zaproxy:stable
+        # Create directory with proper permissions
+        mkdir -p zap-output
+        chmod 750 zap-output
+        docker run -v $(pwd)/zap-output:/zap/wrk/:rw \
+          --network host \
+          -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+          -t http://localhost:8082 \
+          -g gen.conf \
+          -r testreport.html
+      continue-on-error: true
+        
+    - name: Upload ZAP Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: zap-report
+        path: zap-output/testreport.html
+        
+    - name: Stop Spring Boot Application
+      if: always()
+      run: |
+        pkill -f "spring-boot:run" || true
+        pkill -f "java.*station-service" || true
+        docker stop mysql || true
+        docker rm mysql || true 
