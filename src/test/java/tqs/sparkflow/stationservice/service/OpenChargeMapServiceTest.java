@@ -299,7 +299,7 @@ class OpenChargeMapServiceTest {
                 assertThat(result.getCity()).isEqualTo("Unknown");
                 assertThat(result.getCountry()).isEqualTo("Unknown");
                 assertThat(result.getQuantityOfChargers()).isEqualTo(1);
-                assertThat(result.getStatus()).isEqualTo("Available");
+                assertThat(result.getStatus()).isNull();
         }
 
         @Test
@@ -327,7 +327,7 @@ class OpenChargeMapServiceTest {
                 assertThat(result.getCity()).isEqualTo("Unknown");
                 assertThat(result.getCountry()).isEqualTo("Unknown");
                 assertThat(result.getQuantityOfChargers()).isEqualTo(1);
-                assertThat(result.getStatus()).isEqualTo("Available");
+                assertThat(result.getStatus()).isNull();
         }
 
         @Test
@@ -540,5 +540,129 @@ class OpenChargeMapServiceTest {
                 // Then
                 assertThat(result).isNotNull();
                 assertThat(result.getQuantityOfChargers()).isEqualTo(1);
+        }
+
+        @Test
+        void whenConvertingStationDataWithStatusType_thenSetsStatusAndOperational() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                Map<String, Object> statusType = new HashMap<>();
+                statusType.put("IsOperational", true);
+                statusType.put("Title", "Operational");
+                stationData.put("StatusType", statusType);
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", new ArrayList<>());
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getStatus()).isEqualTo("Operational");
+                assertThat(result.getIsOperational()).isTrue();
+        }
+
+        @Test
+        void whenConvertingStationDataWithInvalidStatusType_thenStatusIsNull() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                stationData.put("StatusType", "Invalid"); // Not a Map
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", new ArrayList<>());
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getStatus()).isNull();
+                assertThat(result.getIsOperational()).isNull();
+        }
+
+        @Test
+        void whenConvertingStationDataWithPower_thenSetsHighestPower() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                List<Map<String, Object>> connections = new ArrayList<>();
+
+                Map<String, Object> connection1 = new HashMap<>();
+                connection1.put("PowerKW", 22.0);
+                connections.add(connection1);
+
+                Map<String, Object> connection2 = new HashMap<>();
+                connection2.put("PowerKW", 50.0);
+                connections.add(connection2);
+
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", connections);
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getPower()).isEqualTo(50);
+        }
+
+        @Test
+        void whenConvertingStationDataWithInvalidPower_thenPowerIsNull() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                List<Map<String, Object>> connections = new ArrayList<>();
+
+                Map<String, Object> connection = new HashMap<>();
+                connection.put("PowerKW", "invalid");
+                connections.add(connection);
+
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", connections);
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getPower()).isNull();
+        }
+
+        @Test
+        void whenConvertingStationDataWithExternalId_thenSetsExternalId() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                stationData.put("ID", 123);
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", new ArrayList<>());
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getExternalId()).isEqualTo("123");
+        }
+
+        @Test
+        void whenConvertingStationDataWithStringExternalId_thenSetsExternalId() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                stationData.put("ID", "123");
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", new ArrayList<>());
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getExternalId()).isEqualTo("123");
+        }
+
+        @Test
+        void whenConvertingStationDataWithNullExternalId_thenExternalIdIsNull() {
+                // Given
+                Map<String, Object> stationData = new HashMap<>();
+                stationData.put("ID", null);
+                stationData.put("AddressInfo", new HashMap<>());
+                stationData.put("Connections", new ArrayList<>());
+
+                // When
+                Station result = service.convertMapToStation(stationData);
+
+                // Then
+                assertThat(result.getExternalId()).isNull();
         }
 }

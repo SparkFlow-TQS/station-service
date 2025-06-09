@@ -156,8 +156,10 @@ public class OpenChargeMapService {
       setStationCoordinates(addressInfo, station);
       setStationCity(addressInfo, station);
       setStationCountry(addressInfo, station);
-      station.setStatus("Available");
+      setStationStatus(data, station);
       setStationQuantityOfChargers(connections, station);
+      setStationPower(connections, station);
+      setStationExternalId(data, station);
 
       return station;
     } catch (Exception e) {
@@ -171,8 +173,8 @@ public class OpenChargeMapService {
       throw new IllegalStateException("AddressInfo is not a valid map");
     }
     @SuppressWarnings("unchecked")
-    Map<String, Object> result = (Map<String, Object>) addressInfo;
-    return result;
+    Map<String, Object> map = (Map<String, Object>) addressInfo;
+    return map;
   }
 
   private List<Map<String, Object>> getConnections(Map<String, Object> data) {
@@ -181,8 +183,8 @@ public class OpenChargeMapService {
       throw new IllegalStateException("Connections is not a valid list");
     }
     @SuppressWarnings("unchecked")
-    List<Map<String, Object>> result = (List<Map<String, Object>>) connections;
-    return result;
+    List<Map<String, Object>> list = (List<Map<String, Object>>) connections;
+    return list;
   }
 
   private void setStationId(Map<String, Object> data, Station station) {
@@ -251,6 +253,23 @@ public class OpenChargeMapService {
     station.setCountry(country != null ? country.toString() : UNKNOWN_VALUE);
   }
 
+  private void setStationStatus(Map<String, Object> data, Station station) {
+    Object statusType = data.get("StatusType");
+    if (statusType instanceof Map) {
+      @SuppressWarnings("unchecked")
+      Map<String, Object> map = (Map<String, Object>) statusType;
+      Object isOperational = map.get("IsOperational");
+      if (isOperational instanceof Boolean) {
+        Boolean operational = (Boolean) isOperational;
+        station.setIsOperational(operational);
+      }
+      Object title = map.get("Title");
+      if (title != null) {
+        station.setStatus(title.toString());
+      }
+    }
+  }
+
   private void setStationQuantityOfChargers(List<Map<String, Object>> connections,
       Station station) {
     if (connections == null || connections.isEmpty()) {
@@ -281,5 +300,30 @@ public class OpenChargeMapService {
 
     // Ensure at least 1 charger
     station.setQuantityOfChargers(totalChargers > 0 ? totalChargers : 1);
+  }
+
+  private void setStationPower(List<Map<String, Object>> connections, Station station) {
+    if (connections != null && !connections.isEmpty()) {
+      // Get the highest power from all connections
+      double maxPower = 0.0;
+      boolean hasValidPower = false;
+      for (Map<String, Object> connection : connections) {
+        Object powerKW = connection.get("PowerKW");
+        if (powerKW instanceof Number) {
+          Number number = (Number) powerKW;
+          double power = number.doubleValue();
+          maxPower = Math.max(maxPower, power);
+          hasValidPower = true;
+        }
+      }
+      station.setPower(hasValidPower ? (int) Math.round(maxPower) : null);
+    }
+  }
+
+  private void setStationExternalId(Map<String, Object> data, Station station) {
+    Object id = data.get("ID");
+    if (id != null) {
+      station.setExternalId(id.toString());
+    }
   }
 }
