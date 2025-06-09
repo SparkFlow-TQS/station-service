@@ -273,7 +273,7 @@ class JwtAuthenticationFilterTest {
         
         when(request.getHeader("Authorization")).thenReturn(bearerToken);
         when(jwtUtil.extractUsername(token)).thenReturn(username);
-        when(jwtUtil.validateToken(token, username)).thenThrow(new RuntimeException("Validation error"));
+        when(jwtUtil.validateToken(token, username)).thenThrow(new IllegalArgumentException("Validation error"));
         
         // When
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
