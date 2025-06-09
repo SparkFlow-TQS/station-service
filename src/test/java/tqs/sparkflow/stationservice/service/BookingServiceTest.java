@@ -115,11 +115,10 @@ class BookingServiceTest {
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessageContaining("Station is not operational");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessageContaining("Station is not operational");
 
                 verify(bookingRepository, never()).save(any());
         }
@@ -132,11 +131,10 @@ class BookingServiceTest {
                                 .thenReturn(List.of(testBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessage("There are overlapping bookings for this time slot");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any());
         }
@@ -198,11 +196,11 @@ class BookingServiceTest {
                                 .thenThrow(new RestClientException("User not found"));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(99L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessageContaining("User not found or not authorized");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(99L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessageContaining(
+                                                                "User not found or not authorized");
         }
 
         @Test
@@ -212,9 +210,8 @@ class BookingServiceTest {
                                 .thenThrow(new RestClientException("User not found"));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.getAllBookings(99L);
-                }).isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.getAllBookings(99L))
+                                .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("User not found or not authorized");
         }
 
@@ -225,9 +222,8 @@ class BookingServiceTest {
                                 .thenThrow(new RestClientException("User not found"));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.getBookingsByStationId(99L, 99L);
-                }).isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.getBookingsByStationId(99L, 99L))
+                                .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("User not found or not authorized");
         }
 
@@ -238,9 +234,8 @@ class BookingServiceTest {
                                 .thenThrow(new RestClientException("User not found"));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.getBookingsByUserId(99L);
-                }).isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.getBookingsByUserId(99L))
+                                .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("User not found or not authorized");
         }
 
@@ -256,9 +251,8 @@ class BookingServiceTest {
                                                 "User not authorized to access this booking"));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.getBookingById(1L, 1L);
-                }).isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.getBookingById(1L, 1L))
+                                .isInstanceOf(IllegalStateException.class)
                                 .hasMessage("User not authorized to access this booking");
         }
 
@@ -266,9 +260,8 @@ class BookingServiceTest {
         void whenCancelBooking_withBookingNotFound_thenThrowException() {
                 when(bookingRepository.findById(2L)).thenReturn(Optional.empty());
 
-                assertThatThrownBy(() -> {
-                        bookingService.cancelBooking(2L);
-                }).isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.cancelBooking(2L))
+                                .isInstanceOf(IllegalStateException.class)
                                 .hasMessageContaining("Booking not found");
         }
 
@@ -336,11 +329,10 @@ class BookingServiceTest {
                                 .thenReturn(overlappingBookings);
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessage("There are overlapping bookings for this time slot");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
         }
@@ -356,11 +348,10 @@ class BookingServiceTest {
                                 .thenReturn(List.of(testBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessage("There are overlapping bookings for this time slot");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
         }
@@ -388,11 +379,10 @@ class BookingServiceTest {
                                 .thenReturn(List.of(cancelledBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessage("There are overlapping bookings for this time slot");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
         }
@@ -408,11 +398,10 @@ class BookingServiceTest {
                                 .thenReturn(List.of(testBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> {
-                        bookingService.createRecurringBooking(1L, 1L, now, now.plusHours(2),
-                                        recurringDays);
-                }).isInstanceOf(IllegalStateException.class)
-                                .hasMessage("There are overlapping bookings for this time slot");
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
+                                now.plusHours(2), recurringDays))
+                                                .isInstanceOf(IllegalStateException.class)
+                                                .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
         }

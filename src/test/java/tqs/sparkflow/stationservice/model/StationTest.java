@@ -300,12 +300,12 @@ class StationTest {
   @DisplayName("equals should return false when comparing with null")
   void whenComparingWithNull_thenReturnFalse() {
     // Given
-    Station station = new Station();
+    Station testStation = new Station();
     station.setId(1L);
     station.setName("Test Station");
 
     // When
-    boolean result = station.equals(null);
+    boolean result = testStation.equals(null);
 
     // Then
     assertThat(result).isFalse();
@@ -315,14 +315,14 @@ class StationTest {
   @DisplayName("equals should return false when comparing with different class")
   void whenComparingWithDifferentClass_thenReturnFalse() {
     // Given
-    Station station = new Station();
-    station.setId(1L);
-    station.setName("Test Station");
+    Station testStation = new Station();
+    testStation.setId(1L);
+    testStation.setName("Test Station");
 
     Object otherObject = new Object();
 
     // When
-    boolean result = station.equals(otherObject);
+    boolean result = testStation.equals(otherObject);
 
     // Then
     assertThat(result).isFalse();
@@ -332,12 +332,12 @@ class StationTest {
   @DisplayName("equals should return true when comparing with same instance")
   void whenComparingWithSameInstance_thenReturnTrue() {
     // Given
-    Station station = new Station();
-    station.setId(1L);
-    station.setName("Test Station");
+    Station testStation = new Station();
+    testStation.setId(1L);
+    testStation.setName("Test Station");
 
     // When
-    boolean result = station.equals(station);
+    boolean result = testStation.equals(testStation);
 
     // Then
     assertThat(result).isTrue();
