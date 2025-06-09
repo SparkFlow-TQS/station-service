@@ -267,6 +267,75 @@ class PaymentControllerTest {
             .andExpect(content().string("Invalid signature"));
     }
 
+    @Test
+    @DisplayName("Should handle general exception during payment intent creation")
+    void shouldHandleGeneralExceptionDuringPaymentIntentCreation() throws Exception {
+        // Given
+        when(paymentService.createPaymentIntent(any(PaymentIntentRequestDTO.class)))
+            .thenThrow(new RuntimeException("General error"));
+
+        // When & Then
+        mockMvc.perform(post("/api/payments/create-intent")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testRequest)))
+            .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("Should handle general exception during payment confirmation")
+    void shouldHandleGeneralExceptionDuringPaymentConfirmation() throws Exception {
+        // Given
+        when(paymentService.confirmPayment("pi_test_123"))
+            .thenThrow(new RuntimeException("General error"));
+
+        // When & Then
+        mockMvc.perform(post("/api/payments/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"paymentIntentId\":\"pi_test_123\"}"))
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.error").value("Failed to confirm payment"));
+    }
+
+    @Test
+    @DisplayName("Should handle webhook with general exception")
+    void shouldHandleWebhookWithGeneralException() throws Exception {
+        // Given
+        String payload = "{\"type\":\"payment_intent.succeeded\"}";
+        String signature = "test_signature";
+
+        doThrow(new RuntimeException("General webhook error"))
+                .when(paymentService).handleWebhookEvent(eq(payload), eq(signature));
+
+        // When & Then
+        mockMvc.perform(post("/api/payments/webhook")
+                .header("Stripe-Signature", signature)
+                .content(payload))
+            .andExpect(status().isInternalServerError())
+            .andExpect(content().string("Error processing webhook"));
+    }
+
+    @Test
+    @DisplayName("Should handle payment confirmation with empty payment intent ID")
+    void shouldHandlePaymentConfirmationWithEmptyPaymentIntentId() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/api/payments/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"paymentIntentId\":\"\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Payment intent ID is required"));
+    }
+
+    @Test
+    @DisplayName("Should handle payment confirmation with whitespace-only payment intent ID")
+    void shouldHandlePaymentConfirmationWithWhitespaceOnlyPaymentIntentId() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/api/payments/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"paymentIntentId\":\"   \"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Payment intent ID is required"));
+    }
+
     @Configuration
     @EnableWebSecurity
     static class TestSecurityConfig {

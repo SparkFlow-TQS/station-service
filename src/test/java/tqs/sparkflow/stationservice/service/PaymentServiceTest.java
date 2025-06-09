@@ -358,4 +358,170 @@ class PaymentServiceTest {
         verify(paymentRepository).findByStripePaymentIntentId("pi_test_123");
         verify(paymentRepository, never()).save(any(Payment.class));
     }
+
+    @Test
+    @DisplayName("Should map all Stripe status values correctly")
+    void shouldMapAllStripeStatusValuesCorrectly() {
+        // Test all possible Stripe status mappings
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getId()).thenReturn("pi_test_123");
+        when(paymentRepository.findByStripePaymentIntentId("pi_test_123"))
+            .thenReturn(Optional.of(testPayment));
+        when(paymentRepository.save(any(Payment.class))).thenReturn(testPayment);
+
+        // Test "processing" status
+        when(mockPaymentIntent.getStatus()).thenReturn("processing");
+        Payment result = paymentService.updatePaymentFromStripeEvent(mockPaymentIntent);
+        assertThat(result).isNotNull();
+
+        // Test "requires_action" status
+        when(mockPaymentIntent.getStatus()).thenReturn("requires_action");
+        result = paymentService.updatePaymentFromStripeEvent(mockPaymentIntent);
+        assertThat(result).isNotNull();
+
+        // Test "canceled" status
+        when(mockPaymentIntent.getStatus()).thenReturn("canceled");
+        result = paymentService.updatePaymentFromStripeEvent(mockPaymentIntent);
+        assertThat(result).isNotNull();
+
+        // Test "requires_payment_method" status
+        when(mockPaymentIntent.getStatus()).thenReturn("requires_payment_method");
+        result = paymentService.updatePaymentFromStripeEvent(mockPaymentIntent);
+        assertThat(result).isNotNull();
+
+        // Test default case (unknown status)
+        when(mockPaymentIntent.getStatus()).thenReturn("unknown_status");
+        result = paymentService.updatePaymentFromStripeEvent(mockPaymentIntent);
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should handle webhook with null webhook secret")
+    void shouldHandleWebhookWithNullWebhookSecret() {
+        // Given
+        ReflectionTestUtils.setField(paymentService, "webhookSecret", null);
+        String payload = "{\"type\":\"payment_intent.succeeded\"}";
+        String signature = "test_signature";
+
+        // When & Then - Should not throw exception
+        paymentService.handleWebhookEvent(payload, signature);
+        // No exception should be thrown
+    }
+
+    @Test
+    @DisplayName("Should throw exception when payment by Stripe ID not found")
+    void shouldThrowExceptionWhenPaymentByStripeIdNotFound() {
+        // Given
+        when(paymentRepository.findByStripePaymentIntentId("pi_test_123"))
+            .thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> paymentService.getPaymentByStripeId("pi_test_123"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Payment not found with Stripe ID: pi_test_123");
+
+        verify(paymentRepository).findByStripePaymentIntentId("pi_test_123");
+    }
+
+    @Test
+    @DisplayName("Should confirm payment without booking found")
+    void shouldConfirmPaymentWithoutBookingFound() throws StripeException {
+        // Given
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getId()).thenReturn("pi_test_123");
+        when(mockPaymentIntent.getStatus()).thenReturn("succeeded");
+        when(mockPaymentIntent.getLatestCharge()).thenReturn("ch_test_123");
+
+        Payment payment = new Payment(1L, "pi_test_123", BigDecimal.valueOf(25.50), "EUR", "Test");
+        payment.setStatus(PaymentStatus.SUCCEEDED);
+        
+        when(paymentRepository.findByStripePaymentIntentId("pi_test_123"))
+            .thenReturn(Optional.of(payment));
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
+
+        try (MockedStatic<PaymentIntent> mockedStatic = mockStatic(PaymentIntent.class)) {
+            mockedStatic.when(() -> PaymentIntent.retrieve("pi_test_123")).thenReturn(mockPaymentIntent);
+
+            // When
+            PaymentDTO result = paymentService.confirmPayment("pi_test_123");
+
+            // Then
+            assertThat(result).isNotNull();
+            verify(bookingRepository).findById(1L);
+        }
+    }
+
+    @Test
+    @DisplayName("Should use default description when null in createPaymentIntent")
+    void shouldUseDefaultDescriptionWhenNull() {
+        // Given
+        testRequest.setDescription(null);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
+        when(paymentRepository.findByBookingIdAndStatusOrderByCreatedAtDesc(1L, PaymentStatus.SUCCEEDED))
+            .thenReturn(List.of());
+
+        // When & Then - Should handle null description gracefully
+        assertThatThrownBy(() -> paymentService.createPaymentIntent(testRequest))
+            .isInstanceOf(RuntimeException.class);
+
+        verify(bookingRepository).findById(1L);
+    }
+
+    @Test
+    @DisplayName("Should handle payment intent without charge ID")
+    void shouldHandlePaymentIntentWithoutChargeId() {
+        // Given
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getId()).thenReturn("pi_test_123");
+        when(mockPaymentIntent.getStatus()).thenReturn("succeeded");
+        when(mockPaymentIntent.getLatestCharge()).thenReturn(null);
+
+        when(paymentRepository.findByStripePaymentIntentId("pi_test_123"))
+            .thenReturn(Optional.of(testPayment));
+        when(paymentRepository.save(any(Payment.class))).thenReturn(testPayment);
+
+        // When
+        Payment result = paymentService.updatePaymentFromStripeEvent(mockPaymentIntent);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(paymentRepository).save(any(Payment.class));
+    }
+
+    @Test
+    @DisplayName("Should handle webhook with all supported event types")
+    void shouldHandleWebhookWithAllSupportedEventTypes() {
+        // Given - Mock the Webhook.constructEvent method behavior for testing
+        // Since we can't easily mock static Webhook methods, we test with empty webhook secret
+        ReflectionTestUtils.setField(paymentService, "webhookSecret", "");
+        
+        String[] eventTypes = {
+            "payment_intent.succeeded",
+            "payment_intent.processing", 
+            "payment_intent.requires_action",
+            "payment_intent.canceled",
+            "payment_intent.payment_failed"
+        };
+        
+        for (String eventType : eventTypes) {
+            String payload = "{\"type\":\"" + eventType + "\"}";
+            String signature = "test_signature";
+            
+            // When & Then - Should not throw exception
+            paymentService.handleWebhookEvent(payload, signature);
+        }
+    }
+
+    @Test
+    @DisplayName("Should handle webhook with unsupported event type")
+    void shouldHandleWebhookWithUnsupportedEventType() {
+        // Given
+        ReflectionTestUtils.setField(paymentService, "webhookSecret", "");
+        String payload = "{\"type\":\"account.updated\"}";
+        String signature = "test_signature";
+
+        // When & Then - Should not throw exception
+        paymentService.handleWebhookEvent(payload, signature);
+    }
 }

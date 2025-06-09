@@ -138,4 +138,69 @@ class PaymentIntentRequestDTOTest {
         requestDTO.setDescription("   ");
         assertThat(requestDTO.getDescription()).isEqualTo("   ");
     }
+
+    @Test
+    @DisplayName("Should handle constructor with all parameters")
+    void shouldHandleConstructorWithAllParameters() {
+        // Given
+        PaymentIntentRequestDTO dto = new PaymentIntentRequestDTO(1L, 2550L, "EUR", "Test payment");
+
+        // Then
+        assertThat(dto.getBookingId()).isEqualTo(1L);
+        assertThat(dto.getAmount()).isEqualTo(2550L);
+        assertThat(dto.getCurrency()).isEqualTo("EUR");
+        assertThat(dto.getDescription()).isEqualTo("Test payment");
+    }
+
+    @Test
+    @DisplayName("Should handle equals with null and different object types")
+    void shouldHandleEqualsWithNullAndDifferentTypes() {
+        // Given
+        PaymentIntentRequestDTO dto = new PaymentIntentRequestDTO(1L, 2550L, "EUR", "Test");
+
+        // Then
+        assertThat(dto.equals(null)).isFalse();
+        assertThat(dto.equals("not a DTO")).isFalse();
+        assertThat(dto.equals(dto)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should handle equals with different field values")
+    void shouldHandleEqualsWithDifferentFieldValues() {
+        // Given
+        PaymentIntentRequestDTO base = new PaymentIntentRequestDTO(1L, 2550L, "EUR", "Test");
+        
+        PaymentIntentRequestDTO differentBooking = new PaymentIntentRequestDTO(2L, 2550L, "EUR", "Test");
+        PaymentIntentRequestDTO differentAmount = new PaymentIntentRequestDTO(1L, 5000L, "EUR", "Test");
+        PaymentIntentRequestDTO differentCurrency = new PaymentIntentRequestDTO(1L, 2550L, "USD", "Test");
+        PaymentIntentRequestDTO differentDescription = new PaymentIntentRequestDTO(1L, 2550L, "EUR", "Different");
+
+        // Then
+        assertThat(base.equals(differentBooking)).isFalse();
+        assertThat(base.equals(differentAmount)).isFalse();
+        assertThat(base.equals(differentCurrency)).isFalse();
+        assertThat(base.equals(differentDescription)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should handle equals with null fields")
+    void shouldHandleEqualsWithNullFields() {
+        // Given
+        PaymentIntentRequestDTO dto1 = new PaymentIntentRequestDTO();
+        PaymentIntentRequestDTO dto2 = new PaymentIntentRequestDTO();
+        
+        dto1.setBookingId(null);
+        dto1.setAmount(null);
+        dto1.setCurrency(null);
+        dto1.setDescription(null);
+        
+        dto2.setBookingId(null);
+        dto2.setAmount(null);
+        dto2.setCurrency(null);
+        dto2.setDescription(null);
+
+        // Then
+        assertThat(dto1.equals(dto2)).isTrue();
+        assertThat(dto1.hashCode()).isEqualTo(dto2.hashCode());
+    }
 }

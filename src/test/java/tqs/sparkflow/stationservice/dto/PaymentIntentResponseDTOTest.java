@@ -211,4 +211,66 @@ class PaymentIntentResponseDTOTest {
         assertThat(defaultDTO.getStatus()).isNull();
         assertThat(defaultDTO.getDescription()).isNull();
     }
+
+    @Test
+    @DisplayName("Should handle equals with null and different object types")
+    void shouldHandleEqualsWithNullAndDifferentTypes() {
+        // Given
+        PaymentIntentResponseDTO dto = new PaymentIntentResponseDTO(
+            "pi_test_123", "secret", 2550L, "EUR", "status", "desc"
+        );
+
+        // Then
+        assertThat(dto.equals(null)).isFalse();
+        assertThat(dto.equals("not a DTO")).isFalse();
+        assertThat(dto.equals(dto)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should handle equals with different field values")
+    void shouldHandleEqualsWithDifferentFieldValues() {
+        // Given
+        PaymentIntentResponseDTO base = new PaymentIntentResponseDTO(
+            "pi_test_123", "secret", 2550L, "EUR", "status", "desc"
+        );
+        
+        PaymentIntentResponseDTO differentId = new PaymentIntentResponseDTO(
+            "pi_test_456", "secret", 2550L, "EUR", "status", "desc"
+        );
+        PaymentIntentResponseDTO differentSecret = new PaymentIntentResponseDTO(
+            "pi_test_123", "different", 2550L, "EUR", "status", "desc"
+        );
+        PaymentIntentResponseDTO differentAmount = new PaymentIntentResponseDTO(
+            "pi_test_123", "secret", 5000L, "EUR", "status", "desc"
+        );
+        PaymentIntentResponseDTO differentCurrency = new PaymentIntentResponseDTO(
+            "pi_test_123", "secret", 2550L, "USD", "status", "desc"
+        );
+        PaymentIntentResponseDTO differentStatus = new PaymentIntentResponseDTO(
+            "pi_test_123", "secret", 2550L, "EUR", "different", "desc"
+        );
+        PaymentIntentResponseDTO differentDescription = new PaymentIntentResponseDTO(
+            "pi_test_123", "secret", 2550L, "EUR", "status", "different"
+        );
+
+        // Then
+        assertThat(base.equals(differentId)).isFalse();
+        assertThat(base.equals(differentSecret)).isFalse();
+        assertThat(base.equals(differentAmount)).isFalse();
+        assertThat(base.equals(differentCurrency)).isFalse();
+        assertThat(base.equals(differentStatus)).isFalse();
+        assertThat(base.equals(differentDescription)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should handle equals with null fields")
+    void shouldHandleEqualsWithNullFields() {
+        // Given
+        PaymentIntentResponseDTO dto1 = new PaymentIntentResponseDTO(null, null, null, null, null, null);
+        PaymentIntentResponseDTO dto2 = new PaymentIntentResponseDTO(null, null, null, null, null, null);
+
+        // Then
+        assertThat(dto1.equals(dto2)).isTrue();
+        assertThat(dto1.hashCode()).isEqualTo(dto2.hashCode());
+    }
 }
