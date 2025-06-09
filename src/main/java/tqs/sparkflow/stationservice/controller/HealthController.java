@@ -12,4 +12,4 @@ public class HealthController {
     public String healthCheck() {
         return "Station Manager is healthy :)";
     }
-} 
+}

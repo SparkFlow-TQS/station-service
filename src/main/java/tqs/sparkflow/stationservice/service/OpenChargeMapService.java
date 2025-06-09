@@ -25,7 +25,7 @@ public class OpenChargeMapService {
   private final StationRepository stationRepository;
   private final String apiKey;
   private final String baseUrl;
-  
+
   /**
    * Creates a new instance of OpenChargeMapService.
    *
@@ -34,9 +34,7 @@ public class OpenChargeMapService {
    * @param apiKey The OpenChargeMap API key
    * @param baseUrl The base URL for the OpenChargeMap API
    */
-  public OpenChargeMapService(
-      RestTemplate restTemplate,
-      StationRepository stationRepository,
+  public OpenChargeMapService(RestTemplate restTemplate, StationRepository stationRepository,
       @Value("${openchargemap.api.key}") String apiKey,
       @Value("${openchargemap.api.url}") String baseUrl) {
     this.restTemplate = restTemplate;
@@ -93,16 +91,10 @@ public class OpenChargeMapService {
     }
 
     try {
-      String url = String.format(
-          "%s?key=%s&latitude=%f&longitude=%f&distance=%d",
-          baseUrl, apiKey, latitude, longitude, radius);
-      ResponseEntity<List<Map<String, Object>>> response =
-          restTemplate.exchange(
-              url,
-              HttpMethod.GET,
-              null,
-              new ParameterizedTypeReference<List<Map<String, Object>>>() {}
-          );
+      String url = String.format("%s?key=%s&latitude=%f&longitude=%f&distance=%d", baseUrl, apiKey,
+          latitude, longitude, radius);
+      ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(url,
+          HttpMethod.GET, null, new ParameterizedTypeReference<List<Map<String, Object>>>() {});
 
       List<Map<String, Object>> responseBody = response.getBody();
       if (responseBody == null || responseBody.isEmpty()) {
@@ -133,26 +125,26 @@ public class OpenChargeMapService {
     if (ocmStation == null) {
       return null;
     }
-    return new Station(
-      ocmStation.getId(),                    // externalId
-      ocmStation.getName(),                  // name
-      ocmStation.getAddress(),               // address
-      ocmStation.getCity(),                  // city
-      ocmStation.getCountry(),               // country
-      ocmStation.getLatitude(),              // latitude
-      ocmStation.getLongitude(),             // longitude
-      ocmStation.getQuantityOfChargers(),    // quantityOfChargers
-      ocmStation.getStatus()                 // status
-    );
+    Station station = new Station();
+    station.setExternalId(ocmStation.getId());
+    station.setName(ocmStation.getName());
+    station.setAddress(ocmStation.getAddress());
+    station.setCity(ocmStation.getCity());
+    station.setCountry(ocmStation.getCountry());
+    station.setLatitude(ocmStation.getLatitude());
+    station.setLongitude(ocmStation.getLongitude());
+    station.setQuantityOfChargers(ocmStation.calculateQuantityOfChargers());
+    station.setStatus(ocmStation.getStatus());
+    station.setPower(ocmStation.getPower());
+    station.setIsOperational(true); // Default to operational
+    return station;
   }
 
   private List<Station> convertToStations(List<Map<String, Object>> stationsData) {
-    return stationsData.stream()
-        .map(this::convertMapToStation)
-        .toList();
+    return stationsData.stream().map(this::convertMapToStation).toList();
   }
 
-  private Station convertMapToStation(Map<String, Object> data) {
+  protected Station convertMapToStation(Map<String, Object> data) {
     try {
       Map<String, Object> addressInfo = getAddressInfo(data);
       List<Map<String, Object>> connections = getConnections(data);
@@ -162,6 +154,8 @@ public class OpenChargeMapService {
       setStationName(addressInfo, station);
       setStationAddress(addressInfo, station);
       setStationCoordinates(addressInfo, station);
+      setStationCity(addressInfo, station);
+      setStationCountry(addressInfo, station);
       station.setStatus("Available");
       setStationQuantityOfChargers(connections, station);
 
@@ -217,7 +211,18 @@ public class OpenChargeMapService {
     station.setLongitude(lon != null ? ((Number) lon).doubleValue() : 0.0);
   }
 
-  private void setStationQuantityOfChargers(List<Map<String, Object>> connections, Station station) {
+  private void setStationCity(Map<String, Object> addressInfo, Station station) {
+    Object city = addressInfo != null ? addressInfo.get("Town") : null;
+    station.setCity(city != null ? city.toString() : UNKNOWN_VALUE);
+  }
+
+  private void setStationCountry(Map<String, Object> addressInfo, Station station) {
+    Object country = addressInfo != null ? addressInfo.get("Country") : null;
+    station.setCountry(country != null ? country.toString() : UNKNOWN_VALUE);
+  }
+
+  private void setStationQuantityOfChargers(List<Map<String, Object>> connections,
+      Station station) {
     if (connections == null || connections.isEmpty()) {
       station.setQuantityOfChargers(1); // Default to 1 if no connections
       return;
@@ -243,7 +248,7 @@ public class OpenChargeMapService {
         totalChargers += 1;
       }
     }
-    
+
     // Ensure at least 1 charger
     station.setQuantityOfChargers(totalChargers > 0 ? totalChargers : 1);
   }

@@ -11,57 +11,56 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * Entity class representing a charging session.
- * Tracks the lifecycle of a charging session from creation to completion.
+ * Entity class representing a charging session. Tracks the lifecycle of a charging session from
+ * creation to completion.
  */
 @Entity
 @Table(name = "charging_sessions")
 @Schema(description = "Represents a charging session and its lifecycle")
 public class ChargingSession {
-    
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Schema(description = "Unique identifier of the charging session", example = "1")
   private Long id;
-  
+
   /**
    * The ID of the charging station associated with this session.
    */
   @Schema(description = "ID of the charging station", example = "STATION-001")
   private String stationId;
-  
+
   /**
    * The ID of the user who initiated this charging session.
    */
   @Schema(description = "ID of the user who initiated the session", example = "USER-001")
   private String userId;
-  
+
   /**
-   * Flag indicating whether the charging session has finished.
-   * False when session is active, true when completed.
+   * Flag indicating whether the charging session has finished. False when session is active, true
+   * when completed.
    */
   @Schema(description = "Whether the charging session has finished", example = "false")
   private boolean finished = false;
-  
+
   /**
-   * The timestamp when charging started.
-   * Null until charging begins.
+   * The timestamp when charging started. Null until charging begins.
    */
-  @Schema(description = "Timestamp when charging started", example = "2024-03-20T10:00:00", nullable = true)
+  @Schema(description = "Timestamp when charging started", example = "2024-03-20T10:00:00",
+      nullable = true)
   private LocalDateTime startTime;
-  
+
   /**
-   * The timestamp when charging ended.
-   * Null until charging is completed.
+   * The timestamp when charging ended. Null until charging is completed.
    */
-  @Schema(description = "Timestamp when charging ended", example = "2024-03-20T11:30:00", nullable = true)
+  @Schema(description = "Timestamp when charging ended", example = "2024-03-20T11:30:00",
+      nullable = true)
   private LocalDateTime endTime;
-  
+
 
 
   /**
-   * Default constructor required by JPA.
-   * Initializes the session as not finished.
+   * Default constructor required by JPA. Initializes the session as not finished.
    */
   public ChargingSession() {
     this.finished = false;
@@ -129,4 +128,4 @@ public class ChargingSession {
     this.endTime = endTime;
   }
 
-} 
+}

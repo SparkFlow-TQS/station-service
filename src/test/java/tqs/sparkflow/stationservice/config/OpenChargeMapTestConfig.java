@@ -15,4 +15,4 @@ public class OpenChargeMapTestConfig {
   public RestTemplate restTemplate() {
     return new RestTemplate();
   }
-} 
+}

@@ -94,24 +94,29 @@ class BookingControllerIT {
         // Mock user service responses
         when(restTemplate.getForObject(anyString(), eq(Object.class))).thenReturn(new Object());
         when(restTemplate.getForObject("http://dummy-user-service-url/users/999", Object.class))
-            .thenThrow(new RuntimeException("User not found"));
+                .thenThrow(new RuntimeException("User not found"));
         when(restTemplate.getForObject(anyString(), eq(Boolean.class))).thenReturn(true);
 
         // Mock station service
         when(stationService.getStationById(1L)).thenReturn(testStation);
-        when(stationService.getStationById(999L)).thenThrow(new RuntimeException("Station not found"));
+        when(stationService.getStationById(999L))
+                .thenThrow(new RuntimeException("Station not found"));
 
         // Mock booking service
         when(bookingService.createBooking(any(Booking.class))).thenReturn(testBooking);
-        when(bookingService.getBookingById(anyLong(), anyLong())).thenReturn(Optional.of(testBooking));
-        when(bookingService.getBookingsByStationId(anyLong(), anyLong())).thenReturn(Collections.singletonList(testBooking));
-        when(bookingService.getBookingsByUserId(anyLong())).thenReturn(Collections.singletonList(testBooking));
-        when(bookingService.getAllBookings(anyLong())).thenReturn(Collections.singletonList(testBooking));
+        when(bookingService.getBookingById(anyLong(), anyLong()))
+                .thenReturn(Optional.of(testBooking));
+        when(bookingService.getBookingsByStationId(anyLong(), anyLong()))
+                .thenReturn(Collections.singletonList(testBooking));
+        when(bookingService.getBookingsByUserId(anyLong()))
+                .thenReturn(Collections.singletonList(testBooking));
+        when(bookingService.getAllBookings(anyLong()))
+                .thenReturn(Collections.singletonList(testBooking));
         when(bookingService.cancelBooking(anyLong())).thenReturn(testBooking);
 
         // Mock booking repository
-        when(bookingRepository.findOverlappingBookings(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
-            .thenReturn(Collections.emptyList());
+        when(bookingRepository.findOverlappingBookings(anyLong(), any(LocalDateTime.class),
+                any(LocalDateTime.class))).thenReturn(Collections.emptyList());
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(testBooking));
         when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> {
@@ -119,8 +124,10 @@ class BookingControllerIT {
             booking.setId(1L);
             return booking;
         });
-        when(bookingRepository.findByUserId(anyLong())).thenReturn(Collections.singletonList(testBooking));
-        when(bookingRepository.findByStationId(anyLong())).thenReturn(Collections.singletonList(testBooking));
+        when(bookingRepository.findByUserId(anyLong()))
+                .thenReturn(Collections.singletonList(testBooking));
+        when(bookingRepository.findByStationId(anyLong()))
+                .thenReturn(Collections.singletonList(testBooking));
         when(bookingRepository.findAll()).thenReturn(Collections.singletonList(testBooking));
     }
 
@@ -136,13 +143,13 @@ class BookingControllerIT {
         inputBooking.setEndTime(now.plusHours(4));
         inputBooking.setStatus(BookingStatus.ACTIVE);
 
-        MvcResult result = mockMvc.perform(post("/api/v1/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputBooking)))
-                .andExpect(status().isCreated())
-                .andReturn();
+        MvcResult result = mockMvc
+                .perform(post("/api/v1/bookings").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputBooking)))
+                .andExpect(status().isCreated()).andReturn();
 
-        Booking createdBooking = objectMapper.readValue(result.getResponse().getContentAsString(), Booking.class);
+        Booking createdBooking =
+                objectMapper.readValue(result.getResponse().getContentAsString(), Booking.class);
         assertThat(createdBooking.getStationId()).isEqualTo(1L);
         assertThat(createdBooking.getUserId()).isEqualTo(1L);
         assertThat(createdBooking.getStatus()).isEqualTo(BookingStatus.ACTIVE);
@@ -153,9 +160,7 @@ class BookingControllerIT {
     @Requirement("BOOKING-2")
     @WithMockUser(username = "1")
     void whenGetAllBookings_thenReturnList() throws Exception {
-        mockMvc.perform(get("/api/v1/bookings")
-                .param("userId", "1"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/bookings").param("userId", "1")).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
     }
@@ -165,8 +170,7 @@ class BookingControllerIT {
     @Requirement("BOOKGING-3")
     @WithMockUser(username = "1")
     void whenGetBookingById_thenReturnBooking() throws Exception {
-        mockMvc.perform(get("/api/v1/bookings/1"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/bookings/1")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testBooking.getId()))
                 .andExpect(jsonPath("$.stationId").value(testBooking.getStationId()));
     }
@@ -176,8 +180,7 @@ class BookingControllerIT {
     @Requirement("BOOKING-4")
     @WithMockUser(username = "1")
     void whenCancelBooking_thenReturnUpdatedBooking() throws Exception {
-        mockMvc.perform(post("/api/v1/bookings/1/cancel"))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(post("/api/v1/bookings/1/cancel")).andExpect(status().isNoContent());
     }
 
     @Test
@@ -185,8 +188,7 @@ class BookingControllerIT {
     @Requirement("BOOKING-5")
     @WithMockUser(username = "1")
     void whenGetBookingsByStationId_thenReturnList() throws Exception {
-        mockMvc.perform(get("/api/v1/bookings/station/1"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/bookings/station/1")).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].stationId").value(testBooking.getStationId()));
     }
@@ -196,8 +198,7 @@ class BookingControllerIT {
     @Requirement("BOOKING-6")
     @WithMockUser(username = "1")
     void whenGetBookingsByUserId_thenReturnList() throws Exception {
-        mockMvc.perform(get("/api/v1/bookings/user/1"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/bookings/user/1")).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testBooking.getId()))
                 .andExpect(jsonPath("$[0].userId").value(testBooking.getUserId()));
     }
@@ -211,8 +212,7 @@ class BookingControllerIT {
         inputBooking.setStartTime(now);
         inputBooking.setEndTime(now.plusHours(2));
         inputBooking.setStatus(BookingStatus.ACTIVE);
-        mockMvc.perform(post("/api/v1/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/bookings").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputBooking))
                 .with(SecurityMockMvcRequestPostProcessors.anonymous()))
                 .andExpect(status().isUnauthorized());
@@ -223,9 +223,9 @@ class BookingControllerIT {
     @Requirement("BOOKING-8")
     @WithMockUser(username = "1")
     void whenGetBookingsByStationId_withNoBookings_thenReturnNoContent() throws Exception {
-        when(bookingService.getBookingsByStationId(anyLong(), anyLong())).thenReturn(Collections.emptyList());
-        mockMvc.perform(get("/api/v1/bookings/station/1"))
-                .andExpect(status().isNoContent());
+        when(bookingService.getBookingsByStationId(anyLong(), anyLong()))
+                .thenReturn(Collections.emptyList());
+        mockMvc.perform(get("/api/v1/bookings/station/1")).andExpect(status().isNoContent());
     }
 
     @Test
@@ -234,8 +234,7 @@ class BookingControllerIT {
     @WithMockUser(username = "1")
     void whenGetBookingsByUserId_withNoBookings_thenReturnNoContent() throws Exception {
         when(bookingService.getBookingsByUserId(anyLong())).thenReturn(Collections.emptyList());
-        mockMvc.perform(get("/api/v1/bookings/user/1"))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/v1/bookings/user/1")).andExpect(status().isNoContent());
     }
 
     @Test
@@ -243,13 +242,10 @@ class BookingControllerIT {
     @Requirement("BOOKING-10")
     @WithMockUser(username = "1")
     void createRecurringBooking_happyPath() throws Exception {
-        mockMvc.perform(post("/api/v1/bookings/recurring")
-                .param("userId", "1")
-                .param("stationId", "1")
-                .param("startTime", LocalDateTime.now().toString())
+        mockMvc.perform(post("/api/v1/bookings/recurring").param("userId", "1")
+                .param("stationId", "1").param("startTime", LocalDateTime.now().toString())
                 .param("endTime", LocalDateTime.now().plusHours(2).toString())
-                .param("recurringDays", "1,2,3"))
-                .andExpect(status().isCreated());
+                .param("recurringDays", "1,2,3")).andExpect(status().isCreated());
     }
 
     @Test
@@ -257,10 +253,8 @@ class BookingControllerIT {
     @Requirement("BOOKING-11")
     @WithMockUser(username = "1")
     void getBookingsByStationId_andByUserId() throws Exception {
-        mockMvc.perform(get("/api/v1/bookings/station/1"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/bookings/station/1")).andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/v1/bookings/user/1"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/bookings/user/1")).andExpect(status().isOk());
     }
-} 
+}

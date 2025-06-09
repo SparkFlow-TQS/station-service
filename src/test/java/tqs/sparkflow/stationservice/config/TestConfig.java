@@ -25,12 +25,10 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 /**
- * Test configuration for the station service.
- * Provides all necessary beans and security configurations for testing.
+ * Test configuration for the station service. Provides all necessary beans and security
+ * configurations for testing.
  */
 @TestConfiguration
 @EnableWebSecurity
@@ -64,17 +62,11 @@ public class TestConfig {
     @Bean
     @Primary
     public UserDetailsService userDetailsService() {
-        UserDetails admin = User.builder()
-            .username("admin")
-            .password(passwordEncoder().encode("admin"))
-            .roles("ADMIN")
-            .build();
-        
-        UserDetails user = User.builder()
-            .username("user")
-            .password(passwordEncoder().encode("user"))
-            .roles("USER")
-            .build();
+        UserDetails admin = User.builder().username("admin")
+                .password(passwordEncoder().encode("admin")).roles("ADMIN").build();
+
+        UserDetails user = User.builder().username("user")
+                .password(passwordEncoder().encode("user")).roles("USER").build();
 
         return new InMemoryUserDetailsManager(admin, user);
     }
@@ -87,12 +79,12 @@ public class TestConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-    
 
     @Bean
     @Primary
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(authenticationProvider(userDetailsService()));
+    public AuthenticationManager authenticationManager(
+            AuthenticationProvider authenticationProvider) {
+        return new ProviderManager(authenticationProvider);
     }
 
     /**
@@ -118,7 +110,8 @@ public class TestConfig {
     @Primary
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
+        configuration
+                .setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8082"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
@@ -128,11 +121,5 @@ public class TestConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    @Primary
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri("http://dummy-jwks").build();
     }
 }
