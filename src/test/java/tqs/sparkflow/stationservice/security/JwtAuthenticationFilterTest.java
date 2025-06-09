@@ -18,6 +18,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
@@ -127,62 +130,17 @@ class JwtAuthenticationFilterTest {
         verify(jwtUtil, never()).extractIsOperator(anyString());
     }
     
-    @Test
-    @DisplayName("Should not authenticate when Authorization header is missing")
-    void shouldNotAuthenticateWhenAuthorizationHeaderIsMissing() throws ServletException, IOException {
+    @ParameterizedTest
+    @DisplayName("Should not authenticate with invalid authorization headers")
+    @NullSource
+    @ValueSource(strings = {
+        "Basic dGVzdDp0ZXN0",  // Not Bearer token
+        "Bearer ",             // Empty Bearer token
+        "Bearer    "           // Bearer token with only whitespace
+    })
+    void shouldNotAuthenticateWithInvalidAuthorizationHeaders(String authHeader) throws ServletException, IOException {
         // Given
-        when(request.getHeader("Authorization")).thenReturn(null);
-        
-        // When
-        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-        
-        // Then
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth).isNull();
-        
-        verify(filterChain).doFilter(request, response);
-        verify(jwtUtil, never()).extractUsername(anyString());
-    }
-    
-    @Test
-    @DisplayName("Should not authenticate when Authorization header does not start with Bearer")
-    void shouldNotAuthenticateWhenAuthorizationHeaderDoesNotStartWithBearer() throws ServletException, IOException {
-        // Given
-        when(request.getHeader("Authorization")).thenReturn("Basic dGVzdDp0ZXN0");
-        
-        // When
-        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-        
-        // Then
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth).isNull();
-        
-        verify(filterChain).doFilter(request, response);
-        verify(jwtUtil, never()).extractUsername(anyString());
-    }
-    
-    @Test
-    @DisplayName("Should not authenticate when Bearer token is empty")
-    void shouldNotAuthenticateWhenBearerTokenIsEmpty() throws ServletException, IOException {
-        // Given
-        when(request.getHeader("Authorization")).thenReturn("Bearer ");
-        
-        // When
-        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-        
-        // Then
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth).isNull();
-        
-        verify(filterChain).doFilter(request, response);
-        verify(jwtUtil, never()).extractUsername(anyString());
-    }
-    
-    @Test
-    @DisplayName("Should not authenticate when Bearer token is only whitespace")
-    void shouldNotAuthenticateWhenBearerTokenIsOnlyWhitespace() throws ServletException, IOException {
-        // Given
-        when(request.getHeader("Authorization")).thenReturn("Bearer    ");
+        when(request.getHeader("Authorization")).thenReturn(authHeader);
         
         // When
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
