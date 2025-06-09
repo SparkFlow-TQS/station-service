@@ -74,36 +74,7 @@ public class SecurityConfig {
                                     + "object-src 'none'"))
                     .referrerPolicy(referrer -> referrer
                         .policy(org.springframework.security.web.header.writers
-                            .ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                    .permissionsPolicy(permissions -> permissions
-                        .policy("accelerometer=(), "
-                            + "ambient-light-sensor=(), "
-                            + "autoplay=(), "
-                            + "battery=(), "
-                            + "camera=(), "
-                            + "cross-origin-isolated=(), "
-                            + "display-capture=(), "
-                            + "document-domain=(), "
-                            + "encrypted-media=(), "
-                            + "execution-while-not-rendered=(), "
-                            + "execution-while-out-of-viewport=(), "
-                            + "fullscreen=(), "
-                            + "geolocation=(), "
-                            + "gyroscope=(), "
-                            + "keyboard-map=(), "
-                            + "magnetometer=(), "
-                            + "microphone=(), "
-                            + "midi=(), "
-                            + "navigation-override=(), "
-                            + "payment=(), "
-                            + "picture-in-picture=(), "
-                            + "publickey-credentials-get=(), "
-                            + "screen-wake-lock=(), "
-                            + "sync-xhr=(), "
-                            + "usb=(), "
-                            + "web-share=(), "
-                            + "xr-spatial-tracking=()"))
-        )
+                            .ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
         .authorizeHttpRequests(auth -> auth
             // Swagger UI endpoints first
             .requestMatchers(
