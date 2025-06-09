@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     // Once we get the token validate it.
-    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+    if (username != null && !username.trim().isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
       try {
         // Validate token
         if (jwtUtil.validateToken(jwtToken, username)) {
@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           
           // Create authorities based on operator status
           SimpleGrantedAuthority authority = isOperator ? 
-              new SimpleGrantedAuthority("ROLE_ADMIN") : 
+              new SimpleGrantedAuthority("ROLE_OPERATOR") : 
               new SimpleGrantedAuthority("ROLE_USER");
           
           UsernamePasswordAuthenticationToken authToken = 
