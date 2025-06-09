@@ -173,8 +173,8 @@ public class OpenChargeMapService {
       throw new IllegalStateException("AddressInfo is not a valid map");
     }
     @SuppressWarnings("unchecked")
-    Map<String, Object> result = (Map<String, Object>) addressInfo;
-    return result;
+    Map<String, Object> map = (Map<String, Object>) addressInfo;
+    return map;
   }
 
   private List<Map<String, Object>> getConnections(Map<String, Object> data) {
@@ -183,8 +183,8 @@ public class OpenChargeMapService {
       throw new IllegalStateException("Connections is not a valid list");
     }
     @SuppressWarnings("unchecked")
-    List<Map<String, Object>> result = (List<Map<String, Object>>) connections;
-    return result;
+    List<Map<String, Object>> list = (List<Map<String, Object>>) connections;
+    return list;
   }
 
   private void setStationId(Map<String, Object> data, Station station) {
@@ -257,13 +257,13 @@ public class OpenChargeMapService {
     Object statusType = data.get("StatusType");
     if (statusType instanceof Map) {
       @SuppressWarnings("unchecked")
-      Map<String, Object> statusMap = (Map<String, Object>) statusType;
-      Object isOperational = statusMap.get("IsOperational");
+      Map<String, Object> map = (Map<String, Object>) statusType;
+      Object isOperational = map.get("IsOperational");
       if (isOperational instanceof Boolean) {
         Boolean operational = (Boolean) isOperational;
         station.setIsOperational(operational);
       }
-      Object title = statusMap.get("Title");
+      Object title = map.get("Title");
       if (title != null) {
         station.setStatus(title.toString());
       }
