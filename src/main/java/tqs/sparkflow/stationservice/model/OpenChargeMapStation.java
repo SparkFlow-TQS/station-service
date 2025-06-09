@@ -16,8 +16,6 @@ public class OpenChargeMapStation extends BaseStationFields {
 
     private Integer power;
 
-    private String status;
-
     @NotBlank(message = "Connector type cannot be empty")
     private String connectorType;
 
@@ -75,24 +73,6 @@ public class OpenChargeMapStation extends BaseStationFields {
      */
     public void setQuantityOfChargers(Integer quantityOfChargers) {
         this.quantityOfChargers = quantityOfChargers;
-    }
-
-    /**
-     * Gets the status of the station.
-     *
-     * @return The status of the station
-     */
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * Sets the status of the station.
-     *
-     * @param status The status of the station
-     */
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     /**
@@ -200,13 +180,13 @@ public class OpenChargeMapStation extends BaseStationFields {
         OpenChargeMapStation that = (OpenChargeMapStation) o;
         return Objects.equals(connections, that.connections)
                 && Objects.equals(quantityOfChargers, that.quantityOfChargers)
-                && Objects.equals(power, that.power) && Objects.equals(status, that.status)
+                && Objects.equals(power, that.power)
                 && Objects.equals(connectorType, that.connectorType) && Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), connections, quantityOfChargers, power, status,
-                connectorType, id);
+        return Objects.hash(super.hashCode(), connections, quantityOfChargers, power, connectorType,
+                id);
     }
 }

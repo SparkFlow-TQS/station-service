@@ -69,8 +69,8 @@ class BaseStationFieldsTest {
   @Test
   void whenSettingValidLongitude_thenNoValidationErrors() {
     // Given
-    baseFields.setLatitude(41.1579); // Required field
-    baseFields.setLongitude(-8.6291);
+    baseFields.setLatitude(38.7223); // Different latitude value
+    baseFields.setLongitude(-9.1393); // Different longitude value
     baseFields.setStatus("Available"); // Required field
 
     // When
@@ -78,6 +78,7 @@ class BaseStationFieldsTest {
 
     // Then
     assertThat(violations).isEmpty();
+    assertThat(baseFields.getLongitude()).isEqualTo(-9.1393);
   }
 
   @Test

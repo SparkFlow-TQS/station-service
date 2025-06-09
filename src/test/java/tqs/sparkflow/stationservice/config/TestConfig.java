@@ -23,7 +23,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 
 /**
  * Test configuration for the station service. Provides all necessary beans and security
@@ -73,10 +77,28 @@ public class TestConfig {
     @Bean
     @Primary
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
+        return new AuthenticationProvider() {
+            @Override
+            public Authentication authenticate(Authentication authentication)
+                    throws AuthenticationException {
+                String username = authentication.getName();
+                String password = authentication.getCredentials().toString();
+
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (userDetails != null
+                        && passwordEncoder().matches(password, userDetails.getPassword())) {
+                    return new UsernamePasswordAuthenticationToken(userDetails, password,
+                            userDetails.getAuthorities());
+                }
+                return null;
+            }
+
+            @Override
+            public boolean supports(Class<?> authenticationType) {
+                return UsernamePasswordAuthenticationToken.class
+                        .isAssignableFrom(authenticationType);
+            }
+        };
     }
 
     @Bean
@@ -87,8 +109,8 @@ public class TestConfig {
     }
 
     /**
-     * Creates a security filter chain for tests that permits all requests.
-     * This simplifies testing by removing authentication requirements.
+     * Creates a security filter chain for tests. Configures security settings including CSRF,
+     * headers, session management, and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
      * @return the configured SecurityFilterChain
@@ -96,13 +118,34 @@ public class TestConfig {
      */
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-            .csrf(csrf -> csrf.disable())
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-            .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            AuthenticationProvider authenticationProvider) throws Exception {
+        return http.csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(FrameOptionsConfig::disable))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/stations/**")
+                        .permitAll().requestMatchers("/api/v1/charging-sessions/**").permitAll()
+                        .requestMatchers("/api/v1/openchargemap/**").permitAll()
+                        .requestMatchers("/api/v1/statistics/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/bookings/**").authenticated().anyRequest()
+                        .authenticated())
+                .authenticationManager(authenticationManager(authenticationProvider))
+                .httpBasic(basic -> basic
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Access Denied");
+                        }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("Access Denied");
+                        }))
+                .build();
     }
 
     @Bean
