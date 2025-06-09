@@ -7,7 +7,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +57,7 @@ class JwtUtilTest {
             .setSubject("testuser")
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
-            .signWith(key, SignatureAlgorithm.HS256)
+            .signWith(key)
             .compact();
             
         // Expired token
@@ -67,7 +66,7 @@ class JwtUtilTest {
             .setSubject("testuser")
             .setIssuedAt(new Date(System.currentTimeMillis() - 1000 * 60 * 120)) // 2 hours ago
             .setExpiration(new Date(System.currentTimeMillis() - 1000 * 60 * 60)) // 1 hour ago
-            .signWith(key, SignatureAlgorithm.HS256)
+            .signWith(key)
             .compact();
             
         // Invalid token (wrong signature)
@@ -77,7 +76,7 @@ class JwtUtilTest {
             .setSubject("testuser")
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-            .signWith(wrongKey, SignatureAlgorithm.HS256)
+            .signWith(wrongKey)
             .compact();
             
         // Malformed token
@@ -206,7 +205,7 @@ class JwtUtilTest {
             .setSubject("admin")
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-            .signWith(key, SignatureAlgorithm.HS256)
+            .signWith(key)
             .compact();
             
         String username = jwtUtil.extractUsername(operatorToken);
@@ -230,7 +229,7 @@ class JwtUtilTest {
             .setSubject("testuser")
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-            .signWith(key, SignatureAlgorithm.HS256)
+            .signWith(key)
             .compact();
             
         String username = jwtUtil.extractUsername(tokenWithoutClaims);

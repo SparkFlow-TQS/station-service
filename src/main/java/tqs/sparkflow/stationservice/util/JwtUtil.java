@@ -1,6 +1,7 @@
 package tqs.sparkflow.stationservice.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -90,7 +91,7 @@ public class JwtUtil {
     try {
       final String extractedUsername = extractUsername(token);
       return (extractedUsername.equals(username) && !isTokenExpired(token));
-    } catch (Exception e) {
+    } catch (JwtException | IllegalArgumentException e) {
       return false;
     }
   }

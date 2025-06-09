@@ -16,8 +16,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tqs.sparkflow.stationservice.security.JwtAuthenticationFilter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -62,8 +60,8 @@ public class SecurityConfig {
                         csp ->
                             csp.policyDirectives(
                                 "default-src 'self'; "
-                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                                    + "style-src 'self' 'unsafe-inline'; "
+                                    + "script-src 'self'; "
+                                    + "style-src 'self'; "
                                     + "img-src 'self' data:; "
                                     + "font-src 'self'; "
                                     + "connect-src 'self'; "
