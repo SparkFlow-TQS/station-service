@@ -118,6 +118,28 @@ public class PaymentDTO {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PaymentDTO that = (PaymentDTO) o;
+        return java.util.Objects.equals(id, that.id) &&
+                java.util.Objects.equals(bookingId, that.bookingId) &&
+                java.util.Objects.equals(stripePaymentIntentId, that.stripePaymentIntentId) &&
+                java.util.Objects.equals(amount, that.amount) &&
+                java.util.Objects.equals(currency, that.currency) &&
+                status == that.status &&
+                java.util.Objects.equals(description, that.description) &&
+                java.util.Objects.equals(createdAt, that.createdAt) &&
+                java.util.Objects.equals(updatedAt, that.updatedAt) &&
+                java.util.Objects.equals(paidAt, that.paidAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, bookingId, stripePaymentIntentId, amount, currency, status, description, createdAt, updatedAt, paidAt);
+    }
+
+    @Override
     public String toString() {
         return "PaymentDTO{" +
                 "id=" + id +

@@ -157,6 +157,25 @@ public class Payment {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Payment payment = (Payment) o;
+        return java.util.Objects.equals(id, payment.id) &&
+                java.util.Objects.equals(bookingId, payment.bookingId) &&
+                java.util.Objects.equals(stripePaymentIntentId, payment.stripePaymentIntentId) &&
+                java.util.Objects.equals(amount, payment.amount) &&
+                java.util.Objects.equals(currency, payment.currency) &&
+                status == payment.status &&
+                java.util.Objects.equals(description, payment.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, bookingId, stripePaymentIntentId, amount, currency, status, description);
+    }
+
+    @Override
     public String toString() {
         return "Payment{" +
                 "id=" + id +

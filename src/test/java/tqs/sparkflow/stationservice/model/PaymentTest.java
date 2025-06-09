@@ -177,7 +177,7 @@ class PaymentTest {
         Payment payment3 = new Payment(2L, "pi_test_456", BigDecimal.valueOf(50.00), "USD", "Different");
         payment3.setId(2L);
 
-        // Then
+        // Then - equals() and hashCode() should work based on content, not timestamps
         assertThat(payment1).isEqualTo(payment2);
         assertThat(payment1).isNotEqualTo(payment3);
         assertThat(payment1.hashCode()).isEqualTo(payment2.hashCode());
@@ -196,7 +196,7 @@ class PaymentTest {
         assertThat(toString).contains("Payment");
         assertThat(toString).contains("id=1");
         assertThat(toString).contains("bookingId=1");
-        assertThat(toString).contains("stripePaymentIntentId=pi_test_123");
+        assertThat(toString).contains("stripePaymentIntentId='pi_test_123'");
     }
 
     @Test
@@ -211,11 +211,11 @@ class PaymentTest {
         assertThat(nullPayment.getStripePaymentIntentId()).isNull();
         assertThat(nullPayment.getAmount()).isNull();
         assertThat(nullPayment.getCurrency()).isNull();
-        assertThat(nullPayment.getStatus()).isNull();
+        assertThat(nullPayment.getStatus()).isEqualTo(PaymentStatus.PENDING); // Default constructor sets to PENDING
         assertThat(nullPayment.getStripeChargeId()).isNull();
         assertThat(nullPayment.getDescription()).isNull();
-        assertThat(nullPayment.getCreatedAt()).isNull();
-        assertThat(nullPayment.getUpdatedAt()).isNull();
+        assertThat(nullPayment.getCreatedAt()).isNotNull(); // Default constructor sets timestamp
+        assertThat(nullPayment.getUpdatedAt()).isNotNull(); // Default constructor sets timestamp
         assertThat(nullPayment.getPaidAt()).isNull();
     }
 
@@ -228,6 +228,8 @@ class PaymentTest {
         // Then
         assertThat(defaultPayment).isNotNull();
         assertThat(defaultPayment.getId()).isNull();
-        assertThat(defaultPayment.getStatus()).isNull();
+        assertThat(defaultPayment.getStatus()).isEqualTo(PaymentStatus.PENDING); // Default constructor sets to PENDING
+        assertThat(defaultPayment.getCreatedAt()).isNotNull(); // Default constructor sets timestamp
+        assertThat(defaultPayment.getUpdatedAt()).isNotNull(); // Default constructor sets timestamp
     }
 }

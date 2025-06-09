@@ -71,6 +71,24 @@ public class PaymentIntentResponseDTO {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PaymentIntentResponseDTO that = (PaymentIntentResponseDTO) o;
+        return java.util.Objects.equals(id, that.id) &&
+                java.util.Objects.equals(clientSecret, that.clientSecret) &&
+                java.util.Objects.equals(amount, that.amount) &&
+                java.util.Objects.equals(currency, that.currency) &&
+                java.util.Objects.equals(status, that.status) &&
+                java.util.Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, clientSecret, amount, currency, status, description);
+    }
+
+    @Override
     public String toString() {
         return "PaymentIntentResponseDTO{" +
                 "id='" + id + '\'' +

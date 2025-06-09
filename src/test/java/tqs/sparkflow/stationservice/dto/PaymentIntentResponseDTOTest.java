@@ -126,10 +126,10 @@ class PaymentIntentResponseDTOTest {
 
         // Then
         assertThat(toString).contains("PaymentIntentResponseDTO");
-        assertThat(toString).contains("id=pi_test_123");
+        assertThat(toString).contains("id='pi_test_123'");
         assertThat(toString).contains("amount=2550");
-        assertThat(toString).contains("currency=EUR");
-        assertThat(toString).contains("status=requires_payment_method");
+        assertThat(toString).contains("currency='EUR'");
+        assertThat(toString).contains("status='requires_payment_method'");
     }
 
     @Test

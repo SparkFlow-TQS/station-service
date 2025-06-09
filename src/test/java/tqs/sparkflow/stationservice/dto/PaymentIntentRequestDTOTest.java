@@ -84,7 +84,7 @@ class PaymentIntentRequestDTOTest {
         assertThat(toString).contains("PaymentIntentRequestDTO");
         assertThat(toString).contains("bookingId=1");
         assertThat(toString).contains("amount=2550");
-        assertThat(toString).contains("currency=EUR");
+        assertThat(toString).contains("currency='EUR'");
     }
 
     @Test

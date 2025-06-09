@@ -63,6 +63,22 @@ public class PaymentIntentRequestDTO {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PaymentIntentRequestDTO that = (PaymentIntentRequestDTO) o;
+        return java.util.Objects.equals(bookingId, that.bookingId) &&
+                java.util.Objects.equals(amount, that.amount) &&
+                java.util.Objects.equals(currency, that.currency) &&
+                java.util.Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(bookingId, amount, currency, description);
+    }
+
+    @Override
     public String toString() {
         return "PaymentIntentRequestDTO{" +
                 "bookingId=" + bookingId +

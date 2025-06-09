@@ -104,7 +104,7 @@ class PaymentDTOTest {
         // Then
         assertThat(toString).contains("PaymentDTO");
         assertThat(toString).contains("id=1");
-        assertThat(toString).contains("stripePaymentIntentId=pi_test_123");
+        assertThat(toString).contains("stripePaymentIntentId='pi_test_123'");
     }
 
     @Test
