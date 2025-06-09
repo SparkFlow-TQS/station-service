@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -35,7 +36,7 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
  */
 @TestConfiguration
 @EnableWebSecurity
-@Profile("test")
+@Profile({"test", "!securitytest"})
 public class TestConfig {
 
     @Bean
@@ -113,7 +114,6 @@ public class TestConfig {
      * headers, session management, and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
-     * @param authenticationProvider the AuthenticationProvider to use
      * @return the configured SecurityFilterChain
      * @throws Exception if an error occurs during configuration
      */
