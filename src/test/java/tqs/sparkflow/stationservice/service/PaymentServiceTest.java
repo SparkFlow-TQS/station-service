@@ -18,6 +18,7 @@ import tqs.sparkflow.stationservice.dto.PaymentDTO;
 import tqs.sparkflow.stationservice.dto.PaymentIntentRequestDTO;
 import tqs.sparkflow.stationservice.dto.PaymentIntentResponseDTO;
 import tqs.sparkflow.stationservice.exception.PaymentNotFoundException;
+import tqs.sparkflow.stationservice.exception.PaymentProcessingException;
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Payment;
@@ -112,8 +113,8 @@ class PaymentServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> paymentService.createPaymentIntent(testRequest))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("Failed to create payment intent: Booking not found with ID: 1");
+            .isInstanceOf(PaymentNotFoundException.class)
+            .hasMessage("Booking not found with ID: 1");
 
         verify(bookingRepository).findById(1L);
         verifyNoInteractions(paymentRepository);
@@ -129,8 +130,8 @@ class PaymentServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> paymentService.createPaymentIntent(testRequest))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("Failed to create payment intent: Payment already exists for booking ID: 1");
+            .isInstanceOf(PaymentProcessingException.class)
+            .hasMessage("Payment already exists for booking ID: 1");
 
         verify(bookingRepository).findById(1L);
         verify(paymentRepository).findByBookingIdAndStatusOrderByCreatedAtDesc(1L, PaymentStatus.SUCCEEDED);
@@ -176,8 +177,8 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.confirmPayment("pi_test_123"))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Stripe error");
+                .isInstanceOf(PaymentProcessingException.class)
+                .hasMessage("Failed to confirm payment due to unexpected error");
         }
     }
 
