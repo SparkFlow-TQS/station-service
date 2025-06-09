@@ -50,7 +50,6 @@ class BookingServiceTest {
         private BookingServiceImpl bookingService;
 
         private static final String USER_SERVICE_URL = "http://test-user-service:8081";
-        private static final String USERS_PATH = "/users/";
 
         private Booking testBooking;
         private Station testStation;
