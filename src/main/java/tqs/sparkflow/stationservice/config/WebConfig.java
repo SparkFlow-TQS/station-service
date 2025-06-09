@@ -24,12 +24,8 @@ public class WebConfig implements WebMvcConfigurer {
 
       // Exclude SpringDoc/Swagger classes from the prefix
       String packageName = c.getPackage().getName();
-      if (packageName.startsWith("org.springdoc")
-          || packageName.startsWith("org.springframework.boot.actuate")) {
-        return false;
-      }
-
-      return true;
+      return !packageName.startsWith("org.springdoc")
+          && !packageName.startsWith("org.springframework.boot.actuate");
     });
   }
 }

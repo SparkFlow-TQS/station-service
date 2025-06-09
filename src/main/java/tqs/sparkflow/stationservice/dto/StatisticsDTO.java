@@ -4,6 +4,10 @@ import java.util.List;
 
 public class StatisticsDTO {
 
+    private StatisticsDTO() {
+        // Private constructor to prevent instantiation
+    }
+
     public static class CurrentMonthStats {
         private double totalCost;
         private int estimatedKwh;

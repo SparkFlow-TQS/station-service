@@ -8,9 +8,9 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
+import java.util.Objects;
 
 /** Represents a charging station. */
 @Entity
@@ -23,10 +23,6 @@ public class Station extends BaseStationFields {
   private Long id;
 
   private String externalId;
-
-  @NotBlank(message = "Station name cannot be empty")
-  @Column(name = "name")
-  private String name;
 
   @Column(name = "power")
   private Integer power;
@@ -141,18 +137,12 @@ public class Station extends BaseStationFields {
     this.externalId = externalId;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
+  @Override
   public String getAddress() {
     return address;
   }
 
+  @Override
   public void setAddress(String address) {
     this.address = address;
   }
@@ -176,6 +166,25 @@ public class Station extends BaseStationFields {
   @Override
   public String toString() {
     return "Station{id=" + id + ", name='" + name + "'}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
+    Station station = (Station) o;
+    return Objects.equals(id, station.id) && Objects.equals(externalId, station.externalId)
+        && Objects.equals(power, station.power)
+        && Objects.equals(quantityOfChargers, station.quantityOfChargers);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), id, externalId, power, quantityOfChargers);
   }
 
   /**
