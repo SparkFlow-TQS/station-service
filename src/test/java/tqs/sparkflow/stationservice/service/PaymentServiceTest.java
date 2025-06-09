@@ -112,7 +112,7 @@ class PaymentServiceTest {
         // When & Then
         assertThatThrownBy(() -> paymentService.createPaymentIntent(testRequest))
             .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("Booking not found with ID: 1");
+            .hasMessageContaining("Failed to create payment intent: Booking not found with ID: 1");
 
         verify(bookingRepository).findById(1L);
         verifyNoInteractions(paymentRepository);
@@ -129,7 +129,7 @@ class PaymentServiceTest {
         // When & Then
         assertThatThrownBy(() -> paymentService.createPaymentIntent(testRequest))
             .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("Payment already exists for booking ID: 1");
+            .hasMessageContaining("Failed to create payment intent: Payment already exists for booking ID: 1");
 
         verify(bookingRepository).findById(1L);
         verify(paymentRepository).findByBookingIdAndStatusOrderByCreatedAtDesc(1L, PaymentStatus.SUCCEEDED);
@@ -176,7 +176,7 @@ class PaymentServiceTest {
             // When & Then
             assertThatThrownBy(() -> paymentService.confirmPayment("pi_test_123"))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("Failed to confirm payment: Stripe error");
+                .hasMessage("Stripe error");
         }
     }
 

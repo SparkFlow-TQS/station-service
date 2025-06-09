@@ -9,7 +9,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
 import tqs.sparkflow.stationservice.dto.PaymentDTO;
 import tqs.sparkflow.stationservice.dto.PaymentIntentRequestDTO;
 import tqs.sparkflow.stationservice.dto.PaymentIntentResponseDTO;
@@ -29,6 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PaymentController.class)
+@ContextConfiguration(classes = {PaymentController.class, PaymentControllerTest.TestSecurityConfig.class})
 @ActiveProfiles("test")
 class PaymentControllerTest {
 
@@ -257,5 +265,18 @@ class PaymentControllerTest {
                 .content(payload))
             .andExpect(status().isBadRequest())
             .andExpect(content().string("Invalid signature"));
+    }
+
+    @Configuration
+    @EnableWebSecurity
+    static class TestSecurityConfig {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/payments/**").permitAll()
+                    .anyRequest().authenticated());
+            return http.build();
+        }
     }
 }
