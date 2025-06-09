@@ -1,24 +1,21 @@
 package tqs.sparkflow.stationservice.dto;
 
-public class PaymentIntentResponseDTO {
+public class PaymentIntentResponseDTO extends BasePaymentIntentDTO {
 
     private String id;
     private String clientSecret;
-    private Long amount;
-    private String currency;
     private String status;
-    private String description;
 
     // Constructors
-    public PaymentIntentResponseDTO() {}
+    public PaymentIntentResponseDTO() {
+        super();
+    }
 
     public PaymentIntentResponseDTO(String id, String clientSecret, Long amount, String currency, String status, String description) {
+        super(amount, currency, description);
         this.id = id;
         this.clientSecret = clientSecret;
-        this.amount = amount;
-        this.currency = currency;
         this.status = status;
-        this.description = description;
     }
 
     // Getters and Setters
@@ -38,36 +35,12 @@ public class PaymentIntentResponseDTO {
         this.clientSecret = clientSecret;
     }
 
-    public Long getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Long amount) {
-        this.amount = amount;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
     public String getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @Override
@@ -77,15 +50,13 @@ public class PaymentIntentResponseDTO {
         PaymentIntentResponseDTO that = (PaymentIntentResponseDTO) o;
         return java.util.Objects.equals(id, that.id) &&
                 java.util.Objects.equals(clientSecret, that.clientSecret) &&
-                java.util.Objects.equals(amount, that.amount) &&
-                java.util.Objects.equals(currency, that.currency) &&
                 java.util.Objects.equals(status, that.status) &&
-                java.util.Objects.equals(description, that.description);
+                equalsBase(that);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(id, clientSecret, amount, currency, status, description);
+        return java.util.Objects.hash(id, clientSecret, status, hashCodeBase());
     }
 
     @Override
@@ -93,10 +64,8 @@ public class PaymentIntentResponseDTO {
         return "PaymentIntentResponseDTO{" +
                 "id='" + id + '\'' +
                 ", clientSecret='" + clientSecret + '\'' +
-                ", amount=" + amount +
-                ", currency='" + currency + '\'' +
                 ", status='" + status + '\'' +
-                ", description='" + description + '\'' +
+                ", " + toStringBase() +
                 '}';
     }
 }

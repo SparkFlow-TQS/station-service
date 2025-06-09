@@ -6,56 +6,86 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
-public class Payment {
+public class Payment extends BasePaymentFields {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Override
+    public Long getId() {
+        return super.getId();
+    }
 
     @Column(name = "booking_id", nullable = false)
-    private Long bookingId;
+    @Override
+    public Long getBookingId() {
+        return super.getBookingId();
+    }
 
     @Column(name = "stripe_payment_intent_id", nullable = false, unique = true)
-    private String stripePaymentIntentId;
+    @Override
+    public String getStripePaymentIntentId() {
+        return super.getStripePaymentIntentId();
+    }
 
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    @Override
+    public BigDecimal getAmount() {
+        return super.getAmount();
+    }
 
     @Column(name = "currency", nullable = false, length = 3)
-    private String currency;
+    @Override
+    public String getCurrency() {
+        return super.getCurrency();
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private PaymentStatus status;
+    @Override
+    public PaymentStatus getStatus() {
+        return super.getStatus();
+    }
 
     @Column(name = "stripe_charge_id")
     private String stripeChargeId;
 
     @Column(name = "description")
-    private String description;
+    @Override
+    public String getDescription() {
+        return super.getDescription();
+    }
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Override
+    public LocalDateTime getCreatedAt() {
+        return super.getCreatedAt();
+    }
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    @Override
+    public LocalDateTime getUpdatedAt() {
+        return super.getUpdatedAt();
+    }
 
     @Column(name = "paid_at")
-    private LocalDateTime paidAt;
+    @Override
+    public LocalDateTime getPaidAt() {
+        return super.getPaidAt();
+    }
 
     // Constructors
     public Payment() {
+        super();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.status = PaymentStatus.PENDING;
     }
 
     public Payment(Long bookingId, String stripePaymentIntentId, BigDecimal amount, String currency, String description) {
-        this();
-        this.bookingId = bookingId;
-        this.stripePaymentIntentId = stripePaymentIntentId;
-        this.amount = amount;
-        this.currency = currency;
-        this.description = description;
+        super(bookingId, stripePaymentIntentId, amount, currency, description);
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.status = PaymentStatus.PENDING;
     }
 
     // Update timestamp on entity changes
@@ -64,58 +94,7 @@ public class Payment {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getBookingId() {
-        return bookingId;
-    }
-
-    public void setBookingId(Long bookingId) {
-        this.bookingId = bookingId;
-    }
-
-    public String getStripePaymentIntentId() {
-        return stripePaymentIntentId;
-    }
-
-    public void setStripePaymentIntentId(String stripePaymentIntentId) {
-        this.stripePaymentIntentId = stripePaymentIntentId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public PaymentStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(PaymentStatus status) {
-        this.status = status;
-        if (status == PaymentStatus.SUCCEEDED && this.paidAt == null) {
-            this.paidAt = LocalDateTime.now();
-        }
-    }
-
+    // Additional getters and setters for Payment-specific fields
     public String getStripeChargeId() {
         return stripeChargeId;
     }
@@ -124,36 +103,13 @@ public class Payment {
         this.stripeChargeId = stripeChargeId;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public LocalDateTime getPaidAt() {
-        return paidAt;
-    }
-
-    public void setPaidAt(LocalDateTime paidAt) {
-        this.paidAt = paidAt;
+    // Override setStatus to handle paidAt logic
+    @Override
+    public void setStatus(PaymentStatus status) {
+        super.setStatus(status);
+        if (status == PaymentStatus.SUCCEEDED && this.getPaidAt() == null) {
+            this.setPaidAt(LocalDateTime.now());
+        }
     }
 
     @Override
@@ -161,33 +117,16 @@ public class Payment {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Payment payment = (Payment) o;
-        return java.util.Objects.equals(id, payment.id) &&
-                java.util.Objects.equals(bookingId, payment.bookingId) &&
-                java.util.Objects.equals(stripePaymentIntentId, payment.stripePaymentIntentId) &&
-                java.util.Objects.equals(amount, payment.amount) &&
-                java.util.Objects.equals(currency, payment.currency) &&
-                status == payment.status &&
-                java.util.Objects.equals(description, payment.description);
+        return equalsBaseFields(payment);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(id, bookingId, stripePaymentIntentId, amount, currency, status, description);
+        return hashCodeBaseFields();
     }
 
     @Override
     public String toString() {
-        return "Payment{" +
-                "id=" + id +
-                ", bookingId=" + bookingId +
-                ", stripePaymentIntentId='" + stripePaymentIntentId + '\'' +
-                ", amount=" + amount +
-                ", currency='" + currency + '\'' +
-                ", status=" + status +
-                ", description='" + description + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", paidAt=" + paidAt +
-                '}';
+        return "Payment{" + toStringBaseFields() + '}';
     }
 }

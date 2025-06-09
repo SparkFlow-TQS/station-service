@@ -4,29 +4,19 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-public class PaymentIntentRequestDTO {
+public class PaymentIntentRequestDTO extends BasePaymentIntentDTO {
 
     @NotNull(message = "Booking ID is required")
     private Long bookingId;
 
-    @NotNull(message = "Amount is required")
-    @Positive(message = "Amount must be positive")
-    private Long amount; // Amount in cents
-
-    @NotNull(message = "Currency is required")
-    @Size(min = 3, max = 3, message = "Currency must be exactly 3 characters")
-    private String currency;
-
-    private String description;
-
     // Constructors
-    public PaymentIntentRequestDTO() {}
+    public PaymentIntentRequestDTO() {
+        super();
+    }
 
     public PaymentIntentRequestDTO(Long bookingId, Long amount, String currency, String description) {
+        super(amount, currency, description);
         this.bookingId = bookingId;
-        this.amount = amount;
-        this.currency = currency;
-        this.description = description;
     }
 
     // Getters and Setters
@@ -38,28 +28,19 @@ public class PaymentIntentRequestDTO {
         this.bookingId = bookingId;
     }
 
+    // Validation annotations for inherited fields
+    @Override
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be positive")
     public Long getAmount() {
-        return amount;
+        return super.getAmount();
     }
 
-    public void setAmount(Long amount) {
-        this.amount = amount;
-    }
-
+    @Override
+    @NotNull(message = "Currency is required")
+    @Size(min = 3, max = 3, message = "Currency must be exactly 3 characters")
     public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+        return super.getCurrency();
     }
 
     @Override
@@ -67,24 +48,19 @@ public class PaymentIntentRequestDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PaymentIntentRequestDTO that = (PaymentIntentRequestDTO) o;
-        return java.util.Objects.equals(bookingId, that.bookingId) &&
-                java.util.Objects.equals(amount, that.amount) &&
-                java.util.Objects.equals(currency, that.currency) &&
-                java.util.Objects.equals(description, that.description);
+        return java.util.Objects.equals(bookingId, that.bookingId) && equalsBase(that);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(bookingId, amount, currency, description);
+        return java.util.Objects.hash(bookingId, hashCodeBase());
     }
 
     @Override
     public String toString() {
         return "PaymentIntentRequestDTO{" +
                 "bookingId=" + bookingId +
-                ", amount=" + amount +
-                ", currency='" + currency + '\'' +
-                ", description='" + description + '\'' +
+                ", " + toStringBase() +
                 '}';
     }
 }
