@@ -40,11 +40,13 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${stripe.webhook.secret:}")
     private String webhookSecret;
 
-    @Autowired
-    private PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository;
+    private final BookingRepository bookingRepository;
 
-    @Autowired
-    private BookingRepository bookingRepository;
+    public PaymentServiceImpl(PaymentRepository paymentRepository, BookingRepository bookingRepository) {
+        this.paymentRepository = paymentRepository;
+        this.bookingRepository = bookingRepository;
+    }
 
     @PostConstruct
     public void init() {

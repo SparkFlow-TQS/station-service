@@ -27,8 +27,11 @@ public class PaymentController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
-    @Autowired
-    private PaymentService paymentService;
+    private final PaymentService paymentService;
+
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     @Operation(summary = "Create payment intent", description = "Create a Stripe payment intent for a booking")
     @ApiResponses(value = {
@@ -76,7 +79,7 @@ public class PaymentController {
             return ResponseEntity.badRequest().body(Map.of("error", "Payment intent ID is required"));
         }
 
-        logger.info("Confirming payment: {}", paymentIntentId);
+        logger.info("Confirming payment with provided intent ID");
         
         try {
             PaymentDTO payment = paymentService.confirmPayment(paymentIntentId);
