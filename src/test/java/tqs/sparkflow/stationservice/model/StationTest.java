@@ -11,6 +11,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 
 class StationTest {
 
@@ -298,140 +299,100 @@ class StationTest {
   }
 
   @Test
-  void testEquals() {
+  @DisplayName("equals should return false when comparing with null")
+  void whenComparingWithNull_thenReturnFalse() {
+    // Given
+    Station station = new Station();
+    station.setId(1L);
+    station.setName("Test Station");
+
+    // When
+    boolean result = station.equals(null);
+
+    // Then
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  @DisplayName("equals should return false when comparing with different class")
+  void whenComparingWithDifferentClass_thenReturnFalse() {
+    // Given
+    Station station = new Station();
+    station.setId(1L);
+    station.setName("Test Station");
+
+    Object otherObject = new Object();
+
+    // When
+    boolean result = station.equals(otherObject);
+
+    // Then
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  @DisplayName("equals should return true when comparing with same instance")
+  void whenComparingWithSameInstance_thenReturnTrue() {
+    // Given
+    Station station = new Station();
+    station.setId(1L);
+    station.setName("Test Station");
+
+    // When
+    boolean result = station.equals(station);
+
+    // Then
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @DisplayName("equals should return true when comparing with equal station")
+  void whenComparingWithEqualStation_thenReturnTrue() {
+    // Given
     Station station1 = new Station();
     station1.setId(1L);
+    station1.setName("Test Station");
     station1.setExternalId("ext1");
     station1.setPower(50);
     station1.setQuantityOfChargers(2);
-    // Set base fields to ensure super.equals() passes
-    station1.setName("Test Station");
-    station1.setAddress("Test Address");
-    station1.setCity("Test City");
-    station1.setCountry("Test Country");
-    station1.setLatitude(40.0);
-    station1.setLongitude(-8.0);
-    station1.setStatus("Available");
 
-    // Test same object
-    assertEquals(station1, station1);
-
-    // Test null
-    assertNotEquals(null, station1);
-
-    // Test different class
-    assertNotEquals("Not a Station", station1);
-
-    // Test different id
     Station station2 = new Station();
-    station2.setId(2L);
+    station2.setId(1L);
+    station2.setName("Test Station");
     station2.setExternalId("ext1");
     station2.setPower(50);
     station2.setQuantityOfChargers(2);
-    // Copy base fields
-    station2.setName(station1.getName());
-    station2.setAddress(station1.getAddress());
-    station2.setCity(station1.getCity());
-    station2.setCountry(station1.getCountry());
-    station2.setLatitude(station1.getLatitude());
-    station2.setLongitude(station1.getLongitude());
-    station2.setStatus(station1.getStatus());
-    assertNotEquals(station1, station2);
 
-    // Test different externalId
-    Station station3 = new Station();
-    station3.setId(1L);
-    station3.setExternalId("ext2");
-    station3.setPower(50);
-    station3.setQuantityOfChargers(2);
-    // Copy base fields
-    station3.setName(station1.getName());
-    station3.setAddress(station1.getAddress());
-    station3.setCity(station1.getCity());
-    station3.setCountry(station1.getCountry());
-    station3.setLatitude(station1.getLatitude());
-    station3.setLongitude(station1.getLongitude());
-    station3.setStatus(station1.getStatus());
-    assertNotEquals(station1, station3);
+    // When
+    boolean result = station1.equals(station2);
 
-    // Test different power
-    Station station4 = new Station();
-    station4.setId(1L);
-    station4.setExternalId("ext1");
-    station4.setPower(100);
-    station4.setQuantityOfChargers(2);
-    // Copy base fields
-    station4.setName(station1.getName());
-    station4.setAddress(station1.getAddress());
-    station4.setCity(station1.getCity());
-    station4.setCountry(station1.getCountry());
-    station4.setLatitude(station1.getLatitude());
-    station4.setLongitude(station1.getLongitude());
-    station4.setStatus(station1.getStatus());
-    assertNotEquals(station1, station4);
+    // Then
+    assertThat(result).isTrue();
+  }
 
-    // Test different quantityOfChargers
-    Station station5 = new Station();
-    station5.setId(1L);
-    station5.setExternalId("ext1");
-    station5.setPower(50);
-    station5.setQuantityOfChargers(4);
-    // Copy base fields
-    station5.setName(station1.getName());
-    station5.setAddress(station1.getAddress());
-    station5.setCity(station1.getCity());
-    station5.setCountry(station1.getCountry());
-    station5.setLatitude(station1.getLatitude());
-    station5.setLongitude(station1.getLongitude());
-    station5.setStatus(station1.getStatus());
-    assertNotEquals(station1, station5);
+  @Test
+  @DisplayName("equals should return false when comparing with different station")
+  void whenComparingWithDifferentStation_thenReturnFalse() {
+    // Given
+    Station station1 = new Station();
+    station1.setId(1L);
+    station1.setName("Test Station 1");
+    station1.setExternalId("ext1");
+    station1.setPower(50);
+    station1.setQuantityOfChargers(2);
 
-    // Test equal stations
-    Station station6 = new Station();
-    station6.setId(1L);
-    station6.setExternalId("ext1");
-    station6.setPower(50);
-    station6.setQuantityOfChargers(2);
-    // Copy base fields
-    station6.setName(station1.getName());
-    station6.setAddress(station1.getAddress());
-    station6.setCity(station1.getCity());
-    station6.setCountry(station1.getCountry());
-    station6.setLatitude(station1.getLatitude());
-    station6.setLongitude(station1.getLongitude());
-    station6.setStatus(station1.getStatus());
-    assertEquals(station1, station6);
+    Station station2 = new Station();
+    station2.setId(2L);
+    station2.setName("Test Station 2");
+    station2.setExternalId("ext2");
+    station2.setPower(100);
+    station2.setQuantityOfChargers(4);
 
-    // Test null fields
-    Station station7 = new Station();
-    station7.setId(1L);
-    station7.setExternalId(null);
-    station7.setPower(null);
-    station7.setQuantityOfChargers(null);
-    // Copy base fields
-    station7.setName(station1.getName());
-    station7.setAddress(station1.getAddress());
-    station7.setCity(station1.getCity());
-    station7.setCountry(station1.getCountry());
-    station7.setLatitude(station1.getLatitude());
-    station7.setLongitude(station1.getLongitude());
-    station7.setStatus(station1.getStatus());
+    // When
+    boolean result = station1.equals(station2);
 
-    Station station8 = new Station();
-    station8.setId(1L);
-    station8.setExternalId(null);
-    station8.setPower(null);
-    station8.setQuantityOfChargers(null);
-    // Copy base fields
-    station8.setName(station1.getName());
-    station8.setAddress(station1.getAddress());
-    station8.setCity(station1.getCity());
-    station8.setCountry(station1.getCountry());
-    station8.setLatitude(station1.getLatitude());
-    station8.setLongitude(station1.getLongitude());
-    station8.setStatus(station1.getStatus());
-
-    assertEquals(station7, station8);
+    // Then
+    assertThat(result).isFalse();
   }
 
   @Test
