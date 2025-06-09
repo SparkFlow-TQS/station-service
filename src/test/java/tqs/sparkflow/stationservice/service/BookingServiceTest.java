@@ -113,11 +113,11 @@ class BookingServiceTest {
                 // Given
                 testStation.setIsOperational(false);
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessageContaining("Station is not operational");
 
                 verify(bookingRepository, never()).save(any());
@@ -129,11 +129,11 @@ class BookingServiceTest {
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
                 when(bookingRepository.findOverlappingBookings(any(), any(), any()))
                                 .thenReturn(List.of(testBooking));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any());
@@ -194,11 +194,11 @@ class BookingServiceTest {
                 // Given
                 when(restTemplate.getForObject(anyString(), eq(Object.class)))
                                 .thenThrow(new RestClientException("User not found"));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // When & Then
                 assertThatThrownBy(() -> bookingService.createRecurringBooking(99L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                                endTime, recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessageContaining(
                                                                 "User not found or not authorized");
         }
@@ -322,6 +322,7 @@ class BookingServiceTest {
                 // Given
                 testStation.setQuantityOfChargers(2);
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // Two overlapping bookings - all chargers occupied
                 List<Booking> overlappingBookings = List.of(testBooking, testBooking);
@@ -329,9 +330,8 @@ class BookingServiceTest {
                                 .thenReturn(overlappingBookings);
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
@@ -342,15 +342,15 @@ class BookingServiceTest {
                 // Given
                 testStation.setQuantityOfChargers(1);
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // One overlapping booking - charger occupied
                 when(bookingRepository.findOverlappingBookings(any(), any(), any()))
                                 .thenReturn(List.of(testBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
@@ -360,6 +360,7 @@ class BookingServiceTest {
         void whenCreateBooking_withCancelledBookings_thenThrowException() {
                 // Given
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // Create a cancelled booking
                 Booking cancelledBooking = new Booking();
@@ -367,7 +368,7 @@ class BookingServiceTest {
                 cancelledBooking.setStationId(1L);
                 cancelledBooking.setUserId(1L);
                 cancelledBooking.setStartTime(now);
-                cancelledBooking.setEndTime(now.plusHours(2));
+                cancelledBooking.setEndTime(endTime);
                 cancelledBooking.setStatus(BookingStatus.CANCELLED);
 
                 // Mock user validation
@@ -379,9 +380,8 @@ class BookingServiceTest {
                                 .thenReturn(List.of(cancelledBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
@@ -392,15 +392,15 @@ class BookingServiceTest {
                 // Given
                 testStation.setQuantityOfChargers(null);
                 when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+                LocalDateTime endTime = now.plusHours(2);
 
                 // One overlapping booking - charger occupied
                 when(bookingRepository.findOverlappingBookings(any(), any(), any()))
                                 .thenReturn(List.of(testBooking));
 
                 // When & Then
-                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now,
-                                now.plusHours(2), recurringDays))
-                                                .isInstanceOf(IllegalStateException.class)
+                assertThatThrownBy(() -> bookingService.createRecurringBooking(1L, 1L, now, endTime,
+                                recurringDays)).isInstanceOf(IllegalStateException.class)
                                                 .hasMessage("There are overlapping bookings for this time slot");
 
                 verify(bookingRepository, never()).save(any(Booking.class));
