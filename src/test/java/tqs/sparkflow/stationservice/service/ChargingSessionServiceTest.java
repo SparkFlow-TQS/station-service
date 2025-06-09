@@ -198,7 +198,6 @@ class ChargingSessionServiceTest {
                 // Given
                 String stationId = "1";
                 String userId = "123";
-                LocalDateTime now = LocalDateTime.now();
 
                 ChargingSession session = new ChargingSession(stationId, userId);
 
