@@ -17,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import tqs.sparkflow.stationservice.dto.PaymentDTO;
 import tqs.sparkflow.stationservice.dto.PaymentIntentRequestDTO;
 import tqs.sparkflow.stationservice.dto.PaymentIntentResponseDTO;
+import tqs.sparkflow.stationservice.exception.PaymentNotFoundException;
 import tqs.sparkflow.stationservice.model.Booking;
 import tqs.sparkflow.stationservice.model.BookingStatus;
 import tqs.sparkflow.stationservice.model.Payment;
@@ -206,7 +207,7 @@ class PaymentServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> paymentService.getPaymentById(1L))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(PaymentNotFoundException.class)
             .hasMessage("Payment not found with ID: 1");
 
         verify(paymentRepository).findById(1L);
@@ -417,7 +418,7 @@ class PaymentServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> paymentService.getPaymentByStripeId("pi_test_123"))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(PaymentNotFoundException.class)
             .hasMessage("Payment not found with Stripe ID: pi_test_123");
 
         verify(paymentRepository).findByStripePaymentIntentId("pi_test_123");
@@ -432,12 +433,12 @@ class PaymentServiceTest {
         when(mockPaymentIntent.getStatus()).thenReturn("succeeded");
         when(mockPaymentIntent.getLatestCharge()).thenReturn("ch_test_123");
 
-        Payment payment = new Payment(1L, "pi_test_123", BigDecimal.valueOf(25.50), "EUR", "Test");
-        payment.setStatus(PaymentStatus.SUCCEEDED);
+        Payment localPayment = new Payment(1L, "pi_test_123", BigDecimal.valueOf(25.50), "EUR", "Test");
+        localPayment.setStatus(PaymentStatus.SUCCEEDED);
         
         when(paymentRepository.findByStripePaymentIntentId("pi_test_123"))
-            .thenReturn(Optional.of(payment));
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+            .thenReturn(Optional.of(localPayment));
+        when(paymentRepository.save(any(Payment.class))).thenReturn(localPayment);
         when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
 
         try (MockedStatic<PaymentIntent> mockedStatic = mockStatic(PaymentIntent.class)) {
