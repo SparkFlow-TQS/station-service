@@ -4,7 +4,6 @@ import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.lang.NonNull;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,6 +26,10 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableMethodSecurity(prePostEnabled = true)
 @Profile({"!test", "securitytest"})
 public class SecurityConfig {
+
+  private static final String STATIONS_PATTERN = "/stations/**";
+  private static final String API_V1_STATIONS_PATTERN = "/api/v1/stations/**";
+  private static final String ADMIN_ROLE = "ADMIN";
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -115,7 +118,7 @@ public class SecurityConfig {
             .requestMatchers("/actuator/**", "/actuator/health/**")
             .permitAll()
             // Public station endpoints (read-only access)
-            .requestMatchers("/", "/stations/**", "/api/v1/stations/**")
+            .requestMatchers("/", STATIONS_PATTERN, API_V1_STATIONS_PATTERN)
             .permitAll()
             // Public OpenChargeMap endpoints
             .requestMatchers("/api/openchargemap/**", "/api/v1/openchargemap/**")
@@ -131,14 +134,14 @@ public class SecurityConfig {
             .authenticated()
             // Admin endpoints require admin role
             .requestMatchers("/admin/**", "/api/v1/admin/**")
-            .hasRole("ADMIN")
+            .hasRole(ADMIN_ROLE)
             // Station management (POST, PUT, DELETE) requires admin role
-            .requestMatchers(org.springframework.http.HttpMethod.POST, "/stations/**", "/api/v1/stations/**")
-            .hasRole("ADMIN")
-            .requestMatchers(org.springframework.http.HttpMethod.PUT, "/stations/**", "/api/v1/stations/**")
-            .hasRole("ADMIN")
-            .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/stations/**", "/api/v1/stations/**")
-            .hasRole("ADMIN")
+            .requestMatchers(org.springframework.http.HttpMethod.POST, STATIONS_PATTERN, API_V1_STATIONS_PATTERN)
+            .hasRole(ADMIN_ROLE)
+            .requestMatchers(org.springframework.http.HttpMethod.PUT, STATIONS_PATTERN, API_V1_STATIONS_PATTERN)
+            .hasRole(ADMIN_ROLE)
+            .requestMatchers(org.springframework.http.HttpMethod.DELETE, STATIONS_PATTERN, API_V1_STATIONS_PATTERN)
+            .hasRole(ADMIN_ROLE)
             .anyRequest()
             .authenticated()
         )

@@ -24,7 +24,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Test configuration for the station service. Provides all necessary beans and security

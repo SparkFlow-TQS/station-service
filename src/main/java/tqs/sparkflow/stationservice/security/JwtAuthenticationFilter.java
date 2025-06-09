@@ -47,48 +47,60 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 FilterChain chain) throws ServletException, IOException {
         
     final String requestTokenHeader = request.getHeader("Authorization");
+    String jwtToken = extractJwtToken(requestTokenHeader);
+    String username = extractUsernameFromToken(jwtToken);
 
-    String username = null;
-    String jwtToken = null;
-
-    // JWT Token is in the form "Bearer token". Remove Bearer word and get only the Token
-    if (requestTokenHeader != null && requestTokenHeader.startsWith(BEARER_PREFIX)) {
-      jwtToken = requestTokenHeader.substring(BEARER_PREFIX_LENGTH).trim();
-      if (!jwtToken.isEmpty()) {
-        try {
-          username = jwtUtil.extractUsername(jwtToken);
-        } catch (JwtException | IllegalArgumentException e) {
-          logger.warn("Unable to get JWT Token or JWT Token has expired");
-        }
-      }
+    if (shouldAuthenticate(username)) {
+      authenticateUser(jwtToken, username, request);
     }
-
-    // Once we get the token validate it.
-    if (username != null && !username.trim().isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
-      try {
-        // Validate token
-        if (jwtUtil.validateToken(jwtToken, username)) {
-          // Extract user information from token
-          Boolean isOperator = jwtUtil.extractIsOperator(jwtToken);
-          String email = jwtUtil.extractEmail(jwtToken);
-          
-          // Create authorities based on operator status
-          SimpleGrantedAuthority authority = isOperator ? 
-              new SimpleGrantedAuthority("ROLE_OPERATOR") : 
-              new SimpleGrantedAuthority("ROLE_USER");
-          
-          UsernamePasswordAuthenticationToken authToken = 
-              new UsernamePasswordAuthenticationToken(
-                  username, null, Collections.singletonList(authority));
-          authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    
-          // Set authentication in security context
-          SecurityContextHolder.getContext().setAuthentication(authToken);
-        }
-      } catch (JwtException | IllegalArgumentException e) {
-        logger.warn("Unable to validate JWT token for username: " + username);
-      }
-    }
+    
     chain.doFilter(request, response);
+  }
+  
+  private String extractJwtToken(String requestTokenHeader) {
+    if (requestTokenHeader != null && requestTokenHeader.startsWith(BEARER_PREFIX)) {
+      String token = requestTokenHeader.substring(BEARER_PREFIX_LENGTH).trim();
+      return token.isEmpty() ? null : token;
+    }
+    return null;
+  }
+  
+  private String extractUsernameFromToken(String jwtToken) {
+    if (jwtToken == null) {
+      return null;
+    }
+    try {
+      return jwtUtil.extractUsername(jwtToken);
+    } catch (JwtException | IllegalArgumentException e) {
+      logger.warn("Unable to get JWT Token or JWT Token has expired");
+      return null;
+    }
+  }
+  
+  private boolean shouldAuthenticate(String username) {
+    return username != null && 
+           !username.trim().isEmpty() && 
+           SecurityContextHolder.getContext().getAuthentication() == null;
+  }
+  
+  private void authenticateUser(String jwtToken, String username, HttpServletRequest request) {
+    try {
+      if (Boolean.TRUE.equals(jwtUtil.validateToken(jwtToken, username))) {
+        Boolean isOperator = jwtUtil.extractIsOperator(jwtToken);
+        
+        SimpleGrantedAuthority authority = Boolean.TRUE.equals(isOperator) ? 
+            new SimpleGrantedAuthority("ROLE_OPERATOR") : 
+            new SimpleGrantedAuthority("ROLE_USER");
+        
+        UsernamePasswordAuthenticationToken authToken = 
+            new UsernamePasswordAuthenticationToken(
+                username, null, Collections.singletonList(authority));
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                  
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
+    } catch (JwtException | IllegalArgumentException e) {
+      logger.warn("Unable to validate JWT token for username: " + username);
+    }
   }
 }

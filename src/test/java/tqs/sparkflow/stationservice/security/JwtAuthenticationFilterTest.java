@@ -1,9 +1,7 @@
 package tqs.sparkflow.stationservice.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import tqs.sparkflow.stationservice.util.JwtUtil;
 
@@ -58,14 +55,12 @@ class JwtAuthenticationFilterTest {
         String token = "valid.jwt.token";
         String bearerToken = "Bearer " + token;
         String username = "testuser";
-        String email = "test@example.com";
         Boolean isOperator = false;
         
         when(request.getHeader("Authorization")).thenReturn(bearerToken);
         when(jwtUtil.extractUsername(token)).thenReturn(username);
         when(jwtUtil.validateToken(token, username)).thenReturn(true);
         when(jwtUtil.extractIsOperator(token)).thenReturn(isOperator);
-        when(jwtUtil.extractEmail(token)).thenReturn(email);
         
         // When
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -88,14 +83,12 @@ class JwtAuthenticationFilterTest {
         String token = "valid.jwt.token";
         String bearerToken = "Bearer " + token;
         String username = "admin";
-        String email = "admin@example.com";
         Boolean isOperator = true;
         
         when(request.getHeader("Authorization")).thenReturn(bearerToken);
         when(jwtUtil.extractUsername(token)).thenReturn(username);
         when(jwtUtil.validateToken(token, username)).thenReturn(true);
         when(jwtUtil.extractIsOperator(token)).thenReturn(isOperator);
-        when(jwtUtil.extractEmail(token)).thenReturn(email);
         
         // When
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -132,7 +125,6 @@ class JwtAuthenticationFilterTest {
         
         verify(filterChain).doFilter(request, response);
         verify(jwtUtil, never()).extractIsOperator(anyString());
-        verify(jwtUtil, never()).extractEmail(anyString());
     }
     
     @Test
