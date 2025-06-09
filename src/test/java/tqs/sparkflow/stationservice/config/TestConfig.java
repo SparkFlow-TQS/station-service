@@ -24,7 +24,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Test configuration for the station service. Provides all necessary beans and security
@@ -32,7 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @TestConfiguration
 @EnableWebSecurity
-@Profile("test")
+@Profile({"test", "!securitytest"})
 public class TestConfig {
 
     @Bean
@@ -88,44 +87,22 @@ public class TestConfig {
     }
 
     /**
-     * Creates a security filter chain for tests. Configures security settings including CSRF,
-     * headers, session management, and endpoint authorization rules.
+     * Creates a security filter chain for tests that permits all requests.
+     * This simplifies testing by removing authentication requirements.
      * 
      * @param http the HttpSecurity to configure
-     * @param authenticationProvider the AuthenticationProvider to use
      * @return the configured SecurityFilterChain
      * @throws Exception if an error occurs during configuration
      */
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-            AuthenticationProvider authenticationProvider) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/stations/**")
-                        .permitAll().requestMatchers("/api/v1/charging-sessions/**").permitAll()
-                        .requestMatchers("/api/v1/openchargemap/**").permitAll()
-                        .requestMatchers("/api/v1/statistics/**").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/bookings/**").authenticated().anyRequest()
-                        .authenticated())
-                .authenticationManager(authenticationManager(authenticationProvider))
-                .httpBasic(basic -> basic
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("Access Denied");
-                        }))
-                .exceptionHandling(handling -> handling
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("Access Denied");
-                        }).accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.getWriter().write("Access Denied");
-                        }))
-                .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(csrf -> csrf.disable())
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .build();
     }
 
     @Bean
