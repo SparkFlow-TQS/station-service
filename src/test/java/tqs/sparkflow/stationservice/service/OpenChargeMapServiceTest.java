@@ -299,7 +299,7 @@ class OpenChargeMapServiceTest {
                 assertThat(result.getCity()).isEqualTo("Unknown");
                 assertThat(result.getCountry()).isEqualTo("Unknown");
                 assertThat(result.getQuantityOfChargers()).isEqualTo(1);
-                assertThat(result.getStatus()).isEqualTo("Available");
+                assertThat(result.getStatus()).isNull();
         }
 
         @Test
@@ -327,7 +327,7 @@ class OpenChargeMapServiceTest {
                 assertThat(result.getCity()).isEqualTo("Unknown");
                 assertThat(result.getCountry()).isEqualTo("Unknown");
                 assertThat(result.getQuantityOfChargers()).isEqualTo(1);
-                assertThat(result.getStatus()).isEqualTo("Available");
+                assertThat(result.getStatus()).isNull();
         }
 
         @Test
