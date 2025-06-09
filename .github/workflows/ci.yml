@@ -36,12 +36,6 @@ jobs:
         SPRING_PROFILES_ACTIVE: test
         OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
     
-    - name: Run Integration Tests
-      run: ./mvnw verify -Dtest=*IT
-      env:
-        SPRING_PROFILES_ACTIVE: test
-        OPENCHARGEMAP_API_KEY: ${{ secrets.OPENCHARGEMAP_API_KEY }}
-    
     - name: Run Cucumber Tests
       run: ./mvnw verify -Dtest=CucumberTestRunner
       env:

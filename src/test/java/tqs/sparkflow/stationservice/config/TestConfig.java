@@ -35,7 +35,7 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
  */
 @TestConfiguration
 @EnableWebSecurity
-@Profile("test")
+@Profile({"test", "!securitytest"})
 public class TestConfig {
 
     @Bean
@@ -113,7 +113,6 @@ public class TestConfig {
      * headers, session management, and endpoint authorization rules.
      * 
      * @param http the HttpSecurity to configure
-     * @param authenticationProvider the AuthenticationProvider to use
      * @return the configured SecurityFilterChain
      * @throws Exception if an error occurs during configuration
      */
