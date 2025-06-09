@@ -209,14 +209,20 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private PaymentStatus mapStripeStatusToPaymentStatus(String stripeStatus) {
-        return switch (stripeStatus) {
-            case "succeeded" -> PaymentStatus.SUCCEEDED;
-            case "processing" -> PaymentStatus.PROCESSING;
-            case "requires_action" -> PaymentStatus.REQUIRES_ACTION;
-            case "canceled" -> PaymentStatus.CANCELED;
-            case "requires_payment_method" -> PaymentStatus.FAILED;
-            default -> PaymentStatus.PENDING;
-        };
+        switch (stripeStatus) {
+            case "succeeded":
+                return PaymentStatus.SUCCEEDED;
+            case "processing":
+                return PaymentStatus.PROCESSING;
+            case "requires_action":
+                return PaymentStatus.REQUIRES_ACTION;
+            case "canceled":
+                return PaymentStatus.CANCELED;
+            case "requires_payment_method":
+                return PaymentStatus.FAILED;
+            default:
+                return PaymentStatus.PENDING;
+        }
     }
 
     @Override

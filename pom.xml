@@ -50,6 +50,18 @@
 
 	<repositories>
 		<repository>
+			<id>central</id>
+			<name>Maven Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+		</repository>
+		<repository>
 			<id>spotless</id>
 			<name>Spotless Maven Plugin Repository</name>
 			<url>https://plugins.gradle.org/m2/</url>
@@ -296,7 +308,7 @@
 		<dependency>
 			<groupId>com.stripe</groupId>
 			<artifactId>stripe-java</artifactId>
-			<version>26.13.0</version>
+			<version>24.16.0</version>
 		</dependency>
 	</dependencies>
 
