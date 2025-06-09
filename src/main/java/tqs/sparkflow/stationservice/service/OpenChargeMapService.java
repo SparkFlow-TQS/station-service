@@ -260,7 +260,8 @@ public class OpenChargeMapService {
       Map<String, Object> statusMap = (Map<String, Object>) statusType;
       Object isOperational = statusMap.get("IsOperational");
       if (isOperational instanceof Boolean) {
-        station.setIsOperational((Boolean) isOperational);
+        Boolean operational = (Boolean) isOperational;
+        station.setIsOperational(operational);
       }
       Object title = statusMap.get("Title");
       if (title != null) {
