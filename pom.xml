@@ -292,6 +292,12 @@
 			<artifactId>guava</artifactId>
 			<version>${guava.version}</version>
 		</dependency>
+		<!-- Stripe Payment Processing -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>26.13.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
