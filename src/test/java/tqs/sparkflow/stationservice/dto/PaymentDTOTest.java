@@ -148,4 +148,140 @@ class PaymentDTOTest {
             assertThat(paymentDTO.getAmount()).isEqualTo(amount);
         }
     }
+
+    @Test
+    @DisplayName("Should create DTO with full constructor")
+    void shouldCreateDTOWithFullConstructor() {
+        // Given
+        LocalDateTime now = LocalDateTime.now();
+        
+        // When
+        PaymentDTO dto = new PaymentDTO(
+            1L, 2L, "pi_test_123", BigDecimal.valueOf(25.50), 
+            "EUR", PaymentStatus.SUCCEEDED, "Test payment", 
+            now, now, now
+        );
+
+        // Then
+        assertThat(dto.getId()).isEqualTo(1L);
+        assertThat(dto.getBookingId()).isEqualTo(2L);
+        assertThat(dto.getStripePaymentIntentId()).isEqualTo("pi_test_123");
+        assertThat(dto.getAmount()).isEqualTo(BigDecimal.valueOf(25.50));
+        assertThat(dto.getCurrency()).isEqualTo("EUR");
+        assertThat(dto.getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+        assertThat(dto.getDescription()).isEqualTo("Test payment");
+        assertThat(dto.getCreatedAt()).isEqualTo(now);
+        assertThat(dto.getUpdatedAt()).isEqualTo(now);
+        assertThat(dto.getPaidAt()).isEqualTo(now);
+    }
+
+    @Test
+    @DisplayName("Should handle edge case values")
+    void shouldHandleEdgeCaseValues() {
+        // Test maximum Long values for IDs
+        paymentDTO.setId(Long.MAX_VALUE);
+        assertThat(paymentDTO.getId()).isEqualTo(Long.MAX_VALUE);
+
+        paymentDTO.setBookingId(Long.MIN_VALUE);
+        assertThat(paymentDTO.getBookingId()).isEqualTo(Long.MIN_VALUE);
+
+        // Test very large amounts
+        BigDecimal largeAmount = new BigDecimal("999999999.99");
+        paymentDTO.setAmount(largeAmount);
+        assertThat(paymentDTO.getAmount()).isEqualTo(largeAmount);
+
+        // Test zero amount
+        paymentDTO.setAmount(BigDecimal.ZERO);
+        assertThat(paymentDTO.getAmount()).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("Should handle special characters in text fields")
+    void shouldHandleSpecialCharactersInTextFields() {
+        // Test special characters in string fields
+        String specialStripeId = "pi_123_áéíóú_$%&";
+        String specialDescription = "Payment with 🎉 émoji and special chars: @#$%^&*()";
+        String specialCurrency = "USD"; // Currency codes should be standard
+
+        paymentDTO.setStripePaymentIntentId(specialStripeId);
+        paymentDTO.setDescription(specialDescription);
+        paymentDTO.setCurrency(specialCurrency);
+
+        assertThat(paymentDTO.getStripePaymentIntentId()).isEqualTo(specialStripeId);
+        assertThat(paymentDTO.getDescription()).isEqualTo(specialDescription);
+        assertThat(paymentDTO.getCurrency()).isEqualTo(specialCurrency);
+    }
+
+    @Test
+    @DisplayName("Should handle timestamp edge cases")
+    void shouldHandleTimestampEdgeCases() {
+        // Test past dates
+        LocalDateTime pastDate = LocalDateTime.of(2020, 1, 1, 0, 0, 0);
+        paymentDTO.setCreatedAt(pastDate);
+        assertThat(paymentDTO.getCreatedAt()).isEqualTo(pastDate);
+
+        // Test future dates
+        LocalDateTime futureDate = LocalDateTime.of(2030, 12, 31, 23, 59, 59);
+        paymentDTO.setUpdatedAt(futureDate);
+        assertThat(paymentDTO.getUpdatedAt()).isEqualTo(futureDate);
+
+        // Test current time
+        LocalDateTime now = LocalDateTime.now();
+        paymentDTO.setPaidAt(now);
+        assertThat(paymentDTO.getPaidAt()).isEqualTo(now);
+    }
+
+    @Test
+    @DisplayName("Should maintain immutability of constructor parameters")
+    void shouldMaintainImmutabilityOfConstructorParameters() {
+        // Given
+        LocalDateTime originalTime = LocalDateTime.now();
+        PaymentDTO dto = new PaymentDTO(
+            1L, 2L, "pi_test_123", BigDecimal.valueOf(25.50), 
+            "EUR", PaymentStatus.SUCCEEDED, "Test payment", 
+            originalTime, originalTime, originalTime
+        );
+
+        // When - modify original time reference
+        LocalDateTime modifiedTime = originalTime.plusDays(1);
+
+        // Then - DTO should still have original time
+        assertThat(dto.getCreatedAt()).isEqualTo(originalTime);
+        assertThat(dto.getCreatedAt()).isNotEqualTo(modifiedTime);
+    }
+
+    @Test
+    @DisplayName("Should handle equals with different object types")
+    void shouldHandleEqualsWithDifferentObjectTypes() {
+        // Given
+        PaymentDTO dto = new PaymentDTO();
+        dto.setId(1L);
+
+        // Then
+        assertThat(dto).isNotEqualTo(null);
+        assertThat(dto).isNotEqualTo("not a PaymentDTO");
+        assertThat(dto).isNotEqualTo(123);
+        assertThat(dto).isEqualTo(dto); // reflexive
+    }
+
+    @Test
+    @DisplayName("Should handle hashCode consistency")
+    void shouldHandleHashCodeConsistency() {
+        // Given
+        PaymentDTO dto1 = new PaymentDTO();
+        dto1.setId(1L);
+        dto1.setStripePaymentIntentId("pi_test_123");
+
+        PaymentDTO dto2 = new PaymentDTO();
+        dto2.setId(1L);
+        dto2.setStripePaymentIntentId("pi_test_123");
+
+        // Then
+        assertThat(dto1.hashCode()).isEqualTo(dto2.hashCode());
+        
+        // Multiple calls should return same hash code
+        int hash1 = dto1.hashCode();
+        int hash2 = dto1.hashCode();
+        assertThat(hash1).isEqualTo(hash2);
+    }
 }

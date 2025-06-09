@@ -232,4 +232,155 @@ class PaymentTest {
         assertThat(defaultPayment.getCreatedAt()).isNotNull(); // Default constructor sets timestamp
         assertThat(defaultPayment.getUpdatedAt()).isNotNull(); // Default constructor sets timestamp
     }
+
+    @Test
+    @DisplayName("Should set paid at when status becomes SUCCEEDED")
+    void shouldSetPaidAtWhenStatusBecomesSucceeded() {
+        // Given
+        Payment payment = new Payment();
+        assertThat(payment.getPaidAt()).isNull();
+
+        // When
+        payment.setStatus(PaymentStatus.SUCCEEDED);
+
+        // Then
+        assertThat(payment.getPaidAt()).isNotNull();
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+    }
+
+    @Test
+    @DisplayName("Should not update paid at if already set when status becomes SUCCEEDED")
+    void shouldNotUpdatePaidAtIfAlreadySetWhenStatusBecomesSucceeded() {
+        // Given
+        LocalDateTime originalPaidAt = LocalDateTime.now().minusHours(1);
+        Payment payment = new Payment();
+        payment.setPaidAt(originalPaidAt);
+
+        // When
+        payment.setStatus(PaymentStatus.SUCCEEDED);
+
+        // Then
+        assertThat(payment.getPaidAt()).isEqualTo(originalPaidAt);
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+    }
+
+    @Test
+    @DisplayName("Should not set paid at for non-SUCCEEDED status")
+    void shouldNotSetPaidAtForNonSucceededStatus() {
+        // Given
+        Payment payment = new Payment();
+        assertThat(payment.getPaidAt()).isNull();
+
+        // When
+        payment.setStatus(PaymentStatus.FAILED);
+
+        // Then
+        assertThat(payment.getPaidAt()).isNull();
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
+    }
+
+    @Test
+    @DisplayName("Should handle preUpdate method")
+    void shouldHandlePreUpdateMethod() {
+        // Given
+        Payment payment = new Payment();
+        LocalDateTime originalUpdatedAt = payment.getUpdatedAt();
+
+        // When - Simulate JPA pre-update
+        payment.preUpdate();
+
+        // Then
+        assertThat(payment.getUpdatedAt()).isAfter(originalUpdatedAt);
+    }
+
+    @Test
+    @DisplayName("Should handle all payment statuses")
+    void shouldHandleAllPaymentStatuses() {
+        // Given
+        Payment payment = new Payment();
+        PaymentStatus[] allStatuses = PaymentStatus.values();
+
+        // When & Then
+        for (PaymentStatus status : allStatuses) {
+            payment.setStatus(status);
+            assertThat(payment.getStatus()).isEqualTo(status);
+        }
+    }
+
+    @Test
+    @DisplayName("Should handle edge case amounts")
+    void shouldHandleEdgeCaseAmounts() {
+        // Given & When & Then
+        payment.setAmount(BigDecimal.ZERO);
+        assertThat(payment.getAmount()).isEqualTo(BigDecimal.ZERO);
+
+        payment.setAmount(BigDecimal.valueOf(0.01));
+        assertThat(payment.getAmount()).isEqualTo(BigDecimal.valueOf(0.01));
+
+        payment.setAmount(BigDecimal.valueOf(999999.99));
+        assertThat(payment.getAmount()).isEqualTo(BigDecimal.valueOf(999999.99));
+    }
+
+    @Test
+    @DisplayName("Should handle various currency codes")
+    void shouldHandleVariousCurrencyCodes() {
+        // Given
+        String[] currencies = {"USD", "EUR", "GBP", "JPY", "CAD", "AUD"};
+
+        // When & Then
+        for (String currency : currencies) {
+            payment.setCurrency(currency);
+            assertThat(payment.getCurrency()).isEqualTo(currency);
+        }
+    }
+
+    @Test
+    @DisplayName("Should handle long descriptions")
+    void shouldHandleLongDescriptions() {
+        // Given
+        String longDescription = "This is a very long description that might exceed normal expectations for payment descriptions but should still be handled correctly by the payment model without any issues";
+
+        // When
+        payment.setDescription(longDescription);
+
+        // Then
+        assertThat(payment.getDescription()).isEqualTo(longDescription);
+    }
+
+    @Test
+    @DisplayName("Should handle special characters in strings")
+    void shouldHandleSpecialCharactersInStrings() {
+        // Given
+        String specialStripeId = "pi_1234567890_áéíóú_@#$%";
+        String specialDescription = "Payment with émoji 🎉 and special chars: @#$%^&*()";
+
+        // When
+        payment.setStripePaymentIntentId(specialStripeId);
+        payment.setDescription(specialDescription);
+
+        // Then
+        assertThat(payment.getStripePaymentIntentId()).isEqualTo(specialStripeId);
+        assertThat(payment.getDescription()).isEqualTo(specialDescription);
+    }
+
+    @Test
+    @DisplayName("Should maintain object state consistency")
+    void shouldMaintainObjectStateConsistency() {
+        // Given
+        Payment payment = new Payment(1L, "pi_test_123", BigDecimal.valueOf(25.50), "EUR", "Test payment");
+
+        // When
+        payment.setId(999L);
+        payment.setStatus(PaymentStatus.SUCCEEDED);
+
+        // Then
+        assertThat(payment.getId()).isEqualTo(999L);
+        assertThat(payment.getBookingId()).isEqualTo(1L);
+        assertThat(payment.getStripePaymentIntentId()).isEqualTo("pi_test_123");
+        assertThat(payment.getAmount()).isEqualTo(BigDecimal.valueOf(25.50));
+        assertThat(payment.getCurrency()).isEqualTo("EUR");
+        assertThat(payment.getDescription()).isEqualTo("Test payment");
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+        assertThat(payment.getPaidAt()).isNotNull();
+    }
 }
