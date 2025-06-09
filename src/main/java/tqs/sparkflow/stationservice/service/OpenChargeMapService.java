@@ -305,14 +305,16 @@ public class OpenChargeMapService {
     if (connections != null && !connections.isEmpty()) {
       // Get the highest power from all connections
       double maxPower = 0.0;
+      boolean hasValidPower = false;
       for (Map<String, Object> connection : connections) {
         Object powerKW = connection.get("PowerKW");
         if (powerKW instanceof Number) {
           double power = ((Number) powerKW).doubleValue();
           maxPower = Math.max(maxPower, power);
+          hasValidPower = true;
         }
       }
-      station.setPower((int) Math.round(maxPower));
+      station.setPower(hasValidPower ? (int) Math.round(maxPower) : null);
     }
   }
 
