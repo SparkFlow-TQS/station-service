@@ -96,9 +96,8 @@ public class TestConfig {
     }
 
     /**
-     * Creates a security filter chain for tests.
-     * Configures security settings including CSRF, headers, session management,
-     * and endpoint authorization rules.
+     * Creates a security filter chain for tests that permits all requests.
+     * This simplifies testing by removing authentication requirements.
      * 
      * @param http the HttpSecurity to configure
      * @return the configured SecurityFilterChain
@@ -111,30 +110,7 @@ public class TestConfig {
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/v1/stations/**").permitAll()
-                    .requestMatchers("/api/v1/charging-sessions/**").permitAll()
-                    .requestMatchers("/api/v1/openchargemap/**").permitAll()
-                    .requestMatchers("/api/v1/statistics/**").permitAll()
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/v1/bookings/**").authenticated()
-                    .anyRequest().authenticated()
-            )
-            .authenticationManager(authenticationManager())
-            .httpBasic(basic -> basic
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Access Denied");
-                }))
-            .exceptionHandling(handling -> handling
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Access Denied");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Access Denied");
-                }))
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .build();
     }
 

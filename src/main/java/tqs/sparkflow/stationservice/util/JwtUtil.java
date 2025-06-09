@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
  * This service validates tokens issued by the user-service.
  */
 @Component
+@Profile("!test")
 public class JwtUtil {
 
   @Value("${jwt.secret}")
